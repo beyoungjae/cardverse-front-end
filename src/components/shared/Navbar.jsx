@@ -1,15 +1,22 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaInstagram, FaFacebookF, FaYoutube } from 'react-icons/fa'
-import { AppBar, Toolbar, IconButton, Box, useTheme, Drawer, List, ListItem, ListItemText } from '@mui/material'
+import { AppBar, Toolbar, IconButton, Box, useTheme, Drawer, List, ListItem, ListItemText, Collapse } from '@mui/material'
 import { styled } from '@mui/system'
 import { motion, AnimatePresence } from 'framer-motion'
 import MenuIcon from '@mui/icons-material/Menu'
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
    backgroundColor: theme.palette.background.paper,
    borderBottom: `1px solid ${theme.palette.divider}`,
    boxShadow: 'none',
+   position: 'fixed',
+   top: 0,
+   left: 0,
+   right: 0,
+   zIndex: theme.zIndex.appBar,
 }))
 
 const SocialIcons = styled(Box)(({ theme }) => ({
@@ -21,19 +28,21 @@ const SocialIcons = styled(Box)(({ theme }) => ({
    },
 }))
 
-const Logoimg = styled('img')(({ theme }) => ({
-   height: '40px',
-   cursor: 'pointer',
-   [theme.breakpoints.down('md')]: {
-      display: 'none',
-   },
-}))
-
 const LogoContainer = styled(Box)(({ theme }) => ({
    flexGrow: 1,
    textAlign: 'center',
    [theme.breakpoints.down('md')]: {
-      display: 'none',
+      flexGrow: 0,
+      marginRight: 'auto',
+   },
+}))
+
+const Logoimg = styled('img')(({ theme }) => ({
+   margin: '0 auto',
+   height: '40px',
+   cursor: 'pointer',
+   [theme.breakpoints.down('md')]: {
+      height: '30px',
    },
 }))
 
@@ -59,12 +68,22 @@ const BottomNav = styled(Box)(({ theme }) => ({
    display: 'flex',
    justifyContent: 'center',
    gap: '12rem',
-   padding: '1rem 0',
+   padding: '1.1rem 0',
    borderTop: `1px solid ${theme.palette.divider}`,
    borderBottom: `1px solid ${theme.palette.divider}`,
    backgroundColor: theme.palette.background.paper,
-   position: 'relative',
+   position: 'fixed',
+   top: '64px',
+   left: 0,
+   right: 0,
+   zIndex: theme.zIndex.appBar - 1,
+   [theme.breakpoints.down('lg')]: {
+      gap: '8rem',
+   },
    [theme.breakpoints.down('md')]: {
+      gap: '4rem',
+   },
+   [theme.breakpoints.down('sm')]: {
       display: 'none',
    },
 }))
@@ -79,6 +98,15 @@ const NavItem = styled(Box)(({ theme }) => ({
       fontWeight: 400,
       letterSpacing: '0.5em',
       fontFamily: theme.typography.body1.fontFamily,
+      whiteSpace: 'nowrap',
+      [theme.breakpoints.down('lg')]: {
+         fontSize: '1rem',
+         letterSpacing: '0.3em',
+      },
+      [theme.breakpoints.down('md')]: {
+         fontSize: '0.9rem',
+         letterSpacing: '0.2em',
+      },
       '&:hover': {
          color: theme.palette.text.primary,
       },
@@ -128,6 +156,10 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
 
 const DrawerItem = styled(ListItem)(({ theme }) => ({
    padding: '0.7rem 1rem',
+   display: 'flex',
+   alignItems: 'center',
+   justifyContent: 'space-between',
+   cursor: 'pointer',
    '& .MuiListItemText-primary': {
       color: theme.palette.text.secondary,
       fontSize: '0.9rem',
@@ -166,6 +198,7 @@ const dropdownVariants = {
 const Navbar = () => {
    const [activeMenu, setActiveMenu] = useState(null)
    const [mobileOpen, setMobileOpen] = useState(false)
+   const [expandedMenus, setExpandedMenus] = useState({})
    // eslint-disable-next-line
    const theme = useTheme()
 
@@ -192,30 +225,54 @@ const Navbar = () => {
       setMobileOpen(!mobileOpen)
    }
 
+   const handleMenuToggle = (menu) => {
+      setExpandedMenus((prev) => ({
+         ...prev,
+         [menu]: !prev[menu],
+      }))
+   }
+
    const drawer = (
       <List>
          {Object.entries(menuItems).map(([menu, items]) => (
             <React.Fragment key={menu}>
-               <DrawerItem component={Link} to={`/${menu.toLowerCase()}`}>
-                  <ListItemText primary={menu} />
+               <DrawerItem
+                  onClick={() => handleMenuToggle(menu)}
+                  sx={{
+                     backgroundColor: expandedMenus[menu] ? 'rgba(0, 0, 0, 0.04)' : 'transparent',
+                  }}
+               >
+                  <ListItemText
+                     primary={menu}
+                     sx={{
+                        '& .MuiTypography-root': {
+                           fontWeight: expandedMenus[menu] ? 600 : 400,
+                        },
+                     }}
+                  />
+                  {expandedMenus[menu] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                </DrawerItem>
-               {items.map((item) => (
-                  <DrawerItem key={item.name} component={Link} to={item.path} sx={{ pl: 4 }}>
-                     <ListItemText primary={item.name} />
-                  </DrawerItem>
-               ))}
+               <Collapse in={expandedMenus[menu]} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding>
+                     {items.map((item) => (
+                        <DrawerItem key={item.name} component={Link} to={item.path} sx={{ pl: 4 }} onClick={handleDrawerToggle}>
+                           <ListItemText primary={item.name} />
+                        </DrawerItem>
+                     ))}
+                  </List>
+               </Collapse>
             </React.Fragment>
          ))}
-         <DrawerItem component={Link} to="/support">
+         <DrawerItem component={Link} to="/support" onClick={handleDrawerToggle}>
             <ListItemText primary="고객센터" />
          </DrawerItem>
-         <DrawerItem component={Link} to="/mypage">
+         <DrawerItem component={Link} to="/mypage" onClick={handleDrawerToggle}>
             <ListItemText primary="마이페이지" />
          </DrawerItem>
-         <DrawerItem component={Link} to="/signup">
+         <DrawerItem component={Link} to="/signup" onClick={handleDrawerToggle}>
             <ListItemText primary="회원가입" />
          </DrawerItem>
-         <DrawerItem component={Link} to="/login">
+         <DrawerItem component={Link} to="/login" onClick={handleDrawerToggle}>
             <ListItemText primary="로그인" />
          </DrawerItem>
       </List>
