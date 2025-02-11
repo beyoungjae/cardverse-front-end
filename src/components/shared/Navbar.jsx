@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaInstagram, FaFacebookF, FaYoutube } from 'react-icons/fa'
-import { AppBar, Toolbar, IconButton, Box, useTheme, Drawer, List, ListItem, ListItemText, Collapse } from '@mui/material'
+import { AppBar, Toolbar, IconButton, Box, Drawer, List, ListItem, ListItemText, Collapse } from '@mui/material'
 import { styled } from '@mui/system'
 import { motion, AnimatePresence } from 'framer-motion'
 import MenuIcon from '@mui/icons-material/Menu'
@@ -199,8 +199,6 @@ const Navbar = () => {
    const [activeMenu, setActiveMenu] = useState(null)
    const [mobileOpen, setMobileOpen] = useState(false)
    const [expandedMenus, setExpandedMenus] = useState({})
-   // eslint-disable-next-line
-   const theme = useTheme()
 
    const menuItems = {
       HOME: [
@@ -310,7 +308,7 @@ const Navbar = () => {
          <BottomNav>
             {Object.keys(menuItems).map((menu) => (
                <NavItem key={menu} onMouseEnter={() => setActiveMenu(menu)} onMouseLeave={() => setActiveMenu(null)}>
-                  <Link to={`/${menu.toLowerCase()}`}>{menu}</Link>
+                  <Link>{menu}</Link>
                   <AnimatePresence>
                      {activeMenu === menu && (
                         <DropdownMenu variants={dropdownVariants} initial="hidden" animate="visible" exit="exit">
