@@ -70,7 +70,7 @@ function App() {
          <MainContent>
             <Routes>
                <Route path="/" element={<Home />} />
-               <Route path="/mypage" element={<MyPage />} />
+               <Route path="/my/*" element={<MyPage />} />
                <Route path="/template" element={<Template />} />
                <Route path="/signup" element={<SignupPage />} />
                <Route path="/kaka" element={<LoginkakaPage />} />

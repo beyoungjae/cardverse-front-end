@@ -273,7 +273,7 @@ const Navbar = () => {
          <DrawerItem component={Link} to="/support" onClick={handleDrawerToggle}>
             <ListItemText primary="고객센터" />
          </DrawerItem>
-         <DrawerItem component={Link} to="/mypage" onClick={handleDrawerToggle}>
+         <DrawerItem component={Link} to="/my" onClick={handleDrawerToggle}>
             <ListItemText primary="마이페이지" />
          </DrawerItem>
          <DrawerItem component={Link} to="/signup" onClick={handleDrawerToggle}>
@@ -310,7 +310,7 @@ const Navbar = () => {
                </LogoContainer>
                <NavLinks>
                   <Link to="/support">고객센터</Link>
-                  <Link to="/mypage">마이페이지</Link>
+                  <Link to="/my">마이페이지</Link>
                   <Link to="/signup">회원가입</Link>
                   <Link to="/login">로그인</Link>
                </NavLinks>
