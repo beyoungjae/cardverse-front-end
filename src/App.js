@@ -10,13 +10,13 @@ import { Route, Routes } from 'react-router-dom'
 
 // 네비바 아래 컨텐츠를 위한 컨테이너
 const MainContent = muiStyled(Box)(({ theme }) => ({
-   paddingTop: '126px',
-   [theme.breakpoints.down('lg')]: {
-      paddingTop: '125px',
-   },
-   [theme.breakpoints.down('sm')]: {
-      paddingTop: '55px',
-   },
+    paddingTop: '126px',
+    [theme.breakpoints.down('lg')]: {
+        paddingTop: '125px',
+    },
+    [theme.breakpoints.down('sm')]: {
+        paddingTop: '55px',
+    },
 }))
 
 // 전역 스타일
@@ -58,20 +58,20 @@ const GlobalStyle = createGlobalStyle`
 `
 
 function App() {
-   return (
-      <>
-         <GlobalStyle />
-         <CssBaseline />
-         <Navbar />
-         <MainContent>
-            <Routes>
-               <Route path="/" element={<Home />} />
-               <Route path="/mypage" element={<MyPage />} />
-            </Routes>
-         </MainContent>
-         <Footer />
-      </>
-   )
+    return (
+        <>
+            <GlobalStyle />
+            <CssBaseline />
+            <Navbar />
+            <MainContent>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/mypage" element={<MyPage />} />
+                </Routes>
+            </MainContent>
+            <Footer />
+        </>
+    )
 }
 
 export default App

@@ -3,17 +3,29 @@ import { Box, Typography } from '@mui/material'
 import { createBox } from '../utils/muiSystem'
 
 const Container = createBox({
-   maxWidth: '1280px',
-   margin: '0 auto',
-   padding: '16px',
-   backgroundColor: 'black',
-   color: 'white',
-   height: '1200px',
+    display: 'flex',
+    maxWidth: '1280px',
+    margin: '0 auto',
+    padding: '16px',
+    gap: '16px',
+    backgroundColor: 'black',
+    color: 'white',
+    breakpoint: [
+        // { down: 'md', margin: '0px auto' }, // 960px 이하에서 height 변경
+        // { down: 'sm', height: '250px' }, // 600px 이하에서 height 변경
+    ],
 })
 
-const SideNavbar = createBox({
-   width: '50px',
-   backgroundColor: 'white',
+const Sidebar = createBox({
+    width: '300px',
+    height: '400px',
+    backgroundColor: 'white',
+})
+
+const Content = createBox({
+    flex: '1',
+    backgroundColor: 'white',
+    height: '300px',
 })
 
 // const Container = styled(Box)(({ theme }) => ({
@@ -27,20 +39,16 @@ const SideNavbar = createBox({
 // const SideNavbar = styled(Box)(({ theme }) => ({}))
 
 const MyPage = () => {
-   return (
-      <Container>
-         <></>
-      </Container>
-      // <Container>
-      // <></>
-      // </Container>
-   )
+    return (
+        <Container>
+            <Sidebar />
+            {/* <></> */}
+            <Content />
+        </Container>
+        // <Container>
+        // <></>
+        // </Container>
+    )
 }
 
 export default MyPage
-
-const flex = {
-   display: 'flex',
-   justifyContent: 'center',
-   alignItems: 'center',
-}
