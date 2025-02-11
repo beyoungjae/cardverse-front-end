@@ -19,7 +19,7 @@ const MyPage = () => {
     const currentTab = location.pathname.split('/')[2] || 'template'
     const tabs = ['template', 'coupon', 'review', 'profile']
 
-    const StyledTab = styled(Link)(({ theme, $selected }) => ({
+    const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selected' })(({ theme, $selected }) => ({
         boxSizing: 'border-box',
         width: '25%',
         position: 'relative',
@@ -55,7 +55,7 @@ const MyPage = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        position: 'relative',
+        positionmin: 'relative',
         marginBottom: '4rem',
         gap: '1rem',
         '&::before': {
@@ -77,7 +77,7 @@ const MyPage = () => {
                     const isSelected = currentTab === tab
 
                     return (
-                        <StyledTab key={tab} $selected={isSelected} to={`/my/${tab}`}>
+                        <StyledTab key={tab} $selected={isSelected.toString()} to={`/my/${tab}`}>
                             {tab === 'template' ? 'MY 템플릿' : tab === 'coupon' ? 'MY 쿠폰' : tab === 'review' ? 'MY 리뷰' : 'MY 프로필'}
                         </StyledTab>
                     )
