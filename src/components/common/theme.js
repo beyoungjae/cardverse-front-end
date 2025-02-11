@@ -73,9 +73,9 @@ const theme = createTheme({
       },
       // 텍스트 색상
       text: {
-         primary: '#000000',
-         secondary: '#666666',
-         disabled: '#999999',
+         primary: '#000000', // 선택
+         secondary: '#666666', // 호버 
+         disabled: '#999999', // 미선택
       },
       // 배경 색상
       background: {
