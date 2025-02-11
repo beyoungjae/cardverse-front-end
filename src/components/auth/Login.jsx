@@ -11,7 +11,7 @@ const Login = () => {
    const handleLogin = (e) => {
       e.preventDefault()
       setLoading(true)
-      setLoginButtonContent('로그인 중입니다.')
+      setLoginButtonContent('로그인 중...')
       setTimeout(() => {
          setLoading(false)
          setLoginButtonContent('로그인')
@@ -52,10 +52,18 @@ const Login = () => {
                   backgroundColor: 'rgba(0, 0, 0, 0.5)',
                }}
             />
-            <Typography variant="h5" sx={{ marginBottom: '5px', zIndex: 1, color: 'white', fontSize: '45px', paddingTop: '50px' }}>
+            <Typography
+               variant="h5"
+               sx={{
+                  marginBottom: '5px',
+                  zIndex: 1,
+                  color: 'white',
+                  fontSize: '45px',
+               }}
+            >
                로그인
             </Typography>
-            <p style={{ zIndex: 1, color: 'white', fontSize: '14px', paddingBottom: 'px' }}>CAREVERSE에 오신 것을 환영합니다.</p>
+            <p style={{ zIndex: 1, color: 'white', fontSize: '14px' }}>CAREVERSE에 오신 것을 환영합니다.</p>
          </Box>
 
          {/* 하단 배경 */}
@@ -83,7 +91,7 @@ const Login = () => {
                   justifyContent: 'center',
                   position: 'absolute',
                   top: '50%',
-                  transform: 'translateY(-50%)',
+                  transform: 'translateY(-20%)',
                }}
             >
                <form onSubmit={handleLogin} style={{ width: '100%' }}>
@@ -117,6 +125,7 @@ const Login = () => {
                      sx={{
                         backgroundColor: '#FFFFFF',
                         color: '#000000',
+                        border: '1px solid #C6C6C6',
                      }}
                   >
                      회원가입

@@ -72,6 +72,7 @@ function App() {
                <Route path="/" element={<Home />} />
                <Route path="/my/*" element={<MyPage />} />
                <Route path="/template" element={<Template />} />
+               <Route path="/template/:category" element={<Template />} />
                <Route path="/signup" element={<SignupPage />} />
                <Route path="/kaka" element={<LoginkakaPage />} />
                <Route path="/login" element={<LoginPage />} />
