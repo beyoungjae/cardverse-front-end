@@ -472,8 +472,8 @@ const ReadMore = styled(Box)(({ theme }) => ({
    fontSize: '0.9rem',
    transition: 'all 0.3s ease',
    '&:hover': {
-      gap: '12px',
       color: theme.palette.text.primary,
+      fontSize: '0.95rem',
    },
    [theme.breakpoints.down('sm')]: {
       flexDirection: 'row',
