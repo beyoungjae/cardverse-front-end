@@ -29,8 +29,10 @@ const SocialIcons = styled(Box)(({ theme }) => ({
 }))
 
 const LogoContainer = styled(Box)(({ theme }) => ({
+   display: 'flex',
+   justifyContent: 'center',
+   alignItems: 'center',
    flexGrow: 1,
-   textAlign: 'center',
    [theme.breakpoints.down('md')]: {
       flexGrow: 0,
       marginRight: 'auto',
@@ -41,6 +43,13 @@ const Logoimg = styled('img')(({ theme }) => ({
    margin: '0 auto',
    height: '40px',
    cursor: 'pointer',
+   '&:hover': {
+      transform: 'translateY(-2px)',
+   },
+   transition: 'transform 0.3s ease',
+   '&:active': {
+      transform: 'scale(0.9)',
+   },
    [theme.breakpoints.down('md')]: {
       height: '30px',
    },

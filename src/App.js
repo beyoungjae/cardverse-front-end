@@ -10,8 +10,11 @@ import { Route, Routes } from 'react-router-dom'
 
 // 네비바 아래 컨텐츠를 위한 컨테이너
 const MainContent = muiStyled(Box)(({ theme }) => ({
-   paddingTop: '124px',
-   [theme.breakpoints.down('md')]: {
+   paddingTop: '126px',
+   [theme.breakpoints.down('lg')]: {
+      paddingTop: '125px',
+   },
+   [theme.breakpoints.down('sm')]: {
       paddingTop: '55px',
    },
 }))

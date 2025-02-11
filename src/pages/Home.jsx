@@ -155,17 +155,17 @@ const StyledSlide = styled(Box)(({ theme }) => ({
    [theme.breakpoints.down('lg')]: {
       width: '300px',
       height: '580px',
-      marginBottom: '50px',
+      marginBottom: '60px',
    },
    [theme.breakpoints.down('md')]: {
       width: '280px',
       height: '460px',
-      marginBottom: '30px',
+      marginBottom: '70px',
    },
    [theme.breakpoints.down('sm')]: {
       width: '200px',
       height: '395px',
-      marginBottom: '20px',
+      marginBottom: '80px',
    },
 }))
 
