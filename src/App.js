@@ -4,7 +4,7 @@ import { styled as muiStyled } from '@mui/material/styles'
 import { Box } from '@mui/material'
 import { createGlobalStyle } from 'styled-components'
 import Navbar from './components/shared/Navbar'
-import { Home, MyPage } from './pages'
+import { Home, MyPage, Template } from './pages'
 import Footer from './components/shared/Footer'
 import { Route, Routes } from 'react-router-dom'
 import SignupPage from './pages/SignupPage'
@@ -70,6 +70,7 @@ function App() {
             <Routes>
                <Route path="/" element={<Home />} />
                <Route path="/mypage" element={<MyPage />} />
+               <Route path="/template" element={<Template />} />
                <Route path="/signup" element={<SignupPage />} />
                <Route path="/kaka" element={<LoginkakaPage />} />
                <Route path="/login" element={<LoginPage />} />
