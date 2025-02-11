@@ -5,27 +5,37 @@ import { createBox } from '../utils/muiSystem'
 const Container = createBox({
     display: 'flex',
     maxWidth: '1280px',
+    minWidth: '800px',
     margin: '0 auto',
-    padding: '16px',
-    gap: '16px',
+    padding: '8px',
+    gap: '8px',
     backgroundColor: 'black',
     color: 'white',
     breakpoint: [
-        // { down: 'md', margin: '0px auto' }, // 960px 이하에서 height 변경
-        // { down: 'sm', height: '250px' }, // 600px 이하에서 height 변경
+        { down: 'md', gap: '8px' },
+        { down: 'sm', minWidth: '300px' },
     ],
 })
 
 const Sidebar = createBox({
-    width: '300px',
+    // flex: '0.3',
+    width: '200px',
     height: '400px',
     backgroundColor: 'white',
+    breakpoint: [
+        { down: 'md', width: 'auto', flex: '0.213' },
+        { down: 'sm', display: 'none' },
+    ],
 })
 
 const Content = createBox({
     flex: '1',
     backgroundColor: 'white',
     height: '300px',
+    breakpoint: [
+        { down: 'md', width: 'auto', flex: '0.787' },
+        { down: 'sm', flex:'1' },
+    ],
 })
 
 // const Container = styled(Box)(({ theme }) => ({

@@ -30,7 +30,7 @@ const GlobalStyle = createGlobalStyle`
 
   body {
     line-height: 1.5;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: scroll;
   }
 
