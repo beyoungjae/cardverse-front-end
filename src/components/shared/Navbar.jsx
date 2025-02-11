@@ -304,7 +304,9 @@ const Navbar = () => {
                   </IconButton>
                </SocialIcons>
                <LogoContainer>
-                  <Logoimg component={Link} to="/" src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="로고" />
+                  <Link to="/">
+                     <Logoimg src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="로고" />
+                  </Link>
                </LogoContainer>
                <NavLinks>
                   <Link to="/support">고객센터</Link>
