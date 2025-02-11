@@ -3,7 +3,8 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { styled } from '@mui/material/styles'
 import { Box } from '@mui/material'
 import Navbar from './components/shared/Navbar'
-import Home from './components/Home'
+// import Home from './components/Home'
+import Home from './pages/Home'
 import Footer from './components/shared/Footer'
 
 // 네비바 아래 컨텐츠를 위한 컨테이너
