@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { styled } from '@mui/material/styles'
 import { Box, Typography, Container, Tab, Tabs } from '@mui/material'
 import { motion } from 'framer-motion'
@@ -6,6 +6,7 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
+import { useLocation } from 'react-router-dom'
 
 // 배너 컨테이너
 const BannerContainer = styled(Box)(({ theme }) => ({
@@ -120,12 +121,11 @@ const StyledTab = styled('div')(({ theme, $selected, $isAdjacent }) => ({
       content: '""',
       position: 'absolute',
       bottom: '-1px',
-      left: '50%',
+      left: 0,
       width: $selected ? '100%' : '0%',
       height: '2px',
       backgroundColor: '#000',
       transition: 'all 0.3s ease',
-      transform: 'translateX(-50%)',
    },
    [theme.breakpoints.down('sm')]: {
       padding: '0.8rem 2rem',
@@ -245,31 +245,53 @@ const templates = {
 }
 
 const Template = () => {
+   const location = useLocation()
    const [currentTab, setCurrentTab] = useState('wedding')
    const [showMore, setShowMore] = useState(false)
    const swiperRef = useRef(null)
 
    const tabOrder = ['wedding', 'invitation', 'newyear', 'gohyeon']
 
+   useEffect(() => {
+      window.scrollTo(0, 0)
+   }, [location.pathname])
+
+   useEffect(() => {
+      const path = location.pathname.split('/')
+      const tab = path[path.length - 1]
+      if (tabOrder.includes(tab) && tab !== currentTab) {
+         setCurrentTab(tab)
+      }
+   }, [location.pathname])
+
+   useEffect(() => {
+      if (swiperRef.current?.swiper) {
+         const targetIndex = tabOrder.indexOf(currentTab)
+         const realSlideIndex = targetIndex + tabOrder.length
+         swiperRef.current.swiper.slideTo(realSlideIndex, 300)
+      }
+   }, [currentTab])
+
    const handleTabChange = (newValue) => {
-      setCurrentTab(newValue)
-      setShowMore(false)
-   }
-
-   const getCurrentIndex = () => tabOrder.indexOf(currentTab)
-
-   const isAdjacentTab = (tabName) => {
-      const currentIndex = getCurrentIndex()
-      const tabIndex = tabOrder.indexOf(tabName)
-      const diff = Math.abs(currentIndex - tabIndex)
-      return diff === 1 || diff === tabOrder.length - 1
+      if (newValue !== currentTab) {
+         setCurrentTab(newValue)
+         setShowMore(false)
+      }
    }
 
    const handleSlideChange = (swiper) => {
       const realIndex = swiper.realIndex % tabOrder.length
-      if (tabOrder[realIndex] !== currentTab) {
-         handleTabChange(tabOrder[realIndex])
+      const newTab = tabOrder[realIndex]
+      if (newTab !== currentTab) {
+         handleTabChange(newTab)
       }
+   }
+
+   const isAdjacentTab = (tabName) => {
+      const currentIndex = tabOrder.indexOf(currentTab)
+      const tabIndex = tabOrder.indexOf(tabName)
+      const diff = Math.abs(currentIndex - tabIndex)
+      return diff === 1 || diff === tabOrder.length - 1
    }
 
    const currentTemplates = templates[currentTab] || []
@@ -293,10 +315,11 @@ const Template = () => {
                   modules={[Navigation]}
                   slidesPerView={3}
                   centeredSlides
-                  initialSlide={tabOrder.indexOf(currentTab)}
+                  initialSlide={tabOrder.indexOf(currentTab) + tabOrder.length}
                   speed={300}
                   loop
-                  slidesPerGroup={1}
+                  observer
+                  observeParents
                   watchSlidesProgress
                   allowTouchMove={false}
                   navigation={{
@@ -304,6 +327,13 @@ const Template = () => {
                      nextEl: '.swiper-button-next',
                   }}
                   onSlideChange={handleSlideChange}
+                  onAfterLoopFix={(swiper) => {
+                     const currentIndex = tabOrder.indexOf(currentTab)
+                     const targetIndex = currentIndex + tabOrder.length
+                     if (swiper.activeIndex !== targetIndex) {
+                        swiper.slideTo(targetIndex, 0, false)
+                     }
+                  }}
                   breakpoints={{
                      320: {
                         slidesPerView: 3,
@@ -319,18 +349,16 @@ const Template = () => {
                      },
                   }}
                >
-                  {[...Array(3)].map((_, i) => (
-                     <React.Fragment key={i}>
-                        {tabOrder.map((tabName) => (
-                           <SwiperSlide key={`${tabName}-${i}`}>
-                              <StyledTab $selected={currentTab === tabName} $isAdjacent={isAdjacentTab(tabName)}>
-                                 {tabName === 'wedding' && '청첩장'}
-                                 {tabName === 'newyear' && '연하장'}
-                                 {tabName === 'gohyeon' && '고희연'}
-                                 {tabName === 'invitation' && '초빙장'}
-                              </StyledTab>
-                           </SwiperSlide>
-                        ))}
+                  {tabOrder.map((tabName) => (
+                     <React.Fragment key={tabName}>
+                        <SwiperSlide key={`${tabName}`}>
+                           <StyledTab $selected={currentTab === tabName} $isAdjacent={isAdjacentTab(tabName)}>
+                              {tabName === 'wedding' && '청첩장'}
+                              {tabName === 'newyear' && '연하장'}
+                              {tabName === 'gohyeon' && '고희연'}
+                              {tabName === 'invitation' && '초빙장'}
+                           </StyledTab>
+                        </SwiperSlide>
                      </React.Fragment>
                   ))}
                </Swiper>
@@ -342,19 +370,14 @@ const Template = () => {
                {displayedTemplates.map((template, index) => (
                   <TemplateCard key={template.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
                      <TemplateImage src={template.image} alt={`Template ${template.id}`} />
-                     <PriceInfo>Price | {template.price}</PriceInfo>
+                     <PriceInfo>₩ {template.price}</PriceInfo>
                   </TemplateCard>
                ))}
             </TemplateGrid>
 
-            {currentTemplates.length > 6 && !showMore && (
-               <MoreButton onClick={() => setShowMore(true)}>
-                  <Typography variant="h6" sx={{ mb: 1 }}>
-                     More
-                  </Typography>
-                  <Box className="arrow">↓</Box>
-               </MoreButton>
-            )}
+            <MoreButton onClick={() => setShowMore(!showMore)}>
+               <Typography className="arrow">{showMore ? 'Less' : 'More'}</Typography>
+            </MoreButton>
          </Container>
       </>
    )
