@@ -93,6 +93,7 @@ const BannerSubtitle = styled('img')(({ theme }) => ({
    },
 }))
 
+// 슬라이더 타이틀
 const SliderTitle = styled(Typography)(({ theme }) => ({
    ...theme.typography.h1,
    textAlign: 'center',
@@ -143,6 +144,31 @@ const SliderSection = styled(Box)(({ theme }) => ({
    },
 }))
 
+// 슬라이드 스타일 컴포넌트
+const StyledSlide = styled(Box)(({ theme }) => ({
+   paddingTop: '50px',
+   width: '400px',
+   height: '660px',
+   backgroundColor: 'transparent',
+   margin: '0 auto',
+   marginBottom: '100px',
+   [theme.breakpoints.down('lg')]: {
+      width: '300px',
+      height: '580px',
+      marginBottom: '50px',
+   },
+   [theme.breakpoints.down('md')]: {
+      width: '280px',
+      height: '460px',
+      marginBottom: '30px',
+   },
+   [theme.breakpoints.down('sm')]: {
+      width: '200px',
+      height: '395px',
+      marginBottom: '20px',
+   },
+}))
+
 // 슬라이더 이미지
 const SlideImage = styled('img')(({ theme }) => ({
    width: '100%',
@@ -165,8 +191,10 @@ const SlideImage = styled('img')(({ theme }) => ({
 
 // 슬라이더 컨테이너
 const StyledSwiper = styled(Swiper)(({ theme }) => ({
-   padding: '50px 0',
    '.swiper-slide': {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
       transition: 'all 0.5s ease',
       opacity: 0.4,
       transform: 'scale(0.8)',
@@ -316,7 +344,7 @@ const GalleryGrid = styled(Box)(({ theme }) => ({
    width: '100%',
    position: 'relative',
    overflow: 'hidden',
-   marginBottom: '20rem',
+   marginBottom: '5rem',
 }))
 
 // 갤러리 아이템
@@ -363,7 +391,7 @@ const ImageWrapper = styled(Box)(({ theme }) => ({
    overflow: 'hidden',
    '&::after': {
       content: '""',
-      position: 'fixed',
+      position: 'absolute',
       top: '50%',
       transform: 'translateY(-50%)',
       width: '20%',
@@ -552,7 +580,7 @@ const Home = () => {
                modules={[Autoplay]}
                style={{
                   width: '100%',
-                  padding: '50px 0',
+                  padding: '15px 0',
                }}
                breakpoints={{
                   320: {
@@ -568,17 +596,10 @@ const Home = () => {
                spaceBetween={30}
             >
                {cards.map((card, index) => (
-                  <SwiperSlide
-                     key={card.id}
-                     onClick={() => handleSlideClick(index)}
-                     style={{
-                        paddingTop: '50px',
-                        width: '400px',
-                        height: '700px',
-                        backgroundColor: 'transparent',
-                     }}
-                  >
-                     <SlideImage src={card.image} alt={card.title} />
+                  <SwiperSlide key={card.id} onClick={() => handleSlideClick(index)}>
+                     <StyledSlide>
+                        <SlideImage src={card.image} alt={card.title} />
+                     </StyledSlide>
                   </SwiperSlide>
                ))}
             </StyledSwiper>
