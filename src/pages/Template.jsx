@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { styled } from '@mui/material/styles'
-import { Box, Typography, Container, Tab, Tabs } from '@mui/material'
+import { Box, Typography, Container } from '@mui/material'
 import { motion } from 'framer-motion'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
@@ -249,28 +249,55 @@ const Template = () => {
    const [currentTab, setCurrentTab] = useState('wedding')
    const [showMore, setShowMore] = useState(false)
    const swiperRef = useRef(null)
+   const initialRender = useRef(true)
+   const isProgrammatic = useRef(false) // 프로그램 업데이트 구분
 
    const tabOrder = ['wedding', 'invitation', 'newyear', 'gohyeon']
+   const L = tabOrder.length
 
+   // 페이지 진입 시 스크롤 상단 이동
    useEffect(() => {
       window.scrollTo(0, 0)
    }, [location.pathname])
 
+   // URL에서 탭 설정
    useEffect(() => {
-      const path = location.pathname.split('/')
-      const tab = path[path.length - 1]
-      if (tabOrder.includes(tab) && tab !== currentTab) {
-         setCurrentTab(tab)
+      if (initialRender.current) {
+         const path = location.pathname.split('/')
+         const tab = path[path.length - 1]
+         if (tabOrder.includes(tab) && tab !== currentTab) {
+            setCurrentTab(tab)
+         }
+         initialRender.current = false
       }
    }, [location.pathname])
 
+   // currentTab 변경 시, 슬라이드의 최소 이동 후보 계산
    useEffect(() => {
-      if (swiperRef.current?.swiper) {
-         const targetIndex = tabOrder.indexOf(currentTab)
-         const realSlideIndex = targetIndex + tabOrder.length
-         swiperRef.current.swiper.slideTo(realSlideIndex, 300)
+      const swiper = swiperRef.current?.swiper
+      if (swiper && !initialRender.current) {
+         // 현재 activeIndex를 중앙 세트로 보정
+         let normalizedActive = swiper.activeIndex
+         if (normalizedActive < L) {
+            normalizedActive += L
+         } else if (normalizedActive >= 2 * L) {
+            normalizedActive -= L
+         }
+         // target 탭의 인덱스 (0~L-1)
+         const newTabIndex = tabOrder.indexOf(currentTab)
+         // 후보 1: 중앙 세트 내 (newTabIndex + L)
+         const candidate1 = newTabIndex + L
+         // 후보 2: 다음 세트 (newTabIndex + 2*L)
+         const candidate2 = newTabIndex + 2 * L
+         // 두 후보 중 normalizedActive와의 차이가 작은 쪽 선택
+         const diff1 = Math.abs(candidate1 - normalizedActive)
+         const diff2 = Math.abs(candidate2 - normalizedActive)
+         const targetIndex = diff1 <= diff2 ? candidate1 : candidate2
+
+         isProgrammatic.current = true
+         swiper.slideTo(targetIndex, 300)
       }
-   }, [currentTab])
+   }, [currentTab, L, tabOrder])
 
    const handleTabChange = (newValue) => {
       if (newValue !== currentTab) {
@@ -279,8 +306,13 @@ const Template = () => {
       }
    }
 
+   // onSlideChange에서는 프로그램 업데이트일 경우 무시
    const handleSlideChange = (swiper) => {
-      const realIndex = swiper.realIndex % tabOrder.length
+      if (isProgrammatic.current) {
+         isProgrammatic.current = false
+         return
+      }
+      const realIndex = swiper.realIndex % L
       const newTab = tabOrder[realIndex]
       if (newTab !== currentTab) {
          handleTabChange(newTab)
@@ -291,7 +323,7 @@ const Template = () => {
       const currentIndex = tabOrder.indexOf(currentTab)
       const tabIndex = tabOrder.indexOf(tabName)
       const diff = Math.abs(currentIndex - tabIndex)
-      return diff === 1 || diff === tabOrder.length - 1
+      return diff === 1 || diff === L - 1
    }
 
    const currentTemplates = templates[currentTab] || []
@@ -315,7 +347,8 @@ const Template = () => {
                   modules={[Navigation]}
                   slidesPerView={3}
                   centeredSlides
-                  initialSlide={tabOrder.indexOf(currentTab) + tabOrder.length}
+                  // 초기 중앙 세트로 설정 (예: 'wedding'이면 index 0+L)
+                  initialSlide={tabOrder.indexOf(currentTab) + L}
                   speed={300}
                   loop
                   observer
@@ -327,38 +360,24 @@ const Template = () => {
                      nextEl: '.swiper-button-next',
                   }}
                   onSlideChange={handleSlideChange}
-                  onAfterLoopFix={(swiper) => {
-                     const currentIndex = tabOrder.indexOf(currentTab)
-                     const targetIndex = currentIndex + tabOrder.length
-                     if (swiper.activeIndex !== targetIndex) {
-                        swiper.slideTo(targetIndex, 0, false)
-                     }
-                  }}
                   breakpoints={{
-                     320: {
-                        slidesPerView: 3,
-                        spaceBetween: 10,
-                     },
-                     768: {
-                        slidesPerView: 3,
-                        spaceBetween: 20,
-                     },
-                     1024: {
-                        slidesPerView: 3,
-                        spaceBetween: 30,
-                     },
+                     320: { slidesPerView: 3, spaceBetween: 10 },
+                     768: { slidesPerView: 3, spaceBetween: 20 },
+                     1024: { slidesPerView: 3, spaceBetween: 30 },
                   }}
                >
-                  {tabOrder.map((tabName) => (
-                     <React.Fragment key={tabName}>
-                        <SwiperSlide key={`${tabName}`}>
-                           <StyledTab $selected={currentTab === tabName} $isAdjacent={isAdjacentTab(tabName)}>
-                              {tabName === 'wedding' && '청첩장'}
-                              {tabName === 'newyear' && '연하장'}
-                              {tabName === 'gohyeon' && '고희연'}
-                              {tabName === 'invitation' && '초빙장'}
-                           </StyledTab>
-                        </SwiperSlide>
+                  {[...Array(3)].map((_, i) => (
+                     <React.Fragment key={i}>
+                        {tabOrder.map((tabName) => (
+                           <SwiperSlide key={`${tabName}-${i}`}>
+                              <StyledTab $selected={currentTab === tabName} $isAdjacent={isAdjacentTab(tabName)} onClick={() => handleTabChange(tabName)}>
+                                 {tabName === 'wedding' && '청첩장'}
+                                 {tabName === 'newyear' && '연하장'}
+                                 {tabName === 'gohyeon' && '고희연'}
+                                 {tabName === 'invitation' && '초빙장'}
+                              </StyledTab>
+                           </SwiperSlide>
+                        ))}
                      </React.Fragment>
                   ))}
                </Swiper>
