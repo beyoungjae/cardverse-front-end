@@ -30,27 +30,6 @@ export const createBox = (styles) => {
      })
 }
 
-/* export const createText = (styles) => {
-    return styled(Typography)(({ theme }) => {
-        const resolvedStyles = typeof styles === 'function' ? styles(theme) : styles
-        const { breakpoint, ...baseStyles } = resolvedStyles
-        if (!breakpoint) return baseStyles
-
-        const responsiveStyles = breakpoint.reduce((acc, bp) => {
-            if (bp.down) {
-                acc[theme.breakpoints.down(bp.down)] = { ...bp }
-                delete acc[theme.breakpoints.down(bp.down)].down
-            }
-            if (bp.up) {
-                acc[theme.breakpoints.up(bp.up)] = { ...bp }
-                delete acc[theme.breakpoints.up(bp.up)].up
-            }
-            return acc
-        }, {})
-
-        return { ...baseStyles, ...responsiveStyles }
-    })
-} */
 
     export const createText = (styles) => {
         return styled(Typography)(({ theme }) => {
