@@ -7,9 +7,12 @@ import { MyCoupon, MyReview, MyProfile, MyTemplate } from './layouts'
 import { createBox, createText } from '../../utils/muiSystem'
 
 const Container = createBox((theme) => ({
+    boxSizing: 'border-box',
     backgroundColor: '#f5f5f5',
     padding: '16px',
     border: 'none',
+    minWidth: '375px',
+    breakpoint: [{ down: 'sm', padding: '16px' }],
 }))
 
 const selectNone = {
@@ -27,13 +30,14 @@ const MyPageContainer = createBox((theme) => ({
     maxWidth: '800px',
     margin: '8px auto',
     padding: '16px',
-    minWidth: '375px',
+    // minWidth: '375px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '32px',
+    gap: '24px',
     backgroundColor: '#ffffff',
     boxShadow: '0 0 1px 0.2px rgba(0,0,0,0.54)',
     borderRadius: '8px',
+    breakpoint: [{down: 'md'},{ down: 'sm', padding: '12px', gap: '12px' }],
 }))
 
 const TabLayout = createBox((theme) => ({
@@ -55,27 +59,15 @@ const TabContainer = styled(Box)(({ theme }) => ({
     justifyContent: 'center',
     alignItems: 'center',
     positionmin: 'relative',
-    marginBottom: '2rem',
-    gap: '1rem',
-    '&::before': {
-        content: '""',
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: '1px',
-        backgroundColor: '#e0e0e0',
-    },
+    // gap: '1rem',
     [theme.breakpoints.down('md')]: {
         gap: '0.8rem',
-        marginBottom: '1.5rem',
     },
     [theme.breakpoints.down('sm')]: {
-        gap: '0.6rem',
-        marginBottom: '1.2rem',
+        gap: '0.7rem',
     },
     [theme.breakpoints.down(480)]: {
-        gap: '0.4rem',
+        gap: '0.6rem',
     },
 }))
 
@@ -93,6 +85,7 @@ const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selecte
     textAlign: 'center',
     whiteSpace: 'nowrap',
     textDecoration: 'none',
+    backgroundColor: $selected ? '#f2f2f2' : '#ffffff',
     '&::after': {
         content: '""',
         position: 'absolute',
@@ -105,7 +98,7 @@ const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selecte
     },
     '&:hover': {
         color: theme.palette.text.primary,
-        backgroundColor: theme.palette.action.hover,
+        backgroundColor: '#e7e7e7',
     },
     [theme.breakpoints.down('sm')]: {
         padding: '0.8rem 0px',
