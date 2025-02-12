@@ -39,6 +39,7 @@ const GlobalStyle = createGlobalStyle`
     padding: 0;
     box-sizing: border-box;
     caret-color: transparent; /* 입력 커서(깜빡이는 막대) 숨김 */
+    -webkit-tap-highlight-color: transparent;
   }
 
   input, textarea, [contenteditable="true"] {

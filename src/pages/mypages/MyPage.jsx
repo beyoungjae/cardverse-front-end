@@ -22,7 +22,7 @@ const selectNone = {
 // ** Text 스타일
 const Title = createText((theme) => ({
     variant: 'h1',
-    fontSize: 'clamp(1.4rem, 3vw, 1.75rem)',
+    fontSize: 'clamp(1rem, 5vw, 2.5rem)',
 }))
 
 const MyPageContainer = createBox((theme) => ({
@@ -34,7 +34,7 @@ const MyPageContainer = createBox((theme) => ({
     flexDirection: 'column',
     gap: '24px',
     backgroundColor: '#ffffff',
-    boxShadow: '0 0 1px 0.2px rgba(0,0,0,0.54)',
+    boxShadow: '0 0 0px 0.3px black',
     borderRadius: '8px',
     breakpoint: [{down: 'md'},{ down: 'sm', padding: '12px', gap: '12px' }],
 }))
