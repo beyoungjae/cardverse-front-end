@@ -83,9 +83,7 @@ const TabContainer = styled(Box)(({ theme }) => ({
    '.swiper-button-prev, .swiper-button-next': {
       width: '40px',
       height: '40px',
-      background: 'white',
       borderRadius: '50%',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
       '&::after': {
          fontSize: '1rem',
          color: '#333',
@@ -178,10 +176,23 @@ const TemplateCard = styled(motion.div)(({ theme }) => ({
    },
 }))
 
+// 이미지 감싸는 컨테이너
+const ImageWrapper = styled(Box)(({ theme }) => ({
+   position: 'relative',
+   width: '100%',
+   paddingTop: '100%',
+   overflow: 'hidden',
+   borderRadius: '8px',
+}))
+
 // 템플릿 이미지
 const TemplateImage = styled('img')(({ theme }) => ({
+   position: 'absolute',
+   top: 0,
+   left: 0,
    width: '100%',
-   height: 'auto',
+   height: '100%',
+   objectFit: 'contain',
    transition: 'transform 0.3s ease',
 }))
 
@@ -264,7 +275,6 @@ const Template = () => {
 
    // ref 정의
    const swiperRef = useRef(null)
-   const initialRender = useRef(true)
    const animatingRef = useRef(false)
 
    // 페이지 진입 시 상단 스크롤 이동
@@ -356,7 +366,7 @@ const Template = () => {
    return (
       <>
          <BannerContainer>
-            <BannerImage src="/images/home/banner.png" alt="Template Banner" />
+            <BannerImage src="/images/home/background4.png" alt="Template Banner" />
             <BannerOverlay>
                <BannerTitle>TEMPLATE VOWEL</BannerTitle>
             </BannerOverlay>
@@ -412,7 +422,9 @@ const Template = () => {
             <TemplateGrid>
                {displayedTemplates.map((template, index) => (
                   <TemplateCard key={template.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
-                     <TemplateImage src={template.image} alt={`Template ${template.id}`} />
+                     <ImageWrapper>
+                        <TemplateImage src={template.image} alt={`Template ${template.id}`} />
+                     </ImageWrapper>
                      <PriceInfo>₩ {template.price}</PriceInfo>
                   </TemplateCard>
                ))}
