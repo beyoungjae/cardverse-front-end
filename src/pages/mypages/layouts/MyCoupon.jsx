@@ -122,6 +122,7 @@ const ListItem = createBox((theme) => ({
     aspectRatio: '3 / 0.9',
 }))
 
+// 탭 스타일
 const StyledTab = createBox((theme, { $active, $position }) => {
     const borderColor = '1px solid rgba(0,0,0,0.2)' // ✅ 기본 테두리 색상
     const transparentBorder = '1px solid rgba(0,0,0,0)' // ✅ 투명한 테두리
@@ -132,6 +133,7 @@ const StyledTab = createBox((theme, { $active, $position }) => {
         flex: '0.5',
         textAlign: 'center',
         justifyContent: 'center',
+        userSelect: 'none',
         cursor: 'pointer',
         fontWeight: $active ? 600 : 400,
         color: $active ? theme.palette.text.primary : theme.palette.text.secondary,

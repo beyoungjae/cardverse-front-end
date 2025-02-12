@@ -30,7 +30,6 @@ const MyPageContainer = createBox((theme) => ({
     maxWidth: '800px',
     margin: '8px auto',
     padding: '16px',
-    // minWidth: '375px',
     display: 'flex',
     flexDirection: 'column',
     gap: '24px',
