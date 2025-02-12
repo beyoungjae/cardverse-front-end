@@ -6,7 +6,7 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 
 // 배너 컨테이너
 const BannerContainer = styled(Box)(({ theme }) => ({
@@ -112,7 +112,8 @@ const StyledTab = styled('div')(({ theme, $selected, $isAdjacent }) => ({
    fontSize: $selected ? '1.1rem' : $isAdjacent ? '0.9rem' : '0.8rem',
    fontWeight: $selected ? 600 : 400,
    color: $selected ? '#000' : $isAdjacent ? '#666' : '#888',
-   transition: 'all 0.3s ease',
+   // 필요한 속성만 지정해 불필요한 애니메이션을 줄임
+   transition: 'color 0.3s ease, opacity 0.3s ease, transform 0.3s ease',
    textAlign: 'center',
    whiteSpace: 'nowrap',
    opacity: $selected ? 1 : $isAdjacent ? 0.8 : 0.5,
@@ -125,7 +126,8 @@ const StyledTab = styled('div')(({ theme, $selected, $isAdjacent }) => ({
       width: $selected ? '100%' : '0%',
       height: '2px',
       backgroundColor: '#000',
-      transition: 'all 0.3s ease',
+      transition: 'width 0.3s ease',
+      willChange: 'width',
    },
    [theme.breakpoints.down('sm')]: {
       padding: '0.8rem 2rem',
@@ -246,79 +248,101 @@ const templates = {
 
 const Template = () => {
    const location = useLocation()
-   const [currentTab, setCurrentTab] = useState('wedding')
+   const { tab } = useParams()
+
+   // 탭 순서 배열을 먼저 정의
+   const tabOrder = ['wedding', 'invitation', 'newyear', 'gohyeon']
+   const L = tabOrder.length // 탭 개수
+
+   // 초기 탭 설정 (URL 파라미터가 유효하면 사용, 없으면 'wedding')
+   const initialTab = tab && tabOrder.includes(tab) ? tab : 'wedding'
+
+   // 상태 정의
+   const [currentTab, setCurrentTab] = useState(initialTab)
+   const [desiredTab, setDesiredTab] = useState(initialTab)
    const [showMore, setShowMore] = useState(false)
+
+   // ref 정의
    const swiperRef = useRef(null)
    const initialRender = useRef(true)
-   const isProgrammatic = useRef(false) // 프로그램 업데이트 구분
+   const animatingRef = useRef(false)
 
-   const tabOrder = ['wedding', 'invitation', 'newyear', 'gohyeon']
-   const L = tabOrder.length
-
-   // 페이지 진입 시 스크롤 상단 이동
+   // 페이지 진입 시 상단 스크롤 이동
    useEffect(() => {
       window.scrollTo(0, 0)
    }, [location.pathname])
 
-   // URL에서 탭 설정
+   // URL 파라미터가 변경되면 상태 업데이트
    useEffect(() => {
-      if (initialRender.current) {
-         const path = location.pathname.split('/')
-         const tab = path[path.length - 1]
-         if (tabOrder.includes(tab) && tab !== currentTab) {
-            setCurrentTab(tab)
-         }
-         initialRender.current = false
+      if (tab && tabOrder.includes(tab)) {
+         setCurrentTab(tab)
+         setDesiredTab(tab)
       }
-   }, [location.pathname])
+   }, [tab])
 
-   // currentTab 변경 시, 슬라이드의 최소 이동 후보 계산
-   useEffect(() => {
-      const swiper = swiperRef.current?.swiper
-      if (swiper && !initialRender.current) {
-         // 현재 activeIndex를 중앙 세트로 보정
-         let normalizedActive = swiper.activeIndex
-         if (normalizedActive < L) {
-            normalizedActive += L
-         } else if (normalizedActive >= 2 * L) {
-            normalizedActive -= L
-         }
-         // target 탭의 인덱스 (0~L-1)
-         const newTabIndex = tabOrder.indexOf(currentTab)
-         // 후보 1: 중앙 세트 내 (newTabIndex + L)
-         const candidate1 = newTabIndex + L
-         // 후보 2: 다음 세트 (newTabIndex + 2*L)
-         const candidate2 = newTabIndex + 2 * L
-         // 두 후보 중 normalizedActive와의 차이가 작은 쪽 선택
-         const diff1 = Math.abs(candidate1 - normalizedActive)
-         const diff2 = Math.abs(candidate2 - normalizedActive)
-         const targetIndex = diff1 <= diff2 ? candidate1 : candidate2
-
-         isProgrammatic.current = true
-         swiper.slideTo(targetIndex, 300)
-      }
-   }, [currentTab, L, tabOrder])
-
+   // 텍스트 탭 클릭 시 desiredTab 업데이트
    const handleTabChange = (newValue) => {
-      if (newValue !== currentTab) {
-         setCurrentTab(newValue)
+      if (newValue !== desiredTab) {
+         setDesiredTab(newValue)
          setShowMore(false)
       }
    }
 
-   // onSlideChange에서는 프로그램 업데이트일 경우 무시
-   const handleSlideChange = (swiper) => {
-      if (isProgrammatic.current) {
-         isProgrammatic.current = false
-         return
+   // < > 버튼용: 한 슬라이드씩 이동하도록 desiredTab을 업데이트
+   const handlePrevClick = () => {
+      const currentIndex = tabOrder.indexOf(currentTab)
+      // 이전 탭: 원형 배열이므로 currentIndex-1 (음수이면 마지막으로)
+      const prevIndex = (currentIndex - 1 + L) % L
+      setDesiredTab(tabOrder[prevIndex])
+   }
+   const handleNextClick = () => {
+      const currentIndex = tabOrder.indexOf(currentTab)
+      const nextIndex = (currentIndex + 1) % L
+      setDesiredTab(tabOrder[nextIndex])
+   }
+
+   // desiredTab과 currentTab이 다르면 한 슬라이드씩 이동(최소 이동)하도록 effect 처리
+   useEffect(() => {
+      const swiper = swiperRef.current?.swiper
+      if (swiper && desiredTab !== currentTab && !animatingRef.current) {
+         const currentIndex = tabOrder.indexOf(currentTab)
+         const targetIndex = tabOrder.indexOf(desiredTab)
+         let diff = targetIndex - currentIndex
+         // 원형 배열로 최소 차이 계산 (예: 3 -> 0: diff = -3 -> +1)
+         if (diff > L / 2) {
+            diff -= L
+         } else if (diff < -L / 2) {
+            diff += L
+         }
+         animatingRef.current = true
+         if (diff > 0) {
+            swiper.slideNext(300)
+         } else if (diff < 0) {
+            swiper.slidePrev(300)
+         }
+         // 만약 diff === 0라면 이미 일치하므로 아무것도 하지 않음
       }
-      const realIndex = swiper.realIndex % L
-      const newTab = tabOrder[realIndex]
-      if (newTab !== currentTab) {
-         handleTabChange(newTab)
+   }, [desiredTab, currentTab, L])
+
+   // 슬라이드 전환 완료 시 호출: currentTab 업데이트
+   // (loop 모드에서 swiper.realIndex는 실제 원본 인덱스를 제공합니다)
+   const handleTransitionEnd = (swiper) => {
+      const newIndex = swiper.realIndex % L
+      // 중앙 세트에서 newIndex가 목표 인덱스와 다르다면 currentTab를 업데이트
+      setCurrentTab(tabOrder[newIndex])
+      animatingRef.current = false
+   }
+
+   // 사용자가 스와이프 등으로 이동한 경우에도 desiredTab와 currentTab 동기화
+   const handleSlideChange = (swiper) => {
+      if (!animatingRef.current) {
+         const newIndex = swiper.realIndex % L
+         setCurrentTab(tabOrder[newIndex])
+         setDesiredTab(tabOrder[newIndex])
       }
    }
 
+   // 탭 글씨 스타일 관련: 현재 탭과 인접 탭이면 스타일 다르게 표시
    const isAdjacentTab = (tabName) => {
       const currentIndex = tabOrder.indexOf(currentTab)
       const tabIndex = tabOrder.indexOf(tabName)
@@ -342,12 +366,14 @@ const Template = () => {
             <TotalText>T O T A L {currentTemplates.length}</TotalText>
 
             <TabContainer>
+               {/* 커스텀 화살표 버튼을 직접 구현 */}
+               <div className="swiper-button-prev" onClick={handlePrevClick} style={{ cursor: 'pointer' }}></div>
                <Swiper
                   ref={swiperRef}
                   modules={[Navigation]}
                   slidesPerView={3}
                   centeredSlides
-                  // 초기 중앙 세트로 설정 (예: 'wedding'이면 index 0+L)
+                  // 초기 슬라이드는 중앙 세트의 해당 인덱스로 설정 (예: 'wedding'이면 index = tabOrder.index + L)
                   initialSlide={tabOrder.indexOf(currentTab) + L}
                   speed={300}
                   loop
@@ -355,10 +381,9 @@ const Template = () => {
                   observeParents
                   watchSlidesProgress
                   allowTouchMove={false}
-                  navigation={{
-                     prevEl: '.swiper-button-prev',
-                     nextEl: '.swiper-button-next',
-                  }}
+                  // 기본 내비게이션은 사용하지 않고 커스텀 버튼을 사용합니다.
+                  navigation={false}
+                  onTransitionEnd={handleTransitionEnd}
                   onSlideChange={handleSlideChange}
                   breakpoints={{
                      320: { slidesPerView: 3, spaceBetween: 10 },
@@ -381,8 +406,7 @@ const Template = () => {
                      </React.Fragment>
                   ))}
                </Swiper>
-               <div className="swiper-button-prev"></div>
-               <div className="swiper-button-next"></div>
+               <div className="swiper-button-next" onClick={handleNextClick} style={{ cursor: 'pointer' }}></div>
             </TabContainer>
 
             <TemplateGrid>

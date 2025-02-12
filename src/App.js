@@ -6,7 +6,7 @@ import { createGlobalStyle } from 'styled-components'
 import Navbar from './components/shared/Navbar'
 import { Home, MyPage, Template } from './pages'
 import Footer from './components/shared/Footer'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, Navigate } from 'react-router-dom'
 import SignupPage from './pages/SignupPage'
 import LoginPage from './pages/LoginPage'
 import LoginkakaPage from './pages/Loginkakako'
@@ -71,8 +71,11 @@ function App() {
             <Routes>
                <Route path="/" element={<Home />} />
                <Route path="/my/*" element={<MyPage />} />
-               <Route path="/template" element={<Template />} />
-               <Route path="/template/:category" element={<Template />} />
+               <Route path="/template">
+                  {/* /template 접근 시 기본 탭으로 리다이렉트 */}
+                  <Route index element={<Navigate to="/template/wedding" replace />} />
+                  <Route path=":tab" element={<Template key={window.location.pathname} />} />
+               </Route>
                <Route path="/signup" element={<SignupPage />} />
                <Route path="/kaka" element={<LoginkakaPage />} />
                <Route path="/login" element={<LoginPage />} />
