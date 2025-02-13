@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { styled } from '@mui/material/styles'
 import { Box, Typography, Container } from '@mui/material'
 import { motion } from 'framer-motion'
@@ -139,6 +139,7 @@ const TotalText = styled(Typography)(({ theme }) => ({
    fontSize: '0.9rem',
    color: '#888',
    letterSpacing: '0.2em',
+   lineHeight: '3',
    marginBottom: '3rem',
    textAlign: 'center',
    position: 'relative',
@@ -279,9 +280,14 @@ const TemplateList = () => {
    const swiperRef = useRef(null)
    const animatingRef = useRef(false)
 
-   // 페이지 진입 시 상단 스크롤 이동
-   useEffect(() => {
-      window.scrollTo(0, 0)
+   useLayoutEffect(() => {
+      // 모바일에서는 smooth, 데스크톱에서는 auto 사용
+      const isMobile = window.innerWidth <= 768
+      window.scrollTo({
+         top: 0,
+         left: 0,
+         behavior: isMobile ? 'smooth' : 'auto',
+      })
    }, [location.pathname])
 
    // URL 파라미터가 변경되면 상태 업데이트
@@ -382,7 +388,10 @@ const TemplateList = () => {
          </BannerContainer>
 
          <Container maxWidth="lg" sx={{ py: 8 }}>
-            <TotalText>T O T A L {currentTemplates.length}</TotalText>
+            <TotalText>
+               T O T A L <br />
+               {currentTemplates.length}
+            </TotalText>
 
             <TabContainer>
                {/* 커스텀 화살표 버튼을 직접 구현 */}

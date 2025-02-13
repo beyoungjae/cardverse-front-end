@@ -24,10 +24,6 @@ const MainContent = muiStyled(Box)(({ theme }) => ({
 
 // 전역 스타일
 const GlobalStyle = createGlobalStyle`
-  html {
-    scroll-behavior: smooth;
-  }
-
   body {
     line-height: 1.5;
     overflow-x: auto;

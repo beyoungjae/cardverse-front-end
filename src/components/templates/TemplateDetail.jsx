@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect } from 'react'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
-import { Container, Typography, Box, Button } from '@mui/material'
+import { Container, Typography, Box, Button, Modal, IconButton } from '@mui/material'
 import { styled as muiStyled } from '@mui/material/styles'
 import styled from 'styled-components'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
+import CloseIcon from '@mui/icons-material/Close'
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
+import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 
 // 뒤로가기 버튼 컨테이너
 const BackButtonContainer = muiStyled(Box)(({ theme }) => ({
@@ -117,6 +120,51 @@ const BeforePurchasingButton = styled.div`
       transition: all 0.1s ease;
    }
 `
+
+// 버튼 스타일 컴포넌트들
+const ButtonStyles = {
+   buyButton: {
+      backgroundColor: '#000000',
+      color: '#ffffff',
+      padding: '15px 40px',
+      borderRadius: '5px',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      '&:hover': {
+         backgroundColor: '#333333',
+      },
+   },
+   previewButton: {
+      backgroundColor: '#ffffff',
+      color: '#000000',
+      padding: '15px 40px',
+      border: '1px solid #000000',
+      borderRadius: '5px',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      '&:hover': {
+         backgroundColor: '#f5f5f5',
+      },
+   },
+   tryButton: {
+      width: '100%',
+      padding: '15px',
+      backgroundColor: '#f0f0f0',
+      color: '#000000',
+      border: 'none',
+      borderRadius: '5px',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      '&:hover': {
+         backgroundColor: '#e0e0e0',
+      },
+   },
+}
+
+// 버튼 컴포넌트들
+const ActionButton = muiStyled('button')(({ variant = 'buy' }) => ({
+   ...(variant === 'buy' ? ButtonStyles.buyButton : variant === 'preview' ? ButtonStyles.previewButton : ButtonStyles.tryButton),
+}))
 
 // 구매 버튼 스타일
 const BuyButton = muiStyled(Button)(({ theme }) => ({
@@ -304,6 +352,70 @@ const QRSection = muiStyled(Box)(({ theme }) => ({
    },
 }))
 
+// 모달 스타일
+const PreviewModal = muiStyled(Modal)(({ theme }) => ({
+   display: 'flex',
+   alignItems: 'center',
+   justifyContent: 'center',
+   '& .modal-content': {
+      position: 'relative',
+      width: '100%',
+      maxWidth: '800px',
+      maxHeight: '90vh',
+      margin: '20px',
+      backgroundColor: 'white',
+      borderRadius: '8px',
+      padding: '20px',
+      outline: 'none',
+   },
+   '& .close-button': {
+      position: 'absolute',
+      right: '10px',
+      top: '10px',
+      zIndex: 1,
+   },
+   '& .slide-container': {
+      position: 'relative',
+      width: '100%',
+      height: '60vh', // 높이 조정
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+   },
+   '& .slide-image': {
+      maxWidth: '100%',
+      maxHeight: '100%',
+      objectFit: 'contain',
+      [theme.breakpoints.down('md')]: {
+         width: '80%',
+         height: 'auto',
+      },
+      [theme.breakpoints.down('sm')]: {
+         width: '65%',
+         height: 'auto',
+      },
+   },
+   '& .nav-button': {
+      position: 'absolute',
+      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+      '&:hover': {
+         backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      },
+   },
+   '& .prev-button': {
+      left: '10px',
+   },
+   '& .next-button': {
+      right: '10px',
+   },
+   '& .button-container': {
+      marginTop: '20px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '10px',
+   },
+}))
+
 const TemplateDetail = () => {
    const { templateId } = useParams()
    const location = useLocation()
@@ -327,10 +439,17 @@ const TemplateDetail = () => {
    }
 
    const [activeIndex, setActiveIndex] = useState(0)
+   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0)
 
-   // 페이지 진입 시 상단 스크롤 이동
-   useEffect(() => {
-      window.scrollTo(0, 0)
+   useLayoutEffect(() => {
+      // 모바일에서는 smooth, 데스크톱에서는 auto 사용
+      const isMobile = window.innerWidth <= 768
+      window.scrollTo({
+         top: 0,
+         left: 0,
+         behavior: isMobile ? 'smooth' : 'auto',
+      })
    }, [location.pathname])
 
    useEffect(() => {
@@ -340,6 +459,23 @@ const TemplateDetail = () => {
 
       return () => clearInterval(interval)
    }, [])
+
+   const handlePreviewOpen = () => {
+      setIsPreviewOpen(true)
+      setCurrentPreviewIndex(0)
+   }
+
+   const handlePreviewClose = () => {
+      setIsPreviewOpen(false)
+   }
+
+   const handlePrevImage = () => {
+      setCurrentPreviewIndex((prev) => (prev === 0 ? templateData.detailImages.length - 1 : prev - 1))
+   }
+
+   const handleNextImage = () => {
+      setCurrentPreviewIndex((prev) => (prev + 1) % templateData.detailImages.length)
+   }
 
    return (
       <>
@@ -364,7 +500,7 @@ const TemplateDetail = () => {
                <Typography className="price-text">Price | {templateData.price}</Typography>
                <ButtonGroup>
                   <BuyButton>구매하기</BuyButton>
-                  <PreviewButton>미리보기</PreviewButton>
+                  <PreviewButton onClick={handlePreviewOpen}>미리보기</PreviewButton>
                </ButtonGroup>
             </PriceSection>
 
@@ -399,6 +535,28 @@ const TemplateDetail = () => {
                </Box>
             </QRSection>
          </PageContainer>
+
+         {/* 미리보기 모달 */}
+         <PreviewModal open={isPreviewOpen} onClose={handlePreviewClose} aria-labelledby="preview-modal">
+            <div className="modal-content">
+               <IconButton className="close-button" onClick={handlePreviewClose}>
+                  <CloseIcon />
+               </IconButton>
+               <div className="slide-container">
+                  <IconButton className="nav-button prev-button" onClick={handlePrevImage}>
+                     <NavigateBeforeIcon />
+                  </IconButton>
+                  <img src={templateData.detailImages[currentPreviewIndex]} alt={`Preview ${currentPreviewIndex + 1}`} className="slide-image" />
+                  <IconButton className="nav-button next-button" onClick={handleNextImage}>
+                     <NavigateNextIcon />
+                  </IconButton>
+               </div>
+               <div className="button-container">
+                  <ActionButton variant="try">구매하기 전 잠깐 사용해보기</ActionButton>
+                  <ActionButton variant="buy">구매하기</ActionButton>
+               </div>
+            </div>
+         </PreviewModal>
       </>
    )
 }
