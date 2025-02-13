@@ -4,9 +4,10 @@ import { Box, Typography, Container } from '@mui/material'
 import { motion } from 'framer-motion'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
+import { useLocation, useParams, useNavigate } from 'react-router-dom'
+
 import 'swiper/css'
 import 'swiper/css/navigation'
-import { useLocation, useParams } from 'react-router-dom'
 
 // 배너 컨테이너
 const BannerContainer = styled(Box)(({ theme }) => ({
@@ -257,16 +258,17 @@ const templates = {
    ],
 }
 
-const Template = () => {
+const TemplateList = () => {
    const location = useLocation()
-   const { tab } = useParams()
+   const { tab: urlTab } = useParams()
+   const navigate = useNavigate()
 
    // 탭 순서 배열을 먼저 정의
    const tabOrder = ['wedding', 'invitation', 'newyear', 'gohyeon']
    const L = tabOrder.length // 탭 개수
 
    // 초기 탭 설정 (URL 파라미터가 유효하면 사용, 없으면 'wedding')
-   const initialTab = tab && tabOrder.includes(tab) ? tab : 'wedding'
+   const initialTab = urlTab && tabOrder.includes(urlTab) ? urlTab : 'wedding'
 
    // 상태 정의
    const [currentTab, setCurrentTab] = useState(initialTab)
@@ -284,17 +286,18 @@ const Template = () => {
 
    // URL 파라미터가 변경되면 상태 업데이트
    useEffect(() => {
-      if (tab && tabOrder.includes(tab)) {
-         setCurrentTab(tab)
-         setDesiredTab(tab)
+      if (urlTab && tabOrder.includes(urlTab)) {
+         setCurrentTab(urlTab)
+         setDesiredTab(urlTab)
       }
-   }, [tab])
+   }, [urlTab])
 
    // 텍스트 탭 클릭 시 desiredTab 업데이트
    const handleTabChange = (newValue) => {
       if (newValue !== desiredTab) {
          setDesiredTab(newValue)
          setShowMore(false)
+         // URL은 변경하지 않고 상태만 업데이트
       }
    }
 
@@ -363,6 +366,12 @@ const Template = () => {
    const currentTemplates = templates[currentTab] || []
    const displayedTemplates = showMore ? currentTemplates : currentTemplates.slice(0, 6)
 
+   const handleTemplateClick = (templateId) => {
+      navigate(`/template/${currentTab}/${templateId}`, {
+         state: { currentTab },
+      })
+   }
+
    return (
       <>
          <BannerContainer>
@@ -421,7 +430,7 @@ const Template = () => {
 
             <TemplateGrid>
                {displayedTemplates.map((template, index) => (
-                  <TemplateCard key={template.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
+                  <TemplateCard key={template.id} onClick={() => handleTemplateClick(template.id)} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
                      <ImageWrapper>
                         <TemplateImage src={template.image} alt={`Template ${template.id}`} />
                      </ImageWrapper>
@@ -438,4 +447,4 @@ const Template = () => {
    )
 }
 
-export default Template
+export default TemplateList

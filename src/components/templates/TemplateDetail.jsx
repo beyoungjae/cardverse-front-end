@@ -1,5 +1,5 @@
 import React from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { Container, Typography, Box, Button } from '@mui/material'
 import { styled as muiStyled } from '@mui/material/styles'
 import styled from 'styled-components'
@@ -12,8 +12,8 @@ const BackButtonContainer = muiStyled(Box)(({ theme }) => ({
    borderBottom: `1px solid ${theme.palette.divider}`,
 }))
 
-// 뒤로가기 버튼
-const BackButton = muiStyled(Link)(({ theme }) => ({
+// 뒤로가기 버튼 스타일 수정 (Link 대신 div 사용)
+const BackButton = muiStyled('div')(({ theme }) => ({
    display: 'flex',
    alignItems: 'center',
    gap: '0.5rem',
@@ -21,6 +21,7 @@ const BackButton = muiStyled(Link)(({ theme }) => ({
    textDecoration: 'none',
    fontSize: '0.9rem',
    transition: 'color 0.3s ease',
+   cursor: 'pointer',
    '&:hover': {
       color: theme.palette.text.secondary,
    },
@@ -163,7 +164,18 @@ const QRSection = muiStyled(Box)(({ theme }) => ({
 }))
 
 const TemplateDetail = () => {
-   const { templateId, tab } = useParams()
+   const { templateId } = useParams()
+   const location = useLocation()
+   const navigate = useNavigate()
+
+   // 현재 선택된 탭 정보를 가져오기
+   const currentTab = location.state?.currentTab || 'wedding'
+
+   const handleBack = () => {
+      navigate(`/template/${currentTab}`, {
+         state: { currentTab },
+      })
+   }
 
    // 임시 데이터 (추후 API 연동 필요)
    const templateData = {
@@ -177,7 +189,7 @@ const TemplateDetail = () => {
       <>
          <BackButtonContainer>
             <Container maxWidth="lg">
-               <BackButton to={`/template/${tab}`}>
+               <BackButton onClick={handleBack}>
                   <ArrowBackIosNewIcon sx={{ fontSize: '0.8rem' }} />
                   Back Template
                </BackButton>
