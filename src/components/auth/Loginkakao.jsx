@@ -5,7 +5,7 @@ import { TextField, Button, Typography, Divider, IconButton } from '@mui/materia
 import { Container } from '@mui/system'
 import { CheckCircle, RadioButtonUnchecked } from '@mui/icons-material'
 
-const KakaoLogin = () => {
+const LoginKakao = () => {
    const [email, setEmail] = useState('')
    const [password, setPassword] = useState('')
    const [loading, setLoading] = useState(false)
@@ -124,4 +124,4 @@ const KakaoLogin = () => {
    )
 }
 
-export default KakaoLogin
+export default LoginKakao

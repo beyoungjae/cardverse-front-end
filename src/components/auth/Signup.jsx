@@ -43,8 +43,7 @@ const Signup = () => {
             minHeight: '100vh',
             paddingTop: { xs: '20px', sm: '30px', md: '50px' },
             paddingBottom: '50px',
-            maxWidth: '1280px',
-            backgroundColor: '#EEEEEE',
+            maxWidth: '100%',
          }}
       >
          <Box
@@ -140,8 +139,8 @@ const Signup = () => {
 
                <Grid item xs={12}>
                   <Typography variant="body1">가입유형</Typography>
-                  <TextField select label="가입유형 (크리에이터 / 일반사용자 선택 가능)" value={membershipType} onChange={handleChange} fullWidth margin="normal" variant="outlined">
-                     <MenuItem value="creator">크리에이터</MenuItem>
+                  <TextField select label="가입유형 (추천인 / 일반사용자 선택 가능)" value={membershipType} onChange={handleChange} fullWidth margin="normal" variant="outlined">
+                     <MenuItem value="reference">추천인</MenuItem>
                      <MenuItem value="normal">일반사용자</MenuItem>
                   </TextField>
                </Grid>
@@ -156,9 +155,13 @@ const Signup = () => {
                      sx={{
                         mt: 2,
                         border: '1px solid #A4A4A4',
-                        color: 'black',
-                        backgroundColor: 'white',
+                        backgroundColor: '#B699BB',
+                        color: 'white',
                         fontSize: { xs: '14px', sm: '16px' },
+                        '&:hover': {
+                           backgroundColor: '#B699BB',
+                           borderColor: '#A4A4A4',
+                        },
                      }}
                   >
                      {loading ? <CircularProgress size={25} sx={{ color: '#fff' }} /> : '회원가입'}
@@ -166,7 +169,7 @@ const Signup = () => {
                </Grid>
             </Grid>
 
-            <Card sx={{ marginTop: '10px', border: '1px solid #A4A4A4' }}>
+            <Card sx={{ marginTop: '20px', border: '1px solid #A4A4A4' }}>
                <CardContent sx={{ display: 'flex', textAlign: 'center' }}>
                   <FormControlLabel control={<Checkbox checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} name="agreeTerms" />} label="로봇이 아닙니다." />
                </CardContent>
