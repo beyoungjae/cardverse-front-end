@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { Container, Typography, Box, Button } from '@mui/material'
 import { styled as muiStyled } from '@mui/material/styles'
@@ -12,7 +12,7 @@ const BackButtonContainer = muiStyled(Box)(({ theme }) => ({
    borderBottom: `1px solid ${theme.palette.divider}`,
 }))
 
-// 뒤로가기 버튼 스타일 수정 (Link 대신 div 사용)
+// 뒤로가기 버튼 스타일
 const BackButton = muiStyled('div')(({ theme }) => ({
    display: 'flex',
    alignItems: 'center',
@@ -39,7 +39,13 @@ const MainImageContainer = muiStyled(Box)(({ theme }) => ({
    textAlign: 'center',
    marginBottom: '2rem',
    '& img': {
-      maxWidth: '300px',
+      maxWidth: '500px',
+      [theme.breakpoints.down('md')]: {
+         maxWidth: '350px',
+      },
+      [theme.breakpoints.down('sm')]: {
+         maxWidth: '260px',
+      },
       height: 'auto',
    },
 }))
@@ -47,11 +53,11 @@ const MainImageContainer = muiStyled(Box)(({ theme }) => ({
 // 가격 섹션 스타일
 const PriceSection = muiStyled(Box)(({ theme }) => ({
    textAlign: 'center',
-   marginBottom: '2rem',
+   marginBottom: '10rem',
    '& .price-text': {
       fontSize: '1.2rem',
       fontWeight: 500,
-      marginBottom: '1rem',
+      marginBottom: '2rem',
    },
 }))
 
@@ -64,6 +70,7 @@ const ButtonGroup = muiStyled(Box)(({ theme }) => ({
 }))
 
 const BeforePurchasingButton = styled.div`
+   margin-bottom: 2rem;
    .button {
       padding: 1em 2em;
       border: none;
@@ -111,25 +118,103 @@ const BeforePurchasingButton = styled.div`
    }
 `
 
-// 커스텀 버튼 스타일
-const CustomButton = muiStyled(Button)(({ theme }) => ({
+// 구매 버튼 스타일
+const BuyButton = muiStyled(Button)(({ theme }) => ({
    padding: '0.5rem 2rem',
-   borderRadius: '20px',
-   backgroundColor: theme.palette.primary.main,
+   borderRadius: '8px',
+   backgroundColor: '#B699BB',
    color: 'white',
    '&:hover': {
-      backgroundColor: theme.palette.primary.light,
+      backgroundColor: '#D8B6DD',
+   },
+}))
+
+// 미리보기 버튼 스타일
+const PreviewButton = muiStyled(Button)(({ theme }) => ({
+   padding: '0.5rem 2rem',
+   borderRadius: '8px',
+   backgroundColor: '#dddddd',
+   color: '#000000',
+   '&:hover': {
+      backgroundColor: '#eeeeee',
    },
 }))
 
 // 상세 정보 섹션 스타일
 const DetailSection = muiStyled(Box)(({ theme }) => ({
-   textAlign: 'center',
-   marginBottom: '3rem',
+   borderTop: `0.5px solid ${theme.palette.divider}`,
    '& .detail-title': {
+      fontFamily: theme.typography.fontFamily,
+      color: theme.palette.text.disabled,
+      textAlign: 'center',
+      marginBottom: '3rem',
       fontSize: '1.2rem',
-      letterSpacing: '0.2em',
-      marginBottom: '2rem',
+      letterSpacing: '1em',
+      marginTop: '5rem',
+      marginBottom: '5rem',
+      [theme.breakpoints.down('md')]: {
+         fontSize: '1rem',
+      },
+      [theme.breakpoints.down('sm')]: {
+         fontSize: '0.8rem',
+      },
+   },
+   '& .detail-images': {
+      position: 'relative',
+      width: '320px',
+      height: '640px',
+      margin: '0 auto',
+      [theme.breakpoints.down('md')]: {
+         width: '250px',
+         height: '500px',
+      },
+      [theme.breakpoints.down('sm')]: {
+         width: '200px',
+         height: '400px',
+      },
+      '& .iphone-mockup': {
+         width: '100%',
+         height: '100%',
+         position: 'relative',
+         zIndex: 2,
+         objectFit: 'contain',
+      },
+      '& .screen-content': {
+         position: 'absolute',
+         top: '2.5%', // 아이폰 목업의 화면 영역에 맞게 미세 조정
+         left: '4%',
+         width: '92%', // 화면 비율 미세 조정
+         height: '95%',
+         overflow: 'hidden',
+         borderRadius: '40px', // 아이폰 모서리 곡률에 맞게 조정
+         '& img': {
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: 0,
+            transition: 'opacity 0.5s ease-in-out',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            '&.active': {
+               opacity: 1,
+            },
+         },
+      },
+   },
+}))
+
+// 상세 정보 섹션 타이틀 스타일
+const DetailSectionTitle = muiStyled('div')(({ theme }) => ({
+   ...theme.typography.h2,
+   textAlign: 'center',
+   marginTop: '10rem',
+   marginBottom: '10rem',
+   [theme.breakpoints.down('md')]: {
+      fontSize: '1.4rem',
+   },
+   [theme.breakpoints.down('sm')]: {
+      fontSize: '1.2rem',
    },
 }))
 
@@ -154,12 +239,68 @@ const VideoSection = muiStyled(Box)(({ theme }) => ({
    },
 }))
 
+// 비디오 섹션 서브 코멘트 스타일
+const VideoSectionSubComment = muiStyled('div')(({ theme }) => ({
+   ...theme.typography.body2,
+   textAlign: 'right',
+   color: '#B699BB',
+   marginBottom: '10rem',
+   [theme.breakpoints.down('md')]: {
+      fontSize: '0.7rem',
+   },
+   [theme.breakpoints.down('sm')]: {
+      fontSize: '0.5rem',
+   },
+}))
+
+// QR 코드 섹션 타이틀 스타일
+const QRSectionTitle = muiStyled('div')(({ theme }) => ({
+   ...theme.typography.h3,
+   textAlign: 'center',
+   marginTop: '10rem',
+   marginBottom: '10rem',
+   [theme.breakpoints.down('md')]: {
+      fontSize: '1.3rem',
+   },
+   [theme.breakpoints.down('sm')]: {
+      fontSize: '1rem',
+   },
+}))
+
 // QR 코드 섹션 스타일
 const QRSection = muiStyled(Box)(({ theme }) => ({
    textAlign: 'center',
-   '& img': {
-      maxWidth: '200px',
+   marginBottom: '10rem',
+   '& .qr-code-images': {
+      position: 'relative',
+      width: '200px',
       height: 'auto',
+      margin: '0 auto',
+      [theme.breakpoints.down('md')]: {
+         width: '150px',
+         height: 'auto',
+      },
+      [theme.breakpoints.down('sm')]: {
+         width: '100px',
+         height: 'auto',
+      },
+      '& .iphone-mockup': {
+         width: '100%',
+         height: '100%',
+         position: 'relative',
+         zIndex: 2,
+         objectFit: 'contain',
+      },
+      '& .qr-code': {
+         position: 'absolute',
+         top: '2.5%', // 아이폰 목업의 화면 영역에 맞게 미세 조정
+         left: '4%',
+         width: '92%', // 화면 비율 미세 조정
+         height: '95%',
+         objectFit: 'contain',
+         borderRadius: '40px', // 아이폰 모서리 곡률에 맞게 조정
+         zIndex: 1,
+      },
    },
 }))
 
@@ -185,6 +326,21 @@ const TemplateDetail = () => {
       detailImages: ['/images/templates/card2.svg', '/images/templates/card3.png', '/images/templates/card4.png'],
    }
 
+   const [activeIndex, setActiveIndex] = useState(0)
+
+   // 페이지 진입 시 상단 스크롤 이동
+   useEffect(() => {
+      window.scrollTo(0, 0)
+   }, [location.pathname])
+
+   useEffect(() => {
+      const interval = setInterval(() => {
+         setActiveIndex((prev) => (prev + 1) % templateData.detailImages.length)
+      }, 3000) // 3초마다 이미지 전환
+
+      return () => clearInterval(interval)
+   }, [])
+
    return (
       <>
          <BackButtonContainer>
@@ -207,28 +363,40 @@ const TemplateDetail = () => {
                </BeforePurchasingButton>
                <Typography className="price-text">Price | {templateData.price}</Typography>
                <ButtonGroup>
-                  <CustomButton>구매하기</CustomButton>
-                  <CustomButton>미리보기</CustomButton>
+                  <BuyButton>구매하기</BuyButton>
+                  <PreviewButton>미리보기</PreviewButton>
                </ButtonGroup>
             </PriceSection>
 
             <DetailSection>
                <Typography className="detail-title">TEMPLATE DETAILS</Typography>
                <Box className="detail-images">
-                  {templateData.detailImages.map((image, index) => (
-                     <img key={index} src={image} alt={`Detail ${index + 1}`} />
-                  ))}
+                  <img src="/images/iphone-mockup.png" alt="iPhone mockup" className="iphone-mockup" />
+                  <Box className="screen-content">
+                     {templateData.detailImages.map((image, index) => (
+                        <img key={index} src={image} alt={`Detail ${index + 1}`} className={activeIndex === index ? 'active' : ''} />
+                     ))}
+                  </Box>
                </Box>
             </DetailSection>
+
+            <DetailSectionTitle>클릭 몇 번으로 나만의 감성을 담은 초대장을 완성하세요.</DetailSectionTitle>
 
             <VideoSection>
                <Box className="play-button">
                   <PlayArrowIcon sx={{ color: 'white', fontSize: '2rem' }} />
                </Box>
             </VideoSection>
+            <VideoSectionSubComment>
+               템플릿의 다채로운 기능과 세련된 디자인을 영상으로 확인하세요. <br />본 영상은 예시이며, 실제 템플릿은 자유롭게 편집 가능합니다.
+            </VideoSectionSubComment>
 
+            <QRSectionTitle>디지털 초대장으로 손쉽고 세련되게, 소중한 순간을 공유하세요.</QRSectionTitle>
             <QRSection>
-               <img src="/images/qr-code.png" alt="QR Code" />
+               <Box className="qr-code-images">
+                  <img src="/images/iphone-mockup.png" alt="iPhone mockup" className="iphone-mockup" />
+                  <img src="/images/qrcodeEX.png" alt="QR Code" className="qr-code" />
+               </Box>
             </QRSection>
          </PageContainer>
       </>

@@ -20,7 +20,7 @@ const BannerContainer = styled(Box)(({ theme }) => ({
       height: '300px',
    },
    [theme.breakpoints.down('sm')]: {
-      height: '200px',
+      height: '180px',
    },
 }))
 
