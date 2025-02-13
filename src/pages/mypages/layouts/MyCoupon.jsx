@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { createText, createBox } from '../../../utils/muiSystem'
 import { Layout, StatusContainer } from './'
 // import { styled } from '@mui/material/styles'
-import { styled } from '@mui/system'
+import { fontWeight, styled } from '@mui/system'
 import { Box, Typography } from '@mui/material'
 
 // ** 공통 기본 스타일
@@ -126,8 +126,8 @@ const Coupon = createBox((theme) => ({
 }))
 
 const CouponDiscount = styled(Box)(({ theme }) => ({
-    width: '35%',
-    flex: '0.35',
+    width: '25%',
+    // flex: '0.35',
     backgroundColor: '#FF385C',
     position: 'relative',
     textAlign: 'center',
@@ -167,28 +167,46 @@ const CouponDiscount = styled(Box)(({ theme }) => ({
         fontWeight: 'bold',
         letterSpacing: '0.07rem',
         textShadow: '1px 1px 2px rgba(0, 0, 0, 1)',
-        [theme.bps.md]: {},
-        [theme.bps.sm]: {},
         [theme.bps.xxs]: {
             letterSpacing: '0.05rem',
             textShadow: '0.5px 0.5px 1px rgba(0, 0, 0, 1)',
         },
     },
-
- 
 }))
 
 const CouponInfo = styled(Box)(({ theme }) => ({
-    flex: '0.65',
-    width: '65%',
+    width: '50%',
+    maxWidth: '400px', // ✅ 특정 크기 이상으로 커지지 않도록 제한
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
-    justifyContent: 'space-between',
-    padding: '24px',
+    gap: 'clamp(4px, 1vw, 8px)', // ✅ 갭도 자동 조정
+    // padding: 'clamp(10px, 2vw, 24px)', // ✅ 패딩도 가변 조정
+    padding: 'calc(4px + 1vw)', // ✅ padding도 동적 조절
     backgroundColor: 'white',
     position: 'relative',
     borderRadius: '0 8px 8px 0',
+    '& .coupon-label': {
+        fontSize: 'clamp(0.5rem, 2.5vw, 1.6rem)', // ✅ 자동 조절
+    },
+}))
+
+const CouponDDay = styled(Box)(({ theme }) => ({
+    width: '25%',
+    backgroundColor: 'yellow',
+    display: 'flex',
+    borderRadius: '0 8px 8px 0',
+    flexDirection: 'column',
+    gap: 'calc(0.5rem + 0.5vw)', // ✅ 글씨 크기에 비례하여 자동 조정
+    justifyContent: 'space-between',
+    padding: 'calc(4px + 1vw)', // ✅ padding도 동적 조절
+    alignItems: 'flex-end',
+    '& .coupon-expiration': {
+        fontSize: 'clamp(0.38rem, 1.5vw, 1.0rem)',
+    },
+    '& .coupon-d-day': {
+        fontSize: 'clamp(0.7rem, 3vw, 1.8rem)',
+        fontWeight: 'bold',
+    },
 }))
 
 // 탭 스타일
@@ -244,12 +262,25 @@ const StyledTab = createBox((theme, { $active, $position }) => {
 const MyCoupon = () => {
     // const [activeTab, setActiveTab] = useState('available')
     const [activeTab, setActiveTab] = useState(true)
+    const [visibleCount, setVisibleCount] = useState(3)
+    const [showMore, setShowMore] = useState()
 
     const tabs = [
         { key: true, label: '사용 가능 쿠폰', position: 'left' },
         { key: false, label: '사용 완료 쿠폰', position: 'right' },
     ]
 
+    const coupons = [
+        { id: 1, discount: 3000, label: '추천인 할인 쿠폰', expiration: '2025-02-30', dDay: 16 },
+        { id: 2, discount: 5000, label: '회원가입 이벤트 쿠폰', expiration: '2025-06-30', dDay: 120 },
+        { id: 3, discount: 1000, label: '이벤트 당첨 쿠폰', expiration: '2025-03-32', dDay: 47 },{ id: 4, discount: 1000, label: '이벤트 당첨 쿠폰', expiration: '2025-03-32', dDay: 47 },
+    ]
+    const handleShowMore = () => {
+        setVisibleCount((prev) => prev + 3)
+    }
+    if (!coupons?.length) {
+        return <Typography>사용 가능한 쿠폰이 없습니다.</Typography>
+    }
     return (
         <Layout>
             <Title>MY 쿠폰</Title>
@@ -274,19 +305,22 @@ const MyCoupon = () => {
                     </TabContainer>
                     <ListContainer $active={activeTab === 'available'}>
                         <CouponWrap>
-                            <Coupon>
-                                <CouponDiscount>
-                                    <Typography className="coupon-discount">3000원</Typography>
-                                </CouponDiscount>
-                                <CouponInfo>
-                                    <Label>쿠폰명 설명</Label>
-                                    <Title>할인금액</Title>
-                                </CouponInfo>
-                            </Coupon>
-                            <Coupon></Coupon>
-                            <Coupon></Coupon>
-                            <Coupon></Coupon>
+                            {coupons.slice(0, visibleCount).map(({ id, discount, label, expiration, dDay }) => (
+                                <Coupon key={id}>
+                                    <CouponDiscount>
+                                        <Typography className="coupon-discount">{discount}</Typography>
+                                    </CouponDiscount>
+                                    <CouponInfo>
+                                        <Typography className="coupon-label">{label}</Typography>
+                                    </CouponInfo>
+                                    <CouponDDay>
+                                        <Typography className="coupon-expiration">{expiration}</Typography>
+                                        <Typography className="coupon-d-day">D-{dDay}</Typography>
+                                    </CouponDDay>
+                                </Coupon>
+                            ))}
                         </CouponWrap>
+                        {visibleCount < coupons.length && <MoreButton onClick={handleShowMore}>남은 수량 ({coupons.length - visibleCount}개)</MoreButton>}
                     </ListContainer>
                 </DetailContainer>
             </Container>
@@ -294,4 +328,38 @@ const MyCoupon = () => {
     )
 }
 
+/* 
+  <MoreButton onClick={() => setShowMore(!showMore)}>
+                  <Typography className="arrow">{showMore ? 'Less' : 'More'}</Typography>
+               </MoreButton>
+*/
+
+const MoreButton = styled(Box)(({ theme }) => ({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    cursor: 'pointer',
+    marginTop: theme.spacing(3),
+    color: theme.palette.primary.main,
+    fontWeight: 600,
+    '& .arrow': {
+        animation: 'bounce 2s infinite',
+        fontSize: '1rem',
+    },
+    '@keyframes bounce': {
+        '0%, 20%, 50%, 80%, 100%': { transform: 'translateY(0)' },
+        '40%': { transform: 'translateY(-10px)' },
+        '60%': { transform: 'translateY(-5px)' },
+    },
+}))
+
 export default MyCoupon
+/* 
+{labels.map(({id, label, expiration, dDay }) => (
+                                        <React.Fragment key={id}>
+                                            <Typography>{label}</Typography>
+                                            <Typography>{expiration}</Typography>
+                                            <Typography>{dDay}</Typography>
+                                        </React.Fragment>
+                                    ))}
+*/

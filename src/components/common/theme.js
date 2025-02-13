@@ -351,9 +351,9 @@ const theme = createTheme({
 })
 
 theme.bps = {
-    md: theme.breakpoints.down('md'),
-    sm: theme.breakpoints.down('sm'),
-    xxs: theme.breakpoints.down(480),
+    md: theme.breakpoints.down('md'), // [midium] 960px
+    sm: theme.breakpoints.down('sm'), // [small] 600px
+    xxs: theme.breakpoints.down(480), // 480px
 }
 
 export default theme

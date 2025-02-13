@@ -1,3 +1,5 @@
+import React from 'react'
+
 import { Box, Typography, Button } from '@mui/material'
 import { createBox, createText } from '../../../utils/muiSystem'
 import { Layout } from './'
@@ -39,12 +41,11 @@ const LabelValue = createText((theme) => ({
 // const Wrapper = () => {}
 
 const MyProfile = () => {
-    const user = {
-        nickname: '홍길동',
-        email: 'hong@example.com',
-        createdAt: '2024-01-01',
-        lastLoginAt: '2024-02-01',
-    }
+    const users = [
+        { id: 1,  nick: '준근', email: 'jun1@gmail.com', createdAt: '24년 9월 30일', lastLogin: '25년 2월 5일'  },
+        { id: 2,  nick: '병재', email: 'beyoung2@gmail.com', createdAt: '24년 9월 30일', lastLogin: '25년 2월 7일'  },
+        { id: 3,  nick: '은하', email: 'eun3@gmail.com', createdAt: '24년 9월 30일', lastLogin: '25년 2월 11일'  },
+    ]
 
     return (
         // <ProfileContainer>
@@ -54,19 +55,19 @@ const MyProfile = () => {
             <LabelContainer>
                 <LabelWrap>
                     <Label>닉네임 </Label>
-                    <LabelValue>엉망진창</LabelValue>
+                    <LabelValue>{users[0].nick}</LabelValue>
                 </LabelWrap>
                 <LabelWrap>
                     <Label>email </Label>
-                    <LabelValue>example123@gmail.com</LabelValue>
+                    <LabelValue>{users[0].email}</LabelValue>
                 </LabelWrap>
                 <LabelWrap>
                     <Label>가입일시 </Label>
-                    <LabelValue>25년 2월 1일</LabelValue>
+                    <LabelValue>{users[0].createdAt}</LabelValue>
                 </LabelWrap>
                 <LabelWrap>
                     <Label>최근 로그인 </Label>
-                    <LabelValue>25년 2월 13일</LabelValue>
+                    <LabelValue>{users[0].lastLogin}</LabelValue>
                 </LabelWrap>
             </LabelContainer>
         </Layout>
