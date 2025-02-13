@@ -447,6 +447,12 @@ const TemplateDetail = () => {
       })
    }
 
+   const handleEditorOpen = () => {
+      navigate(`/template/${currentTab}/edit`, {
+         state: { templateId, currentTab },
+      })
+   }
+
    // 임시 데이터 (추후 API 연동 필요)
    const templateData = {
       id: templateId,
@@ -512,7 +518,9 @@ const TemplateDetail = () => {
 
             <PriceSection>
                <BeforePurchasingButton>
-                  <button className="button">구매하기 전 잠깐 사용해보기</button>
+                  <button className="button" onClick={handleEditorOpen}>
+                     구매하기 전 잠깐 사용해보기
+                  </button>
                </BeforePurchasingButton>
                <Typography className="price-text">Price | {templateData.price}</Typography>
                <ButtonGroup>
@@ -569,7 +577,9 @@ const TemplateDetail = () => {
                   </IconButton>
                </div>
                <div className="button-container">
-                  <ActionButton variant="try">구매하기 전 잠깐 사용해보기</ActionButton>
+                  <ActionButton variant="try" onClick={handleEditorOpen}>
+                     구매하기 전 잠깐 사용해보기
+                  </ActionButton>
                   <ActionButton variant="buy">구매하기</ActionButton>
                </div>
             </div>
