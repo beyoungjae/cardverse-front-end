@@ -1,13 +1,31 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { Container, Typography, Box, Button, Modal, IconButton } from '@mui/material'
-import { styled as muiStyled } from '@mui/material/styles'
-import styled from 'styled-components'
+import { styled as muiStyled, keyframes } from '@mui/material/styles'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import CloseIcon from '@mui/icons-material/Close'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
+import { transform } from 'framer-motion'
+
+// 애니메이션 keyframes
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+`
+
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+`
 
 // 뒤로가기 버튼 컨테이너
 const BackButtonContainer = muiStyled(Box)(({ theme }) => ({
@@ -17,16 +35,17 @@ const BackButtonContainer = muiStyled(Box)(({ theme }) => ({
 
 // 뒤로가기 버튼 스타일
 const BackButton = muiStyled('div')(({ theme }) => ({
-   display: 'flex',
+   display: 'inline-block',
    alignItems: 'center',
    gap: '0.5rem',
    color: theme.palette.text.primary,
    textDecoration: 'none',
    fontSize: '0.9rem',
-   transition: 'color 0.3s ease',
+   transition: 'color 0.3s ease, transform 0.3s ease',
    cursor: 'pointer',
    '&:hover': {
       color: theme.palette.text.secondary,
+      transform: 'translateX(-3px)',
    },
 }))
 
@@ -37,12 +56,13 @@ const PageContainer = muiStyled(Container)(({ theme }) => ({
    padding: '2rem 1rem',
 }))
 
-// 메인 이미지 스타일
+// 메인 이미지 스타일 (호버 시 살짝 확대)
 const MainImageContainer = muiStyled(Box)(({ theme }) => ({
    textAlign: 'center',
    marginBottom: '2rem',
    '& img': {
       maxWidth: '500px',
+      transition: 'transform 0.3s ease-in-out',
       [theme.breakpoints.down('md')]: {
          maxWidth: '350px',
       },
@@ -50,6 +70,9 @@ const MainImageContainer = muiStyled(Box)(({ theme }) => ({
          maxWidth: '260px',
       },
       height: 'auto',
+   },
+   '& img:hover': {
+      transform: 'scale(1.02)',
    },
 }))
 
@@ -72,54 +95,50 @@ const ButtonGroup = muiStyled(Box)(({ theme }) => ({
    marginBottom: '3rem',
 }))
 
-const BeforePurchasingButton = styled.div`
-   margin-bottom: 2rem;
-   .button {
-      padding: 1em 2em;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      letter-spacing: 5px;
-      text-transform: uppercase;
-      cursor: pointer;
-      color: #000000;
-      transition: all 1000ms;
-      font-size: 15px;
-      position: relative;
-      overflow: hidden;
-      outline: 2px solid #000000;
-   }
-
-   button:hover {
-      color: #ffffff;
-      transform: scale(1.05);
-      outline: 2px solid #000000;
-      box-shadow: 4px 5px 17px -4px #000000;
-   }
-
-   button::before {
-      content: '';
-      position: absolute;
-      left: -50px;
-      top: 0;
-      width: 0;
-      height: 100%;
-      background-color: #000000;
-      transform: skewX(180deg);
-      z-index: -1;
-      transition: width 500ms;
-   }
-
-   button:hover::before {
-      width: 250%;
-   }
-
-   button:active {
-      transform: scale(0.98);
-      background-color: #000000;
-      transition: all 0.1s ease;
-   }
-`
+// 구매 전 체험 버튼 (muiStyled로 통일)
+const BeforePurchasingButton = muiStyled('div')(({ theme }) => ({
+   marginBottom: '2rem',
+   '& .button': {
+      padding: '1em 2em',
+      border: 'none',
+      borderRadius: '5px',
+      fontWeight: 'bold',
+      letterSpacing: '5px',
+      textTransform: 'uppercase',
+      cursor: 'pointer',
+      color: '#000000',
+      transition: 'all 0.3s ease',
+      fontSize: '15px',
+      position: 'relative',
+      overflow: 'hidden',
+      outline: '2px solid #000000',
+      '&:hover': {
+         color: '#ffffff',
+         transform: 'scale(1.05)',
+         boxShadow: '4px 5px 17px -4px #000000',
+      },
+      '&::before': {
+         content: '""',
+         position: 'absolute',
+         left: '-50px',
+         top: 0,
+         width: 0,
+         height: '100%',
+         backgroundColor: '#000000',
+         transform: 'skewX(180deg)',
+         zIndex: -1,
+         transition: 'width 0.3s ease',
+      },
+      '&:hover::before': {
+         width: '250%',
+      },
+      '&:active': {
+         transform: 'scale(0.98)',
+         backgroundColor: '#000000',
+         transition: 'all 0.1s ease',
+      },
+   },
+}))
 
 // 버튼 스타일 컴포넌트들
 const ButtonStyles = {
@@ -172,6 +191,7 @@ const BuyButton = muiStyled(Button)(({ theme }) => ({
    borderRadius: '8px',
    backgroundColor: '#B699BB',
    color: 'white',
+   transition: 'background-color 0.3s ease',
    '&:hover': {
       backgroundColor: '#D8B6DD',
    },
@@ -183,23 +203,22 @@ const PreviewButton = muiStyled(Button)(({ theme }) => ({
    borderRadius: '8px',
    backgroundColor: '#dddddd',
    color: '#000000',
+   transition: 'background-color 0.3s ease',
    '&:hover': {
       backgroundColor: '#eeeeee',
    },
 }))
 
-// 상세 정보 섹션 스타일
+// 상세 정보 섹션 스타일 (detail image 애니메이션 강화)
 const DetailSection = muiStyled(Box)(({ theme }) => ({
    borderTop: `0.5px solid ${theme.palette.divider}`,
    '& .detail-title': {
       fontFamily: theme.typography.fontFamily,
       color: theme.palette.text.disabled,
       textAlign: 'center',
-      marginBottom: '3rem',
+      margin: '5rem 0',
       fontSize: '1.2rem',
       letterSpacing: '1em',
-      marginTop: '5rem',
-      marginBottom: '5rem',
       [theme.breakpoints.down('md')]: {
          fontSize: '1rem',
       },
@@ -229,23 +248,25 @@ const DetailSection = muiStyled(Box)(({ theme }) => ({
       },
       '& .screen-content': {
          position: 'absolute',
-         top: '2.5%', // 아이폰 목업의 화면 영역에 맞게 미세 조정
+         top: '2.5%',
          left: '4%',
-         width: '92%', // 화면 비율 미세 조정
+         width: '92%',
          height: '95%',
          overflow: 'hidden',
-         borderRadius: '40px', // 아이폰 모서리 곡률에 맞게 조정
+         borderRadius: '40px',
          '& img': {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
             opacity: 0,
-            transition: 'opacity 0.5s ease-in-out',
+            transform: 'scale(0.95)',
+            transition: 'opacity 0.5s ease-in-out, transform 0.5s ease-in-out',
             position: 'absolute',
             top: 0,
             left: 0,
             '&.active': {
                opacity: 1,
+               transform: 'scale(1)',
             },
          },
       },
@@ -256,8 +277,7 @@ const DetailSection = muiStyled(Box)(({ theme }) => ({
 const DetailSectionTitle = muiStyled('div')(({ theme }) => ({
    ...theme.typography.h2,
    textAlign: 'center',
-   marginTop: '10rem',
-   marginBottom: '10rem',
+   margin: '10rem 0',
    [theme.breakpoints.down('md')]: {
       fontSize: '1.4rem',
    },
@@ -266,7 +286,7 @@ const DetailSectionTitle = muiStyled('div')(({ theme }) => ({
    },
 }))
 
-// 비디오 섹션 스타일
+// 비디오 섹션 스타일 (플레이 버튼에 펄스 애니메이션 적용)
 const VideoSection = muiStyled(Box)(({ theme }) => ({
    position: 'relative',
    width: '100%',
@@ -284,6 +304,7 @@ const VideoSection = muiStyled(Box)(({ theme }) => ({
       justifyContent: 'center',
       margin: '0 auto',
       cursor: 'pointer',
+      animation: `${pulse} 2s infinite ease-in-out`,
    },
 }))
 
@@ -305,8 +326,7 @@ const VideoSectionSubComment = muiStyled('div')(({ theme }) => ({
 const QRSectionTitle = muiStyled('div')(({ theme }) => ({
    ...theme.typography.h3,
    textAlign: 'center',
-   marginTop: '10rem',
-   marginBottom: '10rem',
+   margin: '10rem 0',
    [theme.breakpoints.down('md')]: {
       fontSize: '1.3rem',
    },
@@ -326,11 +346,9 @@ const QRSection = muiStyled(Box)(({ theme }) => ({
       margin: '0 auto',
       [theme.breakpoints.down('md')]: {
          width: '150px',
-         height: 'auto',
       },
       [theme.breakpoints.down('sm')]: {
          width: '100px',
-         height: 'auto',
       },
       '& .iphone-mockup': {
          width: '100%',
@@ -341,18 +359,18 @@ const QRSection = muiStyled(Box)(({ theme }) => ({
       },
       '& .qr-code': {
          position: 'absolute',
-         top: '2.5%', // 아이폰 목업의 화면 영역에 맞게 미세 조정
+         top: '2.5%',
          left: '4%',
-         width: '92%', // 화면 비율 미세 조정
+         width: '92%',
          height: '95%',
          objectFit: 'contain',
-         borderRadius: '40px', // 아이폰 모서리 곡률에 맞게 조정
+         borderRadius: '40px',
          zIndex: 1,
       },
    },
 }))
 
-// 모달 스타일
+// 모달 스타일 (fadeIn 애니메이션 적용)
 const PreviewModal = muiStyled(Modal)(({ theme }) => ({
    display: 'flex',
    alignItems: 'center',
@@ -367,6 +385,7 @@ const PreviewModal = muiStyled(Modal)(({ theme }) => ({
       borderRadius: '8px',
       padding: '20px',
       outline: 'none',
+      animation: `${fadeIn} 0.5s ease-out`,
    },
    '& .close-button': {
       position: 'absolute',
@@ -377,7 +396,7 @@ const PreviewModal = muiStyled(Modal)(({ theme }) => ({
    '& .slide-container': {
       position: 'relative',
       width: '100%',
-      height: '60vh', // 높이 조정
+      height: '60vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -388,16 +407,15 @@ const PreviewModal = muiStyled(Modal)(({ theme }) => ({
       objectFit: 'contain',
       [theme.breakpoints.down('md')]: {
          width: '80%',
-         height: 'auto',
       },
       [theme.breakpoints.down('sm')]: {
          width: '65%',
-         height: 'auto',
       },
    },
    '& .nav-button': {
       position: 'absolute',
       backgroundColor: 'rgba(255, 255, 255, 0.3)',
+      transition: 'background-color 0.3s ease',
       '&:hover': {
          backgroundColor: 'rgba(255, 255, 255, 0.2)',
       },
@@ -482,8 +500,8 @@ const TemplateDetail = () => {
          <BackButtonContainer>
             <Container maxWidth="lg">
                <BackButton onClick={handleBack}>
-                  <ArrowBackIosNewIcon sx={{ fontSize: '0.8rem' }} />
-                  Back Template
+                  <ArrowBackIosNewIcon sx={{ fontSize: '0.7rem', pointerEvents: 'auto' }} />
+                  <span>Back Template</span>
                </BackButton>
             </Container>
          </BackButtonContainer>
