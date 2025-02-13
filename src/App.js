@@ -10,6 +10,7 @@ import { Route, Routes, Navigate } from 'react-router-dom'
 import SignupPage from './pages/SignupPage'
 import LoginPage from './pages/LoginPage'
 import LoginkakaPage from './pages/Loginkakako'
+import TemplateDetail from './components/templates/TemplateDetail'
 
 // 네비바 아래 컨텐츠를 위한 컨테이너
 const MainContent = muiStyled(Box)(({ theme }) => ({
@@ -75,6 +76,7 @@ function App() {
                   {/* /template 접근 시 기본 탭으로 리다이렉트 */}
                   <Route index element={<Navigate to="/template/wedding" replace />} />
                   <Route path=":tab" element={<Template key={window.location.pathname} />} />
+                  <Route path=":tab/:templateId" element={<TemplateDetail />} />
                </Route>
                <Route path="/signup" element={<SignupPage />} />
                <Route path="/kaka" element={<LoginkakaPage />} />
