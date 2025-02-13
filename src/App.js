@@ -39,6 +39,12 @@ const GlobalStyle = createGlobalStyle`
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    caret-color: transparent; /* 입력 커서(깜빡이는 막대) 숨김 */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input, textarea, [contenteditable="true"] {
+    caret-color: auto; /* input과 textarea 같은 입력 필드에서만 기본 커서 보이게 */
   }
 
   ::-webkit-scrollbar {
@@ -76,7 +82,6 @@ function App() {
                   {/* /template 접근 시 기본 탭으로 리다이렉트 */}
                   <Route index element={<Navigate to="/template/wedding" replace />} />
                   <Route path=":tab" element={<Template key={window.location.pathname} />} />
-                  <Route path=":tab/:templateId" element={<TemplateDetail />} />
                </Route>
                <Route path="/signup" element={<SignupPage />} />
                <Route path="/kaka" element={<LoginkakaPage />} />
