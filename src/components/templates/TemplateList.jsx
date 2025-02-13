@@ -9,9 +9,7 @@ import { useLocation, useParams, useNavigate } from 'react-router-dom'
 import 'swiper/css'
 import 'swiper/css/navigation'
 
-// =============================================================================
 // 배너 영역
-// =============================================================================
 const BannerContainer = styled(Box)(({ theme }) => ({
    width: '100%',
    height: '400px',
@@ -60,9 +58,7 @@ const BannerTitle = styled(Typography)(({ theme }) => ({
    },
 }))
 
-// =============================================================================
 // TOTAL 텍스트 (상단 카운트 영역)
-// =============================================================================
 const TotalText = styled(Typography)(({ theme }) => ({
    fontSize: '1rem',
    color: theme.palette.text.secondary,
@@ -84,9 +80,7 @@ const TotalText = styled(Typography)(({ theme }) => ({
    },
 }))
 
-// =============================================================================
 // 탭 영역 및 좌우 네비게이션 버튼
-// =============================================================================
 const TabContainer = styled(Box)(({ theme }) => ({
    position: 'relative',
    marginBottom: '4rem',
@@ -149,6 +143,7 @@ const TabContainer = styled(Box)(({ theme }) => ({
    },
 }))
 
+// 탭 버튼 스타일
 const StyledTab = styled('div')(({ theme, $selected, $isAdjacent }) => ({
    position: 'relative',
    padding: '1rem 2rem',
@@ -182,9 +177,7 @@ const StyledTab = styled('div')(({ theme, $selected, $isAdjacent }) => ({
    },
 }))
 
-// =============================================================================
-// 리스트 영역 (백색 배경, 부드러운 fade-in 애니메이션 적용)
-// =============================================================================
+// 리스트 영역
 const ListSection = styled(Box)(({ theme }) => ({
    backgroundColor: '#ffffff',
    padding: theme.spacing(4),
@@ -198,9 +191,7 @@ const ListSection = styled(Box)(({ theme }) => ({
    },
 }))
 
-// =============================================================================
-// 템플릿 카드 및 이미지 영역 (hover 애니메이션, 확대 및 그림자 효과)
-// =============================================================================
+// 템플릿 카드 및 이미지 영역
 const TemplateGrid = styled(Box)(({ theme }) => ({
    display: 'grid',
    gridTemplateColumns: 'repeat(3, 1fr)',
@@ -256,9 +247,7 @@ const PriceInfo = styled(Typography)(({ theme }) => ({
    color: theme.palette.text.primary,
 }))
 
-// =============================================================================
-// More 버튼 (bounce 애니메이션 포함)
-// =============================================================================
+// More 버튼
 const MoreButton = styled(Box)(({ theme }) => ({
    display: 'flex',
    flexDirection: 'column',

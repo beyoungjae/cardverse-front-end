@@ -7,7 +7,6 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import CloseIcon from '@mui/icons-material/Close'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
-import { transform } from 'framer-motion'
 
 // 애니메이션 keyframes
 const fadeIn = keyframes`
@@ -56,7 +55,7 @@ const PageContainer = muiStyled(Container)(({ theme }) => ({
    padding: '2rem 1rem',
 }))
 
-// 메인 이미지 스타일 (호버 시 살짝 확대)
+// 메인 이미지 스타일
 const MainImageContainer = muiStyled(Box)(({ theme }) => ({
    textAlign: 'center',
    marginBottom: '2rem',
@@ -95,7 +94,7 @@ const ButtonGroup = muiStyled(Box)(({ theme }) => ({
    marginBottom: '3rem',
 }))
 
-// 구매 전 체험 버튼 (muiStyled로 통일)
+// 구매 전 체험 버튼
 const BeforePurchasingButton = muiStyled('div')(({ theme }) => ({
    marginBottom: '2rem',
    '& .button': {
@@ -209,7 +208,7 @@ const PreviewButton = muiStyled(Button)(({ theme }) => ({
    },
 }))
 
-// 상세 정보 섹션 스타일 (detail image 애니메이션 강화)
+// 상세 정보 섹션 스타일
 const DetailSection = muiStyled(Box)(({ theme }) => ({
    borderTop: `0.5px solid ${theme.palette.divider}`,
    '& .detail-title': {
@@ -286,7 +285,7 @@ const DetailSectionTitle = muiStyled('div')(({ theme }) => ({
    },
 }))
 
-// 비디오 섹션 스타일 (플레이 버튼에 펄스 애니메이션 적용)
+// 비디오 섹션 스타일
 const VideoSection = muiStyled(Box)(({ theme }) => ({
    position: 'relative',
    width: '100%',
@@ -370,7 +369,7 @@ const QRSection = muiStyled(Box)(({ theme }) => ({
    },
 }))
 
-// 모달 스타일 (fadeIn 애니메이션 적용)
+// 모달 스타일
 const PreviewModal = muiStyled(Modal)(({ theme }) => ({
    display: 'flex',
    alignItems: 'center',
