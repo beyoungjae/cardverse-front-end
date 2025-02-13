@@ -1,49 +1,53 @@
 import { useEffect } from 'react'
-import { styled } from '@mui/material/styles'
+import { fontWeight, styled } from '@mui/system'
+
 import { Box, Typography } from '@mui/material'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-// import { MyProfile, MyCoupon, MyReview, MyTemplate, MyPageLayout } from './layout'
 import { MyCoupon, MyReview, MyProfile, MyTemplate } from './layouts'
 import { createBox, createText } from '../../utils/muiSystem'
 
 const Container = createBox((theme) => ({
     backgroundColor: '#f5f5f5',
-    padding: '16px',
+    padding: '40px',
     border: 'none',
     minWidth: '375px',
     breakpoint: [{ down: 'sm', padding: '16px' }],
 }))
 
-// ** Text 스타일
-const Title = styled(Typography)(({ theme }) => ({
-    display: 'inline',
-    fontSize: 'clamp(1rem, 5vw, 2.5rem)',
-    fontWeight: theme.typography.h1.fontWeight,
-    lineHeight: theme.typography.h1.lineHeight,
-}))
-
 const MyPageContainer = createBox((theme) => ({
     width: '100%',
     maxWidth: '800px',
-    margin: '8px auto',
-    padding: '16px',
+    margin: '0 auto',
+    padding: '32px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '24px',
+    gap: '40px',
     backgroundColor: '#ffffff',
     boxShadow: '0 0 0px 0.3px black',
     borderRadius: '8px',
     breakpoint: [{ down: 'md' }, { down: 'sm', padding: '12px', gap: '12px' }],
 }))
 
-const TabLayout = createBox((theme) => ({
-    width: '800px',
-    margin: '0 auto',
-    border: 'none',
-    boxShadow: theme.shadows[2],
-    borderRadius: '5px',
-    padding: theme.palette.spacing.lg,
-    breakpoint: [{ down: 848, width: '100%' }],
+// ** Text 스타일
+const Title = styled(Typography)(({ theme, variant = 'h1', children }) => ({
+    ...theme.typography[variant],
+    color: 'rgba(0,0,0,0.4)',
+    textShadow: '4px 2px 3px rgba(0,0,0,0.12)',
+    position: 'relative',
+    fontSize: 'clamp(1rem, 5vw, 2.5rem)',
+    '&::after': {
+        content: `"${children}"`,
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        color: 'white',
+        fontSize: 'clamp(1rem, 5vw, 2.5rem)',
+        height: '50px',
+        background: 'linear-gradient(135deg, rgb(220,220,220), rgb(20,20,20))' /* 🔥 그라데이션 배경 */,
+        WebkitBackgroundClip: 'text' /* ✅ 텍스트에 배경 적용 */,
+        WebkitTextFillColor: 'transparent' /* ✅ 글자 색상을 투명하게 */,
+    },
+    [theme.bps.md]: {},
 }))
 
 // 마이페이지 탭 컨테이너
@@ -55,27 +59,27 @@ const TabContainer = styled(Box)(({ theme }) => ({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    // gap: '1rem',
+    gap: '1rem',
 
     '&::after': {
         position: 'absolute',
         width: '100%',
-        bottom: '-2px',
+        bottom: '-10px',
         left: '0',
         content: '""',
         height: '1px',
         backgroundColor: '#cccccc',
-        background: 'linear-gradient(to right, rgba(204, 204, 204, 0) 0%, rgba(204, 204, 204, 1) 10%,rgba(204, 204, 204, 1) 90%,  rgba(204, 204, 204, 0) 100%)',
+        background: 'linear-gradient(to right, rgba(140,140,140, 0) 0%, rgba(140,140,140, 1) 10%,rgba(140,140,140, 1) 90%,  rgba(140,140,140, 0) 100%)',
     },
     '&::before': {
         position: 'absolute',
         width: '100%',
-        top: '-1px',
+        top: '-10px',
         left: '0',
         content: '""',
         height: '1px',
         backgroundColor: '#cccccc',
-        background: 'linear-gradient(to right, rgba(204, 204, 204, 0) 0%, rgba(204, 204, 204, 1) 10%,rgba(204, 204, 204, 1) 90%,  rgba(204, 204, 204, 0) 100%)',
+        background: 'linear-gradient(to right, rgba(140,140,140, 0) 0%, rgba(140,140,140, 1) 10%,rgba(140,140,140, 1) 90%,  rgba(140,140,140, 0) 100%)',
     },
     [theme.breakpoints.down('md')]: {
         gap: '0.8rem',
@@ -88,7 +92,7 @@ const TabContainer = styled(Box)(({ theme }) => ({
         '&::after': {
             position: 'absolute',
             width: '100%',
-            bottom: '-2px',
+            bottom: '-5px',
             left: '0',
             content: '""',
             height: '1px',
@@ -97,7 +101,7 @@ const TabContainer = styled(Box)(({ theme }) => ({
         '&::before': {
             position: 'absolute',
             width: '100%',
-            top: '-1px',
+            top: '-5px',
             left: '0',
             content: '""',
             height: '1px',
@@ -118,13 +122,14 @@ const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selecte
     fontSize: 'clamp(0.8rem, 2vw, 1rem)',
     fontWeight: $selected ? 600 : 400,
     textAlign: 'center',
+    bordorRadius: '8px 0 0 8px',
     whiteSpace: 'nowrap',
-    // transition: 'all 1s ease',
     transition: 'background-color 0.4s ease',
     textDecoration: 'none',
-    backgroundColor: $selected ? '#f0f0f0' : '#ffffff',
+    backgroundColor: $selected ? '#f1f1f1' : '#ffffff',
     '&::after': {
         content: '""',
+        bordorRadius: '8px 0 0 8px',
         position: 'absolute',
         bottom: '-1px',
         left: '50%',
@@ -137,14 +142,16 @@ const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selecte
     '&:hover': $selected
         ? {} // ✅ 선택된 상태에서는 아무 스타일도 변경되지 않도록
         : {
+              bordorRadius: '8px 0 0 8px',
               color: theme.palette.text.primary,
-              backgroundColor: '#f8f8f8',
+              backgroundColor: '#f7f7f7',
               transition: 'all 0.3s ease',
           },
     [theme.breakpoints.down('sm')]: {
         padding: '0.8rem 0px',
         width: '25%',
         '&::after': {
+            bordorRadius: '8px 0 0 8px',
             height: '2px',
         },
     },

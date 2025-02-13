@@ -1,6 +1,7 @@
 import { Box, Typography, Button } from '@mui/material'
 import { createBox, createText } from '../../../utils/muiSystem'
-
+// import { styled } from '@mui/system'
+import { styled } from '@mui/material/styles'
 export { default as MyProfile } from './MyProfile'
 export { default as MyCoupon } from './MyCoupon'
 export { default as MyTemplate } from './MyTemplate'
@@ -23,7 +24,7 @@ export const Layout = createBox((theme) => ({
     border: 'none',
     boxShadow: '0 0 0px 0.3px black',
     borderRadius: '5px',
-    gap: '16px',
+    gap: '24px',
     padding: theme.palette.spacing.lg,
     breakpoint: [{ down: 848, width: '100%' }],
 }))
@@ -35,11 +36,43 @@ export const StatusContainer = createBox((theme) => ({
     breakpoint: [
         { down: 'md', padding: '12px' },
         { down: 'sm', padding: '10px' },
-        { down: '480', padding: '8px'}
+        { down: '480', padding: '8px' },
     ],
 }))
 
 // ** 디테일 컨테이너
 export const DetailContainer = createBox((theme) => ({
     ...commonStyles(theme),
+}))
+
+// ** Text 스타일
+export const Title = styled(Typography)(({ theme, variant = 'h1', children }) => ({
+    ...theme.typography[variant],
+    color: 'rgba(0,0,0,0.9)',
+    textShadow: '2px 1px 1px rgba(0,0,0,0.12)',
+    position: 'relative',
+    fontSize: 'clamp(1.2rem, 3vw, 1.7rem)',
+    width: 'fit-content',
+    marginBottom: '6px',
+    '&::after': {
+        content: `"${children}"`,
+        position: 'absolute',
+        left: '0px',
+        top: '0px',
+        color: 'transparent',
+        fontSize: 'clamp(1.2rem, 3vw, 1.7rem)',
+        height: '50px',
+        background: 'linear-gradient(135deg, rgba(255,255,255,1), rgba(0,0,0,1))' /* 🔥 그라데이션 배경 */,
+
+        WebkitBackgroundClip: 'text' /* ✅ 텍스트에 배경 적용 */,
+    },
+    '&::before': {
+        content: '""',
+        position: 'absolute',
+        bottom: '-6px',
+        width: '200%',
+        left: '-10px',
+        background: 'linear-gradient(to right,rgba(140,140,140,0) 0%, rgba(140,140,140,1) 5%, rgba(140,140,140, 1) 30%,rgba(140,140,140, 1) 70%,  rgba(0,0,0,0) 100%)',
+        height: '1px',
+    },
 }))

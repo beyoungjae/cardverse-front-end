@@ -1,67 +1,26 @@
 import React, { useState } from 'react'
 import { createText, createBox } from '../../../utils/muiSystem'
-import { Layout, StatusContainer } from './'
-// import { styled } from '@mui/material/styles'
-import { fontWeight, styled } from '@mui/system'
+import { Layout, StatusContainer, Title } from './'
+import { styled } from '@mui/system'
 import { Box, Typography } from '@mui/material'
 
-// ** 공통 기본 스타일
-const commonStyles = {
-    width: '100%',
-    border: 'none',
-    padding: '16px',
-}
-
-const commonBodyText = {
-    variant: 'body1',
-    fontSize: 'clamp(0.9rem, 1.8vw, 1rem)',
-}
-
-const commonBreakPoint = (theme) => ({
-    breakpoint: [
-        { up: 'lg', gap: theme.spacing(2) },
-        { down: 'lg', gap: theme.spacing(1) },
-    ],
-})
-
-// ** Text 스타일
-const Title = createText((theme) => ({
-    variant: 'h3',
-    fontSize: 'clamp(1.2rem, 3vw, 1.4rem)',
-}))
-
-const Label = createText((theme) => ({
-    variant: 'body1',
-    fontSize: 'clamp(0.8rem, 1.8vw, 1rem)',
-    fontWeight: 'bold',
-    minWidth: '80px',
-}))
-
-const LabelValue = createText((theme) => ({
-    variant: 'body1',
-    fontSize: 'clamp(0.8rem, 1.8vw, 1rem)',
-}))
-
-// ** Container 스타일
-// 컨테이너
+/** 컨테이너 스타일 **/
 const Container = createBox((theme) => ({
     width: ' 100%',
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px',
+    gap: '160px',
     breakpoint: [
-        { up: 'lg', gap: theme.spacing(2) },
+        { up: 'lg', gap: theme.spacing(3) },
         { down: 'lg', gap: theme.spacing(1) },
     ],
 }))
 
-// 디테일 컨테이너
 const DetailContainer = createBox((theme) => ({
     width: '100%',
     border: 'none',
 }))
 
-// 쿠폰내역 전환 컨테이너
 const TabContainer = createBox((theme) => ({
     width: '100%',
     margin: 0,
@@ -79,14 +38,13 @@ const ListContainer = createBox((theme) => ({
     borderLeft: '1px solid rgba(0,0,0,0.2)',
     borderRight: '1px solid rgba(0,0,0,0.2)',
     borderBottom: '1px solid rgba(0,0,0,0.2)',
-    // borderRadius: '0 0 8px 8px',
+
     borderRadius: '0 0 8px 8px',
 
     breakpoint: [{ down: 'sm', padding: '8px' }],
 }))
 
-// ** Wrap 스타일
-// 라벨 wrap
+/** 라벨 스타일 **/
 const LabelWrap = createBox((theme) => ({
     display: 'flex',
     backgroundColor: theme.palette.background.default,
@@ -100,7 +58,19 @@ const LabelWrap = createBox((theme) => ({
     ],
 }))
 
-// 리스트 Wrap
+const Label = createText((theme) => ({
+    variant: 'body1',
+    fontSize: 'clamp(0.8rem, 1.8vw, 1rem)',
+    fontWeight: 'bold',
+    minWidth: '80px',
+}))
+
+const LabelValue = createText((theme) => ({
+    variant: 'body1',
+    fontSize: 'clamp(0.8rem, 1.8vw, 1rem).tex',
+}))
+
+/** 쿠폰 스타일 **/
 const CouponWrap = createBox((theme) => ({
     padding: '32px',
     backgroundColor: 'white',
@@ -111,13 +81,10 @@ const CouponWrap = createBox((theme) => ({
         { down: 'md', padding: '16px' },
         { down: 'sm', padding: '12px', gap: '12px' },
     ],
-    // alignItems: 'center',
 }))
 
-// ** Item 스타일
 const Coupon = createBox((theme) => ({
     width: '100%',
-    // border: '1px solid black',
     boxSizing: 'border-box',
     aspectRatio: '3 / 0.9',
     display: 'flex',
@@ -127,7 +94,6 @@ const Coupon = createBox((theme) => ({
 
 const CouponDiscount = styled(Box)(({ theme }) => ({
     width: '25%',
-    // flex: '0.35',
     backgroundColor: '#FF385C',
     position: 'relative',
     textAlign: 'center',
@@ -209,7 +175,7 @@ const CouponDDay = styled(Box)(({ theme }) => ({
     },
 }))
 
-// 탭 스타일
+/** 네비탭 스타일 **/
 const StyledTab = createBox((theme, { $active, $position }) => {
     const borderColor = '1px solid rgba(0,0,0,0.2)' // ✅ 기본 테두리 색상
     const transparentBorder = '1px solid rgba(0,0,0,0)' // ✅ 투명한 테두리
@@ -273,7 +239,8 @@ const MyCoupon = () => {
     const coupons = [
         { id: 1, discount: 3000, label: '추천인 할인 쿠폰', expiration: '2025-02-30', dDay: 16 },
         { id: 2, discount: 5000, label: '회원가입 이벤트 쿠폰', expiration: '2025-06-30', dDay: 120 },
-        { id: 3, discount: 1000, label: '이벤트 당첨 쿠폰', expiration: '2025-03-32', dDay: 47 },{ id: 4, discount: 1000, label: '이벤트 당첨 쿠폰', expiration: '2025-03-32', dDay: 47 },
+        { id: 3, discount: 1000, label: '이벤트 당첨 쿠폰', expiration: '2025-03-32', dDay: 47 },
+        { id: 4, discount: 1000, label: '이벤트 당첨 쿠폰', expiration: '2025-03-32', dDay: 47 },
     ]
     const handleShowMore = () => {
         setVisibleCount((prev) => prev + 3)
