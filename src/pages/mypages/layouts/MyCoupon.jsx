@@ -1,20 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { createText, createBox } from '../../../utils/muiSystem'
-import { Layout, StatusContainer, Title } from './'
+import { Layout, StatusContainer, SubTitle, Container } from './'
 import { styled } from '@mui/system'
 import { Box, Typography } from '@mui/material'
-
-/** 컨테이너 스타일 **/
-const Container = createBox((theme) => ({
-    width: ' 100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '160px',
-    breakpoint: [
-        { up: 'lg', gap: theme.spacing(3) },
-        { down: 'lg', gap: theme.spacing(1) },
-    ],
-}))
 
 const DetailContainer = createBox((theme) => ({
     width: '100%',
@@ -245,12 +233,22 @@ const MyCoupon = () => {
     const handleShowMore = () => {
         setVisibleCount((prev) => prev + 3)
     }
-    if (!coupons?.length) {
-        return <Typography>사용 가능한 쿠폰이 없습니다.</Typography>
-    }
+
+    const handleActiveTab = useCallback(
+        (key) => {
+            console.log(key)
+            if (activeTab !== key) {
+                setActiveTab((prev) => !prev)
+                setVisibleCount(3)
+            } else {
+            }
+        },
+        [activeTab],
+    )
+
     return (
         <Layout>
-            <Title>MY 쿠폰</Title>
+            <SubTitle>MY 쿠폰</SubTitle>
             <Container>
                 <StatusContainer>
                     <LabelWrap>
@@ -265,7 +263,7 @@ const MyCoupon = () => {
                                 key={key}
                                 $active={activeTab === key} // ✅ Boolean 값으로 비교 (문자열 X)
                                 $position={position}
-                                onClick={() => setActiveTab(key)}>
+                                onClick={() => handleActiveTab(key)}>
                                 {label}
                             </StyledTab>
                         ))}

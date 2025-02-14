@@ -7,7 +7,8 @@ import { MyCoupon, MyReview, MyProfile, MyTemplate } from './layouts'
 import { createBox, createText } from '../../utils/muiSystem'
 
 const Container = createBox((theme) => ({
-    backgroundColor: '#f5f5f5',
+    // backgroundColor: '#f5f5f5',
+    backgroundColor: '#f4f3f1',
     padding: '40px',
     border: 'none',
     minWidth: '375px',
@@ -16,25 +17,26 @@ const Container = createBox((theme) => ({
 
 const MyPageContainer = createBox((theme) => ({
     width: '100%',
-    maxWidth: '800px',
+    maxWidth: '1000px',
     margin: '0 auto',
-    padding: '32px',
+    padding: '40px',
     display: 'flex',
     flexDirection: 'column',
     gap: '40px',
     backgroundColor: '#ffffff',
     boxShadow: '0 0 0px 0.3px black',
     borderRadius: '8px',
-    breakpoint: [{ down: 'md' }, { down: 'sm', padding: '12px', gap: '12px' }],
+    breakpoint: [{ down: 'md', gap:'32px' }, { down: 'sm', padding: '12px', gap: '16px' }],
 }))
 
 // ** Text 스타일
 const Title = styled(Typography)(({ theme, variant = 'h1', children }) => ({
     ...theme.typography[variant],
-    color: 'rgba(0,0,0,0.4)',
+    color: 'rgba(0,0,0,1)',
     textShadow: '4px 2px 3px rgba(0,0,0,0.12)',
     position: 'relative',
     fontSize: 'clamp(1rem, 5vw, 2.5rem)',
+    width: 'fit-content',
     '&::after': {
         content: `"${children}"`,
         position: 'absolute',
@@ -43,7 +45,7 @@ const Title = styled(Typography)(({ theme, variant = 'h1', children }) => ({
         color: 'white',
         fontSize: 'clamp(1rem, 5vw, 2.5rem)',
         height: '50px',
-        background: 'linear-gradient(135deg, rgb(220,220,220), rgb(20,20,20))' /* 🔥 그라데이션 배경 */,
+        background: 'linear-gradient(270deg, rgba(60,60,60,1), rgba(20,20,20,0.1))' /* 🔥 그라데이션 배경 */,
         WebkitBackgroundClip: 'text' /* ✅ 텍스트에 배경 적용 */,
         WebkitTextFillColor: 'transparent' /* ✅ 글자 색상을 투명하게 */,
     },
@@ -60,6 +62,8 @@ const TabContainer = styled(Box)(({ theme }) => ({
     alignItems: 'center',
     position: 'relative',
     gap: '1rem',
+    // backgroundColor: '#E4E7EC',
+    background: 'linear-gradient(to right, rgba(228, 231, 236, 0) 0%, rgba(242, 241, 239, 1) 10%,rgba(242, 241, 239, 1) 90%,  rgba(228, 231, 236, 0) 100%)',
 
     '&::after': {
         position: 'absolute',
@@ -111,14 +115,13 @@ const TabContainer = styled(Box)(({ theme }) => ({
 }))
 
 // 마이페이지 탭 스타일
-const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selected' })(({ theme, $selected }) => ({
+const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selected' })(({ theme, $selected, children }) => ({
     boxSizing: 'border-box',
     width: '22%',
     position: 'relative',
     padding: '1rem 0px',
     cursor: 'pointer',
     userSelect: 'none',
-    color: $selected ? theme.palette.text.primary : theme.palette.text.disabled,
     fontSize: 'clamp(0.8rem, 2vw, 1rem)',
     fontWeight: $selected ? 600 : 400,
     textAlign: 'center',
@@ -126,7 +129,16 @@ const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selecte
     whiteSpace: 'nowrap',
     transition: 'background-color 0.4s ease',
     textDecoration: 'none',
-    backgroundColor: $selected ? '#f1f1f1' : '#ffffff',
+
+    // 컬러
+    color: $selected ? theme.palette.text.primary : theme.palette.text.disabled,
+    // 기본 회색컬러
+    // backgroundColor: $selected ? '#f1f1f1' : '#ffffff',
+    // backgroundColor: $selected ? '#F5F7FA' : 'transparent',
+    background: $selected ? 'linear-gradient(to right, rgba(242, 241, 239, 1) 0%,rgb(202,255,254) 15%,rgb(202,255,254) 85%, rgba(242, 241, 239, 1) 100%)' : 'transparent',
+    backgroundColor: $selected ? 'rgb(202, 255, 254)' : 'transparent',
+    transition: 'all 0.4s ease',
+
     '&::after': {
         content: '""',
         bordorRadius: '8px 0 0 8px',
@@ -136,24 +148,40 @@ const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selecte
         width: $selected ? '100%' : '0%',
         height: '3px',
         transition: 'all 0.4s ease',
-        backgroundColor: '#000',
+        // backgroundColor: '#000',
+        background: 'linear-gradient(to right, rgba(255,255,255, 0) 0%, rgba(150,150,150, 1) 30%, rgba(100,100,100,1) 50%,rgba(150,150,150,1) 70%,  rgba(255,255,255, 0) 100%)',
         transform: 'translateX(-50%)',
     },
     '&:hover': $selected
-        ? {} // ✅ 선택된 상태에서는 아무 스타일도 변경되지 않도록
+        ? {} // 선택된 상태에서는 아무 스타일도 변경하지 않음
         : {
               bordorRadius: '8px 0 0 8px',
               color: theme.palette.text.primary,
-              backgroundColor: '#f7f7f7',
+              background: 'linear-gradient(to right, rgba(228, 231, 236, 0) 0%, rgba(228, 237, 254, 1) 10%,rgba(228, 237, 254, 1) 90%, rgba(228, 231, 236, 0) 100%)',
               transition: 'all 0.3s ease',
+              opacity: 1, // ✅ hover 상태에서 opacity를 1로 유지
           },
-    [theme.breakpoints.down('sm')]: {
-        padding: '0.8rem 0px',
-        width: '25%',
-        '&::after': {
-            bordorRadius: '8px 0 0 8px',
-            height: '2px',
-        },
+
+    '&::before': $selected
+        ? {}
+        : {
+              content: `"${children}"`,
+              position: 'absolute',
+              top: '49%',
+              left: '50%',
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transform: 'translate(-50%, -50%)',
+              background: 'linear-gradient(to right, rgba(228, 231, 236, 0) 0%, rgba(245, 253, 255, 0.579) 10%,rgba(245, 253, 255, 0.579) 90%,  rgba(228, 231, 236, 0) 100%)', // ✅ 배경을 어둡게 하면서 부드러운 hover 효과
+              opacity: 0,
+              transition: 'opacity 0.3s ease',
+          },
+
+    '&:hover::before': {
+        opacity: 1, // ✅ hover 시 배경이 부드럽게 나타남
     },
 }))
 
@@ -184,7 +212,7 @@ const MyPage = () => {
 
                         return (
                             <StyledTab key={tab} $selected={isSelected} to={`/my/${tab}`}>
-                                {tab === 'template' ? '템플릿' : tab === 'coupon' ? '쿠폰' : tab === 'review' ? '리뷰' : '내정보'}
+                                {tab === 'template' ? '템플릿' : tab === 'coupon' ? '쿠폰' : tab === 'review' ? '리뷰 & 문의' : '내정보'}
                             </StyledTab>
                         )
                     })}
