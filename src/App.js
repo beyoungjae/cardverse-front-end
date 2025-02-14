@@ -3,6 +3,8 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { styled as muiStyled } from '@mui/material/styles'
 import { Box } from '@mui/material'
 import { createGlobalStyle } from 'styled-components'
+import { LocalizationProvider } from '@mui/x-date-pickers'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import Navbar from './components/shared/Navbar'
 import { Home, MyPage, TemplatePage } from './pages'
 import Footer from './components/shared/Footer'
@@ -65,7 +67,7 @@ const GlobalStyle = createGlobalStyle`
 
 function App() {
    return (
-      <>
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
          <GlobalStyle />
          <CssBaseline />
          <Navbar />
@@ -84,7 +86,7 @@ function App() {
             </Routes>
          </MainContent>
          <Footer />
-      </>
+      </LocalizationProvider>
    )
 }
 

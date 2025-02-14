@@ -50,13 +50,21 @@ const CharacterCount = styled(Typography)(({ theme, isNearLimit }) => ({
    marginTop: theme.spacing(0.5),
 }))
 
+const ErrorMessage = styled(motion.div)(({ theme }) => ({
+   color: theme.palette.error.main,
+   fontSize: '0.75rem',
+   marginTop: theme.spacing(0.5),
+}))
+
 const TitleSection = ({ control }) => {
    const maxLength = 50
    const warningThreshold = 40
 
    return (
-      <Box sx={{ mb: 4 }}>
-         <SectionTitle>초대장 제목</SectionTitle>
+      <Box component={motion.div} layout sx={{ mb: 4 }}>
+         <Typography variant="h6" gutterBottom>
+            제목
+         </Typography>
          <Controller
             name="title"
             control={control}
@@ -73,42 +81,41 @@ const TitleSection = ({ control }) => {
                },
             }}
             render={({ field, fieldState: { error } }) => (
-               <InputContainer initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                  <StyledTextField
+               <>
+                  <TextField
                      {...field}
                      fullWidth
                      variant="outlined"
-                     placeholder="특별한 날을 위한 멋진 제목을 입력해주세요"
+                     placeholder="초대장의 제목을 입력해주세요"
                      error={!!error}
-                     InputProps={{
-                        startAdornment: (
-                           <InputAdornment position="start">
-                              <TitleIcon color={error ? 'error' : 'action'} />
-                           </InputAdornment>
-                        ),
-                        sx: {
-                           fontSize: '1.1rem',
-                           '&::placeholder': {
-                              fontSize: '0.9rem',
+                     component={motion.div}
+                     whileTap={{ scale: 0.995 }}
+                     whileFocus={{ scale: 1.005 }}
+                     sx={{
+                        '& .MuiOutlinedInput-root': {
+                           transition: 'all 0.3s ease',
+                           '&:hover': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                           },
+                           '&.Mui-focused': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 6px 12px rgba(0,0,0,0.1)',
                            },
                         },
                      }}
                   />
                   <AnimatePresence mode="wait">
-                     {error ? (
-                        <HelperText error initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+                     {error && (
+                        <ErrorMessage initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
                            {error.message}
-                        </HelperText>
-                     ) : (
-                        <HelperText initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
-                           특별한 날을 위한 멋진 제목을 입력해주세요
-                        </HelperText>
+                        </ErrorMessage>
                      )}
                   </AnimatePresence>
                   <CharacterCount isNearLimit={field.value?.length >= warningThreshold}>
                      {field.value?.length || 0}/{maxLength}자
                   </CharacterCount>
-               </InputContainer>
+               </>
             )}
          />
       </Box>

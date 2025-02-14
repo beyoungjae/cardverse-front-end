@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import { Box, TextField, Typography, InputAdornment } from '@mui/material'
 import { Controller } from 'react-hook-form'
 import { styled } from '@mui/material/styles'
@@ -53,6 +53,7 @@ const CharacterCount = styled(Typography)(({ theme, isNearLimit }) => ({
    color: isNearLimit ? theme.palette.warning.main : theme.palette.text.secondary,
    textAlign: 'right',
    marginTop: theme.spacing(0.5),
+   transition: 'color 0.3s ease',
 }))
 
 const PlaceholderText = styled(Typography)(({ theme }) => ({
@@ -62,14 +63,28 @@ const PlaceholderText = styled(Typography)(({ theme }) => ({
    fontStyle: 'italic',
 }))
 
+const ErrorMessage = styled(motion.div)(({ theme }) => ({
+   color: theme.palette.error.main,
+   fontSize: '0.75rem',
+   marginTop: theme.spacing(0.5),
+}))
+
 const GreetingSection = ({ control }) => {
+   const textareaRef = useRef(null)
    const maxLength = 500
    const warningThreshold = 400
 
    const placeholderSuggestions = ['소중한 분들을 초대합니다.', '함께 나누고 싶은 특별한 순간입니다.', '여러분의 축하와 함께하고 싶습니다.']
 
+   useEffect(() => {
+      if (textareaRef.current) {
+         textareaRef.current.style.height = 'auto'
+         textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
+      }
+   }, [])
+
    return (
-      <Box sx={{ mb: 4 }}>
+      <Box component={motion.div} layout sx={{ mb: 4 }}>
          <SectionTitle>인사말</SectionTitle>
          <AnimatePresence mode="wait">
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
@@ -93,7 +108,7 @@ const GreetingSection = ({ control }) => {
                },
             }}
             render={({ field, fieldState: { error } }) => (
-               <InputContainer initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+               <>
                   <StyledTextField
                      {...field}
                      multiline
@@ -117,9 +132,9 @@ const GreetingSection = ({ control }) => {
                   />
                   <AnimatePresence mode="wait">
                      {error ? (
-                        <HelperText id="greeting-helper-text" error initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} role="alert">
+                        <ErrorMessage initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
                            {error.message}
-                        </HelperText>
+                        </ErrorMessage>
                      ) : (
                         <HelperText id="greeting-helper-text" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
                            정성스러운 인사말로 마음을 전해보세요
@@ -129,7 +144,7 @@ const GreetingSection = ({ control }) => {
                   <CharacterCount isNearLimit={field.value?.length >= warningThreshold} role="status" aria-live="polite">
                      {field.value?.length || 0}/{maxLength}자
                   </CharacterCount>
-               </InputContainer>
+               </>
             )}
          />
       </Box>

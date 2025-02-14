@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Box, TextField, Typography, InputAdornment, IconButton, Autocomplete, Collapse } from '@mui/material'
+import { Box, TextField, Typography, InputAdornment, IconButton, Autocomplete, Collapse, CircularProgress } from '@mui/material'
 import { Controller } from 'react-hook-form'
 import { styled } from '@mui/material/styles'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -7,6 +7,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn'
 import DirectionsIcon from '@mui/icons-material/Directions'
 import SearchIcon from '@mui/icons-material/Search'
 import PlaceIcon from '@mui/icons-material/Place'
+import { debounce } from 'lodash'
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
    fontSize: '1.1rem',
@@ -54,97 +55,108 @@ const InputContainer = styled(motion.div)(({ theme }) => ({
    },
 }))
 
-// 가상의 장소 데이터 (실제로는 Google Places API 등을 사용)
-const mockPlaces = [
-   { id: 1, name: '그랜드 하얏트 서울', address: '서울특별시 용산구 소월로 322' },
-   { id: 2, name: '롯데호텔 서울', address: '서울특별시 중구 을지로 30' },
-   { id: 3, name: '반얀트리 클럽 앤 스파 서울', address: '서울특별시 중구 장충동2가 산 5-5' },
-   { id: 4, name: '포시즌스 호텔 서울', address: '서울특별시 종로구 새문안로 97' },
-   { id: 5, name: '웨스틴 조선 서울', address: '서울특별시 중구 소공로 106' },
-]
+const ErrorMessage = styled(motion.div)(({ theme }) => ({
+   color: theme.palette.error.main,
+   fontSize: '0.75rem',
+   marginTop: theme.spacing(0.5),
+}))
+
+// 가상의 장소 검색 API 모킹
+const mockPlacesAPI = async (query) => {
+   await new Promise((resolve) => setTimeout(resolve, 500))
+   const mockPlaces = [
+      { id: 1, name: '그랜드 하얏트 서울', address: '서울특별시 용산구 소월로 322' },
+      { id: 2, name: '롯데호텔 서울', address: '서울특별시 중구 을지로 30' },
+      { id: 3, name: '웨스틴 조선 서울', address: '서울특별시 중구 소공로 106' },
+      { id: 4, name: '반얀트리 클럽 앤 스파 서울', address: '서울특별시 중구 장충동2가 산 5-5' },
+      { id: 5, name: '파크 하얏트 서울', address: '서울특별시 강남구 테헤란로 606' },
+   ]
+   return mockPlaces.filter((place) => place.name.toLowerCase().includes(query.toLowerCase()) || place.address.toLowerCase().includes(query.toLowerCase()))
+}
 
 const LocationSection = ({ control }) => {
-   const [searchResults, setSearchResults] = useState([])
-   const [isSearching, setIsSearching] = useState(false)
+   const [options, setOptions] = useState([])
+   const [loading, setLoading] = useState(false)
+   const [inputValue, setInputValue] = useState('')
 
-   // 장소 검색 시뮬레이션
-   const handleSearch = (query) => {
-      setIsSearching(true)
-      // 실제 구현에서는 API 호출
-      setTimeout(() => {
-         const results = mockPlaces.filter((place) => place.name.toLowerCase().includes(query.toLowerCase()) || place.address.toLowerCase().includes(query.toLowerCase()))
-         setSearchResults(results)
-         setIsSearching(false)
-      }, 500)
-   }
+   const searchPlaces = debounce(async (query) => {
+      if (!query) {
+         setOptions([])
+         return
+      }
+      setLoading(true)
+      try {
+         const results = await mockPlacesAPI(query)
+         setOptions(results)
+      } catch (error) {
+         console.error('장소 검색 중 오류 발생:', error)
+         setOptions([])
+      } finally {
+         setLoading(false)
+      }
+   }, 300)
+
+   useEffect(() => {
+      searchPlaces(inputValue)
+   }, [inputValue])
 
    return (
-      <Box sx={{ mb: 4 }}>
+      <Box component={motion.div} layout sx={{ mb: 4 }}>
          <SectionTitle>장소</SectionTitle>
 
          <Controller
             name="location"
             control={control}
-            defaultValue=""
-            rules={{
-               required: '장소를 입력해주세요',
-               minLength: {
-                  value: 5,
-                  message: '최소 5자 이상 입력해주세요',
-               },
-            }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
                <InputContainer initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                   <Autocomplete
-                     freeSolo
-                     options={searchResults}
-                     getOptionLabel={(option) => (typeof option === 'string' ? option : option.name)}
-                     loading={isSearching}
-                     onInputChange={(_, newValue) => {
-                        handleSearch(newValue)
+                     value={value}
+                     onChange={(event, newValue) => {
+                        onChange(newValue ? `${newValue.name} (${newValue.address})` : '')
                      }}
-                     onChange={(_, newValue) => {
-                        if (newValue && typeof newValue !== 'string') {
-                           onChange(newValue.name)
-                        } else {
-                           onChange(newValue)
-                        }
+                     inputValue={inputValue}
+                     onInputChange={(event, newInputValue) => {
+                        setInputValue(newInputValue)
                      }}
+                     options={options}
+                     getOptionLabel={(option) => (typeof option === 'string' ? option : `${option.name} (${option.address})`)}
+                     loading={loading}
                      renderInput={(params) => (
                         <StyledTextField
                            {...params}
+                           fullWidth
+                           placeholder="장소를 검색해주세요"
                            error={!!error}
-                           placeholder="행사 장소를 입력해주세요"
                            InputProps={{
                               ...params.InputProps,
-                              startAdornment: (
-                                 <InputAdornment position="start">
-                                    <PlaceIcon color={error ? 'error' : 'action'} />
-                                 </InputAdornment>
+                              endAdornment: (
+                                 <>
+                                    {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                                    {params.InputProps.endAdornment}
+                                 </>
                               ),
+                           }}
+                           sx={{
+                              '& .MuiOutlinedInput-root': {
+                                 transition: 'all 0.3s ease',
+                                 '&:hover': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                                 },
+                                 '&.Mui-focused': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 6px 12px rgba(0,0,0,0.1)',
+                                 },
+                              },
                            }}
                         />
                      )}
-                     renderOption={(props, option) => (
-                        <Box component="li" {...props}>
-                           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                              <Typography variant="body1">{option.name}</Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                 {option.address}
-                              </Typography>
-                           </Box>
-                        </Box>
-                     )}
                   />
                   <AnimatePresence mode="wait">
-                     {error ? (
-                        <HelperText error initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} role="alert">
+                     {error && (
+                        <ErrorMessage initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
                            {error.message}
-                        </HelperText>
-                     ) : (
-                        <HelperText initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
-                           정확한 장소명을 입력해주세요
-                        </HelperText>
+                        </ErrorMessage>
                      )}
                   </AnimatePresence>
                </InputContainer>
