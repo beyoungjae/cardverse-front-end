@@ -7,8 +7,8 @@ import { MyCoupon, MyReview, MyProfile, MyTemplate } from './layouts'
 import { createBox, createText } from '../../utils/muiSystem'
 
 const Container = createBox((theme) => ({
-    // backgroundColor: '#f5f5f5',
-    backgroundColor: '#f4f3f1',
+    backgroundColor: '#f5f5f5',
+    // backgroundColor: '#f4f3f1',
     padding: '40px',
     border: 'none',
     minWidth: '375px',
@@ -26,7 +26,10 @@ const MyPageContainer = createBox((theme) => ({
     backgroundColor: '#ffffff',
     boxShadow: '0 0 0px 0.3px black',
     borderRadius: '8px',
-    breakpoint: [{ down: 'md', gap:'32px' }, { down: 'sm', padding: '12px', gap: '16px' }],
+    breakpoint: [
+        { down: 'md', gap: '32px' },
+        { down: 'sm', padding: '12px', gap: '16px' },
+    ],
 }))
 
 // ** Text 스타일
@@ -55,7 +58,7 @@ const Title = styled(Typography)(({ theme, variant = 'h1', children }) => ({
 // 마이페이지 탭 컨테이너
 const TabContainer = styled(Box)(({ theme }) => ({
     width: '100%',
-    maxWidth: '800px',
+    maxWidth: '10   00px',
     margin: '0 auto',
     display: 'flex',
     justifyContent: 'center',
@@ -131,11 +134,11 @@ const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selecte
     textDecoration: 'none',
 
     // 컬러
-    color: $selected ? theme.palette.text.primary : theme.palette.text.disabled,
+    color: $selected ? '#ffffff' : theme.palette.text.disabled,
     // 기본 회색컬러
     // backgroundColor: $selected ? '#f1f1f1' : '#ffffff',
     // backgroundColor: $selected ? '#F5F7FA' : 'transparent',
-    background: $selected ? 'linear-gradient(to right, rgba(242, 241, 239, 1) 0%,rgb(202,255,254) 15%,rgb(202,255,254) 85%, rgba(242, 241, 239, 1) 100%)' : 'transparent',
+    background: $selected ? 'linear-gradient(to right, rgba(242, 241, 239, 1) 0%,rgb(100,100,100) 1%,rgb(100,100,100) 99%, rgba(242, 241, 239, 1) 100%)' : 'transparent',
     backgroundColor: $selected ? 'rgb(202, 255, 254)' : 'transparent',
     transition: 'all 0.4s ease',
 
@@ -147,9 +150,8 @@ const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selecte
         left: '50%',
         width: $selected ? '100%' : '0%',
         height: '3px',
-        transition: 'all 0.4s ease',
-        // backgroundColor: '#000',
-        background: 'linear-gradient(to right, rgba(255,255,255, 0) 0%, rgba(150,150,150, 1) 30%, rgba(100,100,100,1) 50%,rgba(150,150,150,1) 70%,  rgba(255,255,255, 0) 100%)',
+        transition: 'all 0.3s ease-in-out',
+        background: 'linear-gradient(to right, rgba(255,255,255, 0) 0%, rgba(210,210,210, 1) 30%, rgba(240,240,240,1) 50%,rgba(210,210,210,1) 70%,  rgba(255,255,255, 0) 100%)',
         transform: 'translateX(-50%)',
     },
     '&:hover': $selected
@@ -157,8 +159,8 @@ const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selecte
         : {
               bordorRadius: '8px 0 0 8px',
               color: theme.palette.text.primary,
-              background: 'linear-gradient(to right, rgba(228, 231, 236, 0) 0%, rgba(228, 237, 254, 1) 10%,rgba(228, 237, 254, 1) 90%, rgba(228, 231, 236, 0) 100%)',
-              transition: 'all 0.3s ease',
+              background: 'linear-gradient(to right, rgba(242, 241, 239, 0) 0%, rgba(170,170,170, 1) 1%,rgba(170,170,170, 1) 99%, rgba(242, 241, 239, 0) 100%)',
+              transition: 'all 0.2s ease',
               opacity: 1, // ✅ hover 상태에서 opacity를 1로 유지
           },
 
@@ -175,9 +177,9 @@ const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selecte
               alignItems: 'center',
               justifyContent: 'center',
               transform: 'translate(-50%, -50%)',
-              background: 'linear-gradient(to right, rgba(228, 231, 236, 0) 0%, rgba(245, 253, 255, 0.579) 10%,rgba(245, 253, 255, 0.579) 90%,  rgba(228, 231, 236, 0) 100%)', // ✅ 배경을 어둡게 하면서 부드러운 hover 효과
+              //   background: 'linear-gradient(to right, rgba(242, 241, 239, 0) 0%, rgba(170,170,170, 1) 10%,rgba(170,170,170, 1) 90%, rgba(242, 241, 239, 0) 100%)', // ✅ 배경을 어둡게 하면서 부드러운 hover 효과
               opacity: 0,
-              transition: 'opacity 0.3s ease',
+              transition: 'opacity 0.2s ease',
           },
 
     '&:hover::before': {
