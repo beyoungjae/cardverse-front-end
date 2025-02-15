@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { createText, createBox } from '../../../utils/muiSystem'
 import { Layout, StatusContainer, SubTitle, Container } from './'
 import { styled } from '@mui/system'
@@ -45,6 +45,7 @@ const TabContainer = createBox((theme) => ({
 const StyledTab = createBox((theme, { $active, $position }) => {
     const borderColor = '1px solid rgba(0,0,0,0.2)' // ✅ 기본 테두리 색상
     const transparentBorder = '1px solid rgba(0,0,0,0)' // ✅ 투명한 테두리
+    // rtype
     return {
         // ...commonBodyText,
         fontSize: 'clamp(0.6rem, 1.8vw, 1rem)',
@@ -122,7 +123,7 @@ const ListContainer = styled(Box)(({ theme }) => ({
     [theme.bps.sm]: { padding: '8px' },
 }))
 
-const TemplateWrap = styled(Box)(({ theme }) => ({
+const ListWrap = styled(Box)(({ theme }) => ({
     padding: '32px',
     backgroundColor: 'white',
     display: 'grid',
@@ -138,7 +139,7 @@ const TemplateWrap = styled(Box)(({ theme }) => ({
     },
 }))
 
-const Template = styled(Box)(({ theme }) => ({
+const ListItem = styled(Box)(({ theme }) => ({
     width: '100%',
     boxSizing: 'border-box',
     aspectRatio: '3 / 4.5',
@@ -233,30 +234,41 @@ const CouponDDay = styled(Box)(({ theme }) => ({
 
 const MyTemplate = () => {
     const [activeTab, setActiveTab] = useState(true)
-    const [visibleCount, setVisibleCount] = useState(4)
+    const [visibleCount, setVisibleCount] = useState(10)
+    const [type, settype] = useState('review')
 
     const tabs = [
-        { key: true, label: '리뷰', position: 'left' },
-        { key: false, label: '문의', position: 'right' },
+        { key: true, label: '리뷰', type: 'review', position: 'left' },
+        { key: false, label: '문의', type: 'qna', position: 'right' },
     ]
 
-    const templates = [
-        { id: 1, image: '이미지', label: '초대장', status: 'active', isPaid: true },
-        { id: 2, image: '이미지', label: '초대장', status: 'active', isPaid: true },
-        { id: 3, image: '이미지', label: '초대장', status: 'draft', isPaid: false },
-        { id: 4, image: '이미지', label: '초대장', status: 'active', isPaid: true },
-        { id: 5, image: '이미지', label: '초대장', status: 'active', isPaid: false },
-        { id: 6, image: '이미지', label: '초대장', status: 'active', isPaid: false },
-        { id: 7, image: '이미지', label: '초대장', status: 'active', isPaid: true },
+    const posts = [
+        { id: 1, type: 'review', title: '초대장', status: 'active', isPaid: true },
+        { id: 2, type: 'review', title: '초대장', status: 'active', isPaid: true },
+        { id: 3, type: 'qna', title: '초대장', status: 'draft', isPaid: false },
+        { id: 4, type: 'qna', title: '초대장', status: 'active', isPaid: true },
+        { id: 5, type: 'qna', title: '초대장', status: 'active', isPaid: false },
+        { id: 6, type: 'review', title: '초대장', status: 'active', isPaid: false },
+        { id: 7, type: 'review', title: '초대장', status: 'active', isPaid: true },
     ]
 
     const handleShowMore = () => {
-        setVisibleCount((prev) => prev + 2)
+        setVisibleCount((prev) => prev + 10)
     }
-    const handleToggleTab = () => {
-        setActiveTab((prev) => !prev)
-        setVisibleCount((prev) => (prev = 4))
-    }
+
+    // 필터링된 포스트 메모이제이션
+    const filteredPosts = useMemo(() => posts.filter((post) => post.type === activeTab), [posts, activeTab])
+
+    const handleActiveTab = useCallback(
+        (key) => {
+            if (activeTab !== key) {
+                setActiveTab((prev) => !prev)
+                setVisibleCount(10)
+            } else {
+            }
+        },
+        [activeTab],
+    )
     return (
         <Layout>
             <Container>
@@ -271,7 +283,6 @@ const MyTemplate = () => {
                         <LabelValue></LabelValue>
                     </LabelWrap>
                 </StatusContainer>
-                {/* {tabs.map()} */}
                 <DetailContainer>
                     <TabContainer>
                         {tabs.map(({ key, label, position }) => (
@@ -279,20 +290,22 @@ const MyTemplate = () => {
                                 key={key}
                                 $active={activeTab === key} // ✅ Boolean 값으로 비교 (문자열 X)
                                 $position={position}
-                                onClick={handleToggleTab}>
+                                onClick={() => handleActiveTab(key)}>
                                 {label}
                             </StyledTab>
                         ))}
                     </TabContainer>
                     <ListContainer>
-                        <TemplateWrap>
-                            {templates.slice(0, visibleCount).map(({ id, label, image, status, isPaid }) => (
-                                <React.Fragment key={id}>
-                                    <Template></Template>
-                                </React.Fragment>
+                        <ListWrap>
+                            {filteredPosts.slice(0, visibleCount).map(({ id, type, status, title }) => (
+                                <ListItem key={id} className={type}>
+                                    {/* 리스트 아이템 내용 */}
+                                    11
+                                    1
+                                </ListItem>
                             ))}
-                        </TemplateWrap>
-                        {visibleCount < templates.length && <MoreButton onClick={handleShowMore}>남은 수량 ({templates.length - visibleCount}개)</MoreButton>}
+                        </ListWrap>
+                        {visibleCount < posts.length && <MoreButton onClick={handleShowMore}>남은 수량 ({posts.length - visibleCount}개)</MoreButton>}
                     </ListContainer>
                 </DetailContainer>
             </Container>
