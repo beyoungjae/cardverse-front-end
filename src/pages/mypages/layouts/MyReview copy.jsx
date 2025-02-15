@@ -92,6 +92,22 @@ const StyledTab = createBox((theme, { $active, $position }) => {
     }
 })
 
+const ListContainers = createBox((theme) => ({
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    padding: '16px',
+    backgroundColor: theme.palette.background.grey,
+    borderLeft: '1px solid rgba(0,0,0,0.2)',
+    borderRight: '1px solid rgba(0,0,0,0.2)',
+    borderBottom: '1px solid rgba(0,0,0,0.2)',
+
+    borderRadius: '0 0 8px 8px',
+
+    breakpoint: [{ down: 'sm', padding: '8px' }],
+}))
+
 const ListContainer = styled(Box)(({ theme }) => ({
     width: '100%',
     display: 'flex',
@@ -108,11 +124,11 @@ const ListContainer = styled(Box)(({ theme }) => ({
 }))
 
 const ListWrap = styled(Box)(({ theme }) => ({
-    padding: '0px 4px',
+    padding: '32px',
     backgroundColor: 'white',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '32px',
     [theme.bps.md]: {
         padding: '16px',
     },
@@ -126,19 +142,99 @@ const ListWrap = styled(Box)(({ theme }) => ({
 const ListItem = styled(Box)(({ theme }) => ({
     width: '100%',
     boxSizing: 'border-box',
-    aspectRatio: '3 / 0.3',
-    // backgroundColor: 'rgb(250,249,247)',
+    aspectRatio: '3 / 4.5',
+    backgroundColor: 'rgb(250,249,247)',
     display: 'flex',
-    // borderRadius: '8px',
-    borderBottom: `1px solid ${theme.palette.divider}`,
-    // border: '0px 0px 1px 0px',
-    // borderBottom: theme.palette.divider,
-    // boxShadow: '2px 3px 2px 1px rgba(0,0,0,0.2)',
+    borderRadius: '8px',
+    boxShadow: '2px 3px 2px 1px rgba(0,0,0,0.2)',
+}))
+
+const CouponDiscount = styled(Box)(({ theme }) => ({
+    width: '25%',
+    backgroundColor: '#FF385C',
+    position: 'relative',
+    textAlign: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    '&::after': {
+        content: '""',
+        position: 'absolute',
+        left: -8,
+        top: 0,
+        bottom: 0,
+        width: 16,
+        background: `
+            linear-gradient(
+                -45deg, 
+                transparent 33.33%, 
+                #FF385C 33.33%, 
+                #FF385C 66.66%, 
+                transparent 66.66%
+            ),
+            linear-gradient(
+                45deg, 
+                transparent 33.33%, 
+                #FF385C 33.33%, 
+                #FF385C 66.66%, 
+                transparent 66.66%
+            )
+        `,
+        backgroundSize: '24px 8px',
+        backgroundPosition: '0 0, 0 16px',
+        backgroundRepeat: 'repeat-y',
+    },
+    '& .coupon-discount': {
+        fontSize: 'clamp(0.7rem, 3vw, 2.3rem)',
+        // fontSize: 'clamp(0.7rem, 2vw, 5rem)',
+        fontWeight: 'bold',
+        letterSpacing: '0.07rem',
+        textShadow: '1px 1px 2px rgba(0, 0, 0, 1)',
+        [theme.bps.xxs]: {
+            letterSpacing: '0.05rem',
+            textShadow: '0.5px 0.5px 1px rgba(0, 0, 0, 1)',
+        },
+    },
+}))
+
+const CouponInfo = styled(Box)(({ theme }) => ({
+    width: '50%',
+    maxWidth: '400px', // ✅ 특정 크기 이상으로 커지지 않도록 제한
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 'clamp(4px, 1vw, 8px)', // ✅ 갭도 자동 조정
+    // padding: 'clamp(10px, 2vw, 24px)', // ✅ 패딩도 가변 조정
+    padding: 'calc(4px + 1vw)', // ✅ padding도 동적 조절
+    backgroundColor: 'white',
+    position: 'relative',
+    borderRadius: '0 8px 8px 0',
+    '& .coupon-label': {
+        fontSize: 'clamp(0.5rem, 2.5vw, 1.6rem)', // ✅ 자동 조절
+    },
+}))
+
+const CouponDDay = styled(Box)(({ theme }) => ({
+    width: '25%',
+    backgroundColor: 'yellow',
+    display: 'flex',
+    borderRadius: '0 8px 8px 0',
+    flexDirection: 'column',
+    gap: 'calc(0.5rem + 0.5vw)', // ✅ 글씨 크기에 비례하여 자동 조정
+    justifyContent: 'space-between',
+    padding: 'calc(4px + 1vw)', // ✅ padding도 동적 조절
+    alignItems: 'flex-end',
+    '& .coupon-expiration': {
+        fontSize: 'clamp(0.38rem, 1.5vw, 1.0rem)',
+    },
+    '& .coupon-d-day': {
+        fontSize: 'clamp(0.7rem, 3vw, 1.8rem)',
+        fontWeight: 'bold',
+    },
 }))
 
 const MyTemplate = () => {
-    const [activeTab, setActiveTab] = useState(true)
-    const [visibleCount, setVisibleCount] = useState(4)
+    const [activeTab, setActiveTab] = useState('review')
+    const [visibleCount, setVisibleCount] = useState(10)
     const [type, setType] = useState('review')
 
     const tabs = [
@@ -154,12 +250,6 @@ const MyTemplate = () => {
         { id: 5, type: 'qna', title: '문의 3', status: 'active', isPaid: false },
         { id: 6, type: 'review', title: '리뷰 3', status: 'active', isPaid: false },
         { id: 7, type: 'review', title: '리뷰 4', status: 'active', isPaid: true },
-        { id: 8, type: 'qna', title: '문의 4', status: 'active', isPaid: false },
-        { id: 9, type: 'qna', title: '문의 5', status: 'active', isPaid: false },
-        { id: 10, type: 'review', title: '리뷰 5', status: 'active', isPaid: true },
-        { id: 11, type: 'review', title: '리뷰 6', status: 'active', isPaid: true },
-        { id: 12, type: 'review', title: '리뷰 7', status: 'active', isPaid: true },
-        { id: 13, type: 'review', title: '리뷰 8', status: 'active', isPaid: true },
     ]
 
     const handleShowMore = () => {
@@ -167,57 +257,69 @@ const MyTemplate = () => {
     }
 
     // 필터링된 포스트 메모이제이션
-    // const filteredPosts = useMemo(() => posts.filter((post) => post.type === activeTab), [posts, activeTab])
-    const filteredPosts = useMemo(() => posts.filter((post) => post.type === (activeTab ? 'review' : 'qna')), [posts, activeTab])
+    const filteredPosts = useMemo(() => posts.filter((post) => post.type === activeTab), [posts, activeTab])
 
-    const reviewCount = useMemo(() => posts.map((post) => post.type === 'review').length, [posts])
+    // const handleActiveTab = useCallback(
+    //     (key) => {
+    //         if (activeTab !== key) {
+    //             setActiveTab((prev) => !prev)
+    //             setVisibleCount(10)
+    //         } else {
+    //         }
+    //     },
+    //     [activeTab],
+    // )
 
     const handleActiveTab = useCallback(
-        (key, type) => {
-            if (activeTab !== key) {
-                setActiveTab((prev) => !prev)
-                setVisibleCount(4)
-                setType(type)
-            } else {
+        (key) => {
+            const selectedTab = tabs.find((tab) => tab.key === key) // ✅ key(Boolean)으로 탭 찾기
+            if (selectedTab && activeTab !== selectedTab.type) {
+                setActiveTab(selectedTab.type) // ✅ 'review' 또는 'qna' 저장
+                setVisibleCount(10)
             }
         },
         [activeTab],
     )
+
     return (
         <Layout>
             <Container>
                 <SubTitle>MY 리뷰 & 문의</SubTitle>
+
                 <StatusContainer>
                     <LabelWrap>
                         <Label>작성 리뷰 : </Label>
                         <LabelValue></LabelValue>
-                    </LabelWrap>{' '}
+                    </LabelWrap>
                     <LabelWrap>
                         <Label>문의 내역 : </Label>
                         <LabelValue></LabelValue>
                     </LabelWrap>
                 </StatusContainer>
+
                 <DetailContainer>
                     <TabContainer>
-                        {tabs.map(({ key, label, position, type }) => (
+                        {tabs.map(({ key, label, position }) => (
                             <StyledTab
                                 key={key}
-                                $active={activeTab === key} // ✅ Boolean 값으로 비교 (문자열 X)
+                                $active={activeTab === tabs.find((tab) => tab.key === key)?.type} // ✅ String 비교
                                 $position={position}
-                                onClick={() => handleActiveTab(key, type)}>
+                                onClick={() => handleActiveTab(key)}>
                                 {label}
                             </StyledTab>
                         ))}
                     </TabContainer>
+
                     <ListContainer>
                         <ListWrap>
                             {filteredPosts.slice(0, visibleCount).map(({ id, type, status, title }) => (
                                 <ListItem key={id} className={type}>
+                                    {/* 리스트 아이템 내용 */}
                                     {title}
                                 </ListItem>
                             ))}
                         </ListWrap>
-                        {visibleCount < posts.length && <MoreButton onClick={handleShowMore}>더보기 ({reviewCount}개)</MoreButton>}
+                        {visibleCount < posts.length && <MoreButton onClick={handleShowMore}>더보기 ({posts.length - visibleCount}개)</MoreButton>}
                     </ListContainer>
                 </DetailContainer>
             </Container>
