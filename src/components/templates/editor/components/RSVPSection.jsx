@@ -1,241 +1,347 @@
-import React, { useState } from 'react'
-import { Box, TextField, Typography, FormControlLabel, Switch, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Chip, Collapse, Button, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel } from '@mui/material'
-import { Controller } from 'react-hook-form'
-import { styled } from '@mui/material/styles'
-import DeleteIcon from '@mui/icons-material/Delete'
-import EditIcon from '@mui/icons-material/Edit'
+import React, { useState, useCallback } from 'react'
+import { Box, Chip, Typography, IconButton, Tooltip, FormControlLabel, Checkbox, FormGroup, TextField } from '@mui/material'
+import { useFormContext, Controller } from 'react-hook-form'
 import { motion, AnimatePresence } from 'framer-motion'
-import dayjs from 'dayjs'
+import HowToRegIcon from '@mui/icons-material/HowToReg'
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import FavoriteIcon from '@mui/icons-material/Favorite'
+import CelebrationIcon from '@mui/icons-material/Celebration'
+import CakeIcon from '@mui/icons-material/Cake'
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
+import MessageIcon from '@mui/icons-material/Message'
+import LocalDiningIcon from '@mui/icons-material/LocalDining'
+import GroupIcon from '@mui/icons-material/Group'
+import PhoneIcon from '@mui/icons-material/Phone'
+import { SectionContainer, SectionTitle, TitleText, StyledTextField, HelpText, IconButtonWrapper, fadeInUp, easeTransition, COLORS } from '../styles/commonStyles'
 
-const SectionTitle = styled(Typography)(({ theme }) => ({
-   fontSize: '1.1rem',
-   fontWeight: 500,
-   marginBottom: theme.spacing(2),
-   color: theme.palette.text.primary,
-}))
-
-const StyledTextField = styled(TextField)(({ theme }) => ({
-   '& .MuiOutlinedInput-root': {
-      '&:hover fieldset': {
-         borderColor: theme.palette.primary.main,
-      },
-      '&.Mui-focused fieldset': {
-         borderColor: theme.palette.primary.main,
-      },
+const invitationTypes = [
+   {
+      id: 'wedding',
+      label: '청첩장',
+      icon: <FavoriteIcon />,
+      title: '참석 여부를 알려주세요',
+      description: '소중한 분들의 참석 여부를 확인하고 싶습니다',
+      options: [
+         { id: 'attendees', label: '참석 인원', icon: <GroupIcon />, required: true },
+         { id: 'contact', label: '연락처', icon: <PhoneIcon />, required: true },
+         { id: 'meal', label: '식사 선호도', icon: <LocalDiningIcon />, required: false },
+         { id: 'message', label: '축하 메시지', icon: <MessageIcon />, required: false },
+      ],
    },
-}))
-
-const RSVPList = styled(List)(({ theme }) => ({
-   marginTop: theme.spacing(2),
-   backgroundColor: theme.palette.background.paper,
-   borderRadius: theme.shape.borderRadius,
-   border: `1px solid ${theme.palette.divider}`,
-}))
-
-const RSVPItem = styled(motion.div)(({ theme }) => ({
-   borderBottom: `1px solid ${theme.palette.divider}`,
-   '&:last-child': {
-      borderBottom: 'none',
+   {
+      id: 'newYear',
+      label: '연하장',
+      icon: <CelebrationIcon />,
+      title: '새해 인사를 나눠요',
+      description: '새해 덕담을 서로 나누어요',
+      options: [
+         { id: 'contact', label: '연락처', icon: <PhoneIcon />, required: true },
+         { id: 'message', label: '새해 덕담', icon: <MessageIcon />, required: false },
+      ],
    },
-}))
-
-const StatusChip = styled(Chip)(({ theme, status }) => ({
-   ...(status === 'attending' && {
-      backgroundColor: theme.palette.success.light,
-      color: theme.palette.success.dark,
-   }),
-   ...(status === 'not_attending' && {
-      backgroundColor: theme.palette.error.light,
-      color: theme.palette.error.dark,
-   }),
-   ...(status === 'pending' && {
-      backgroundColor: theme.palette.warning.light,
-      color: theme.palette.warning.dark,
-   }),
-}))
-
-const PreviewBox = styled(motion.div)(({ theme }) => ({
-   marginTop: theme.spacing(2),
-   padding: theme.spacing(2),
-   backgroundColor: theme.palette.grey[50],
-   borderRadius: theme.shape.borderRadius,
-   border: `1px solid ${theme.palette.divider}`,
-}))
-
-// 가상의 RSVP 데이터
-const mockRSVPData = [
-   { id: 1, name: '김철수', status: 'attending', message: '축하드립니다! 꼭 참석하겠습니다.' },
-   { id: 2, name: '이영희', status: 'not_attending', message: '죄송하지만 참석이 어려울 것 같습니다.' },
-   { id: 3, name: '박지성', status: 'pending', message: '일정을 조율해보고 다시 연락드리겠습니다.' },
+   {
+      id: 'birthday',
+      label: '고희연',
+      icon: <CakeIcon />,
+      title: '축하의 마음을 전해주세요',
+      description: '귀한 발걸음을 해주실 분들을 확인하고 싶습니다',
+      options: [
+         { id: 'attendees', label: '참석 인원', icon: <GroupIcon />, required: true },
+         { id: 'contact', label: '연락처', icon: <PhoneIcon />, required: true },
+         { id: 'meal', label: '식사 선호도', icon: <LocalDiningIcon />, required: false },
+         { id: 'message', label: '축하 메시지', icon: <MessageIcon />, required: false },
+      ],
+   },
+   {
+      id: 'invitation',
+      label: '초빙장',
+      icon: <EmojiEventsIcon />,
+      title: '참석 여부를 알려주세요',
+      description: '귀한 시간 내어주실 분들을 확인하고 싶습니다',
+      options: [
+         { id: 'attendees', label: '참석 인원', icon: <GroupIcon />, required: true },
+         { id: 'contact', label: '연락처', icon: <PhoneIcon />, required: true },
+         { id: 'message', label: '메시지', icon: <MessageIcon />, required: false },
+      ],
+   },
 ]
 
-const RSVPSection = ({ control }) => {
-   const [editDialog, setEditDialog] = useState({ open: false, data: null })
-   const [rsvpList, setRsvpList] = useState(mockRSVPData)
+const RSVPSection = () => {
+   const [showHelp, setShowHelp] = useState(false)
+   const [selectedType, setSelectedType] = useState('wedding')
+   const { control, setValue, watch } = useFormContext()
 
-   const handleStatusChange = (id, newStatus) => {
-      setRsvpList((prev) => prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item)))
-   }
+   const currentType = invitationTypes.find((type) => type.id === selectedType)
+   const rsvpTitle = watch('rsvpTitle')
+   const rsvpDescription = watch('rsvpDescription')
+   const rsvpOptions = watch('rsvpOptions') || []
+   const rsvpButtonText = watch('rsvpButtonText')
+   const useKakaoTalk = watch('useKakaoTalk')
 
-   const handleDelete = (id) => {
-      setRsvpList((prev) => prev.filter((item) => item.id !== id))
-   }
+   const handleHelpToggle = useCallback(() => {
+      setShowHelp((prev) => !prev)
+   }, [])
 
-   const handleEdit = (item) => {
-      setEditDialog({ open: true, data: item })
-   }
+   const handleReset = useCallback(() => {
+      setValue('rsvpTitle', '', { shouldValidate: true })
+      setValue('rsvpDescription', '', { shouldValidate: true })
+      setValue('rsvpOptions', [], { shouldValidate: true })
+      setValue('rsvpButtonText', '', { shouldValidate: true })
+      setValue('useKakaoTalk', false, { shouldValidate: true })
+   }, [setValue])
 
-   const handleEditSave = (editedData) => {
-      setRsvpList((prev) => prev.map((item) => (item.id === editedData.id ? editedData : item)))
-      setEditDialog({ open: false, data: null })
-   }
+   const handleTypeSelect = useCallback(
+      (type) => {
+         setSelectedType(type)
+         const selectedType = invitationTypes.find((t) => t.id === type)
+         setValue('rsvpTitle', selectedType.title, { shouldValidate: true })
+         setValue('rsvpDescription', selectedType.description, { shouldValidate: true })
+         setValue(
+            'rsvpOptions',
+            selectedType.options.filter((option) => option.required).map((option) => option.id),
+            { shouldValidate: true }
+         )
+         setValue('rsvpButtonText', '참석 여부 알리기', { shouldValidate: true })
+      },
+      [setValue]
+   )
 
-   const getStatusLabel = (status) => {
-      switch (status) {
-         case 'attending':
-            return '참석'
-         case 'not_attending':
-            return '불참'
-         case 'pending':
-            return '미정'
-         default:
-            return status
-      }
-   }
+   const handleOptionToggle = useCallback(
+      (optionId) => {
+         const currentOptions = watch('rsvpOptions') || []
+         const option = currentType.options.find((opt) => opt.id === optionId)
+
+         if (option.required) return // 필수 옵션은 토글 불가
+
+         if (currentOptions.includes(optionId)) {
+            setValue(
+               'rsvpOptions',
+               currentOptions.filter((id) => id !== optionId),
+               { shouldValidate: true }
+            )
+         } else {
+            setValue('rsvpOptions', [...currentOptions, optionId], { shouldValidate: true })
+         }
+      },
+      [currentType, setValue, watch]
+   )
 
    return (
-      <Box sx={{ mb: 4 }}>
-         <SectionTitle>참석 여부</SectionTitle>
+      <SectionContainer component={motion.div} variants={fadeInUp} initial="initial" animate="animate" exit="exit" transition={easeTransition}>
+         <SectionTitle>
+            <TitleText>
+               <HowToRegIcon className="icon" />
+               <Box className="title">RSVP</Box>
+            </TitleText>
+            <IconButtonWrapper>
+               <HelpOutlineIcon onClick={handleHelpToggle} />
+               <RestartAltIcon onClick={handleReset} />
+            </IconButtonWrapper>
+         </SectionTitle>
 
-         <Box sx={{ mb: 3 }}>
-            <Controller name="rsvpEnabled" control={control} defaultValue={false} render={({ field: { value, onChange } }) => <FormControlLabel control={<Switch checked={value} onChange={(e) => onChange(e.target.checked)} />} label="RSVP 기능 활성화" />} />
+         <AnimatePresence>
+            {showHelp && (
+               <HelpText>
+                  <strong>RSVP 설정 도움말</strong>
+                  <ul>
+                     <li>초대장 유형에 맞는 RSVP 옵션을 선택해주세요.</li>
+                     <li>필수 항목은 자동으로 선택되며 해제할 수 없습니다.</li>
+                     <li>카카오톡 알림 기능을 활성화하면 실시간으로 답변을 받을 수 있습니다.</li>
+                     <li>제목과 설명을 수정하여 개성있는 RSVP를 만들어보세요.</li>
+                  </ul>
+               </HelpText>
+            )}
+         </AnimatePresence>
+
+         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3, mt: 2 }}>
+            {invitationTypes.map((type) => (
+               <Tooltip key={type.id} title={`${type.label} RSVP 설정하기`}>
+                  <Chip
+                     icon={type.icon}
+                     label={type.label}
+                     onClick={() => handleTypeSelect(type.id)}
+                     sx={{
+                        backgroundColor: selectedType === type.id ? `${COLORS.accent.main}15` : 'rgba(255, 255, 255, 0.8)',
+                        color: selectedType === type.id ? COLORS.accent.main : COLORS.text.primary,
+                        border: `1px solid ${selectedType === type.id ? COLORS.accent.main : COLORS.accent.main}15`,
+                        '&:hover': {
+                           backgroundColor: selectedType === type.id ? `${COLORS.accent.main}25` : 'white',
+                           transform: 'translateY(-2px)',
+                           boxShadow: `0 4px 12px ${COLORS.accent.main}15`,
+                        },
+                        transition: 'all 0.3s ease',
+                     }}
+                  />
+               </Tooltip>
+            ))}
          </Box>
 
-         <Collapse in={control._formValues.rsvpEnabled}>
+         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Controller name="rsvpTitle" control={control} defaultValue="" rules={{ required: 'RSVP 제목을 입력해주세요' }} render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="RSVP 제목" placeholder={currentType.title} error={!!error} helperText={error?.message} />} />
+
             <Controller
-               name="attendance"
+               name="rsvpDescription"
                control={control}
                defaultValue=""
-               rules={{
-                  required: control._formValues.rsvpEnabled ? '참석 여부 메시지를 입력해주세요' : false,
-               }}
-               render={({ field, fieldState: { error } }) => <StyledTextField {...field} fullWidth multiline rows={3} variant="outlined" placeholder="참석 여부를 확인하는 메시지를 입력하세요" error={!!error} helperText={error?.message} sx={{ mb: 2 }} />}
+               rules={{ required: 'RSVP 설명을 입력해주세요' }}
+               render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="RSVP 설명" placeholder={currentType.description} error={!!error} helperText={error?.message} />}
+            />
+
+            <Box>
+               <Typography variant="subtitle2" sx={{ mb: 1, color: COLORS.text.secondary }}>
+                  RSVP 옵션 선택
+               </Typography>
+               <FormGroup>
+                  {currentType.options.map((option) => (
+                     <FormControlLabel
+                        key={option.id}
+                        control={
+                           <Checkbox
+                              checked={rsvpOptions.includes(option.id)}
+                              onChange={() => handleOptionToggle(option.id)}
+                              disabled={option.required}
+                              sx={{
+                                 color: COLORS.accent.main,
+                                 '&.Mui-checked': {
+                                    color: COLORS.accent.main,
+                                 },
+                              }}
+                           />
+                        }
+                        label={
+                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              {option.icon}
+                              {option.label}
+                              {option.required && (
+                                 <Chip
+                                    label="필수"
+                                    size="small"
+                                    sx={{
+                                       backgroundColor: `${COLORS.accent.main}15`,
+                                       color: COLORS.accent.main,
+                                       height: '20px',
+                                    }}
+                                 />
+                              )}
+                           </Box>
+                        }
+                     />
+                  ))}
+               </FormGroup>
+            </Box>
+
+            <Controller
+               name="rsvpButtonText"
+               control={control}
+               defaultValue=""
+               rules={{ required: '버튼 텍스트를 입력해주세요' }}
+               render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="버튼 텍스트" placeholder="참석 여부 알리기" error={!!error} helperText={error?.message} />}
             />
 
             <Controller
-               name="rsvpDeadline"
+               name="useKakaoTalk"
                control={control}
-               defaultValue=""
-               rules={{
-                  required: control._formValues.rsvpEnabled ? 'RSVP 마감일을 선택해주세요' : false,
-               }}
-               render={({ field, fieldState: { error } }) => (
-                  <StyledTextField
-                     {...field}
-                     fullWidth
-                     type="date"
-                     variant="outlined"
-                     label="RSVP 마감일"
-                     error={!!error}
-                     helperText={error?.message}
-                     InputLabelProps={{
-                        shrink: true,
-                     }}
-                     sx={{ mb: 3 }}
+               defaultValue={false}
+               render={({ field: { value, onChange } }) => (
+                  <FormControlLabel
+                     control={
+                        <Checkbox
+                           checked={value}
+                           onChange={onChange}
+                           sx={{
+                              color: COLORS.accent.main,
+                              '&.Mui-checked': {
+                                 color: COLORS.accent.main,
+                              },
+                           }}
+                        />
+                     }
+                     label="카카오톡으로 알림 받기"
                   />
                )}
             />
+         </Box>
 
-            <Typography variant="subtitle2" color="textSecondary" sx={{ mb: 1 }}>
-               RSVP 현황
-            </Typography>
-
-            <RSVPList>
-               <AnimatePresence>
-                  {rsvpList.map((rsvp) => (
-                     <RSVPItem key={rsvp.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.2 }}>
-                        <ListItem>
-                           <ListItemText primary={rsvp.name} secondary={rsvp.message} secondaryTypographyProps={{ style: { whiteSpace: 'pre-wrap' } }} />
-                           <ListItemSecondaryAction>
-                              <StatusChip label={getStatusLabel(rsvp.status)} status={rsvp.status} size="small" sx={{ mr: 1 }} />
-                              <IconButton edge="end" size="small" onClick={() => handleEdit(rsvp)} sx={{ mr: 1 }}>
-                                 <EditIcon />
-                              </IconButton>
-                              <IconButton edge="end" size="small" onClick={() => handleDelete(rsvp.id)}>
-                                 <DeleteIcon />
-                              </IconButton>
-                           </ListItemSecondaryAction>
-                        </ListItem>
-                     </RSVPItem>
-                  ))}
-               </AnimatePresence>
-            </RSVPList>
-
-            <Dialog open={editDialog.open} onClose={() => setEditDialog({ open: false, data: null })}>
-               <DialogTitle>RSVP 상태 수정</DialogTitle>
-               <DialogContent>
-                  <Box sx={{ pt: 2 }}>
-                     <FormControl fullWidth sx={{ mb: 2 }}>
-                        <InputLabel>참석 상태</InputLabel>
-                        <Select
-                           value={editDialog.data?.status || ''}
-                           onChange={(e) =>
-                              setEditDialog((prev) => ({
-                                 ...prev,
-                                 data: { ...prev.data, status: e.target.value },
-                              }))
-                           }
-                           label="참석 상태"
-                        >
-                           <MenuItem value="attending">참석</MenuItem>
-                           <MenuItem value="not_attending">불참</MenuItem>
-                           <MenuItem value="pending">미정</MenuItem>
-                        </Select>
-                     </FormControl>
-                     <TextField
-                        fullWidth
-                        multiline
-                        rows={3}
-                        label="메시지"
-                        value={editDialog.data?.message || ''}
-                        onChange={(e) =>
-                           setEditDialog((prev) => ({
-                              ...prev,
-                              data: { ...prev.data, message: e.target.value },
-                           }))
-                        }
-                     />
-                  </Box>
-               </DialogContent>
-               <DialogActions>
-                  <Button onClick={() => setEditDialog({ open: false, data: null })}>취소</Button>
-                  <Button onClick={() => handleEditSave(editDialog.data)} variant="contained">
-                     저장
-                  </Button>
-               </DialogActions>
-            </Dialog>
-         </Collapse>
-
-         <AnimatePresence>
-            {control._formValues.rsvpEnabled && (control._formValues.attendance || control._formValues.rsvpDeadline) && (
-               <PreviewBox initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} transition={{ duration: 0.3 }}>
-                  <Typography variant="subtitle2" color="primary" gutterBottom>
-                     RSVP 미리보기
-                  </Typography>
-                  {control._formValues.attendance && (
-                     <Typography variant="body2" paragraph>
-                        {control._formValues.attendance}
-                     </Typography>
+         {(rsvpTitle || rsvpDescription || rsvpOptions.length > 0) && (
+            <Box
+               component={motion.div}
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               sx={{
+                  mt: 3,
+                  p: 3,
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  borderRadius: '12px',
+                  border: `1px dashed ${COLORS.accent.main}`,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  '&::before': {
+                     content: '""',
+                     position: 'absolute',
+                     top: 0,
+                     left: 0,
+                     right: 0,
+                     bottom: 0,
+                     background: `linear-gradient(45deg, ${COLORS.accent.main}15 25%, transparent 25%, transparent 50%, ${COLORS.accent.main}15 50%, ${COLORS.accent.main}15 75%, transparent 75%, transparent)`,
+                     backgroundSize: '20px 20px',
+                     opacity: 0.5,
+                  },
+               }}
+            >
+               <Box sx={{ position: 'relative', zIndex: 1 }}>
+                  {currentType.icon}
+                  <Box sx={{ mt: 1, color: COLORS.accent.main, fontWeight: 500 }}>{currentType.label} RSVP</Box>
+                  {rsvpTitle && <Box sx={{ mt: 2, color: COLORS.text.primary, fontSize: '1.2rem', fontWeight: 500 }}>{rsvpTitle}</Box>}
+                  {rsvpDescription && <Box sx={{ mt: 1, color: COLORS.text.secondary }}>{rsvpDescription}</Box>}
+                  {rsvpOptions.length > 0 && (
+                     <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                        {rsvpOptions.map((optionId) => {
+                           const option = currentType.options.find((opt) => opt.id === optionId)
+                           return (
+                              <Chip
+                                 key={optionId}
+                                 icon={option.icon}
+                                 label={option.label}
+                                 sx={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                    border: `1px solid ${COLORS.accent.main}15`,
+                                 }}
+                              />
+                           )
+                        })}
+                     </Box>
                   )}
-                  {control._formValues.rsvpDeadline && (
-                     <Typography variant="body2" color="textSecondary">
-                        회신 마감일: {dayjs(control._formValues.rsvpDeadline).format('YYYY년 MM월 DD일')}
-                     </Typography>
+                  {rsvpButtonText && (
+                     <Box
+                        sx={{
+                           mt: 2,
+                           p: 1,
+                           backgroundColor: COLORS.accent.main,
+                           color: 'white',
+                           borderRadius: '8px',
+                           textAlign: 'center',
+                           cursor: 'pointer',
+                           transition: 'all 0.3s ease',
+                           '&:hover': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: `0 4px 12px ${COLORS.accent.main}25`,
+                           },
+                        }}
+                     >
+                        {rsvpButtonText}
+                     </Box>
                   )}
-               </PreviewBox>
-            )}
-         </AnimatePresence>
-      </Box>
+                  {useKakaoTalk && (
+                     <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, color: COLORS.text.secondary }}>
+                        <img src="/kakao.png" alt="KakaoTalk" style={{ width: '20px', height: '20px' }} />
+                        카카오톡으로 알림 받기
+                     </Box>
+                  )}
+               </Box>
+            </Box>
+         )}
+      </SectionContainer>
    )
 }
 

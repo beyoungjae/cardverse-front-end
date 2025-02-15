@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { debounce } from 'lodash'
+import imageCompression from 'browser-image-compression'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
@@ -21,6 +22,21 @@ const useImageGallery = (initialImages = []) => {
          return '파일 크기는 5MB를 초과할 수 없습니다.'
       }
       return null
+   }, [])
+
+   const optimizeImage = useCallback(async (file) => {
+      if (!file) return null
+
+      try {
+         const compressedFile = await imageCompression(file, {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+         })
+         return compressedFile
+      } catch (error) {
+         console.error('이미지 최적화 실패:', error)
+         return file
+      }
    }, [])
 
    // 이미지 업로드 처리
@@ -56,17 +72,18 @@ const useImageGallery = (initialImages = []) => {
             setUploadProgress(newProgress)
 
             // 업로드 시뮬레이션
-            validFiles.forEach((file) => {
+            const optimizedFiles = await Promise.all(validFiles.map(optimizeImage))
+            optimizedFiles.forEach((file) => {
                simulateUpload(file)
             })
 
-            setImages((prev) => [...prev, ...validFiles])
+            setImages((prev) => [...prev, ...optimizedFiles])
             setPreviewUrls((prev) => [...prev, ...newPreviewUrls])
          }
 
          return { success: validFiles.length > 0, errors: newErrors }
       },
-      [validateImage]
+      [validateImage, optimizeImage]
    )
 
    // 업로드 진행률 시뮬레이션

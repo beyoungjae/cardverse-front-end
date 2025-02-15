@@ -1,16 +1,33 @@
-import React, { useState, useCallback } from 'react'
-import { Box, Container, Tabs, Tab, Button, Snackbar, Alert, IconButton, useMediaQuery, Drawer, SpeedDial, SpeedDialIcon, SpeedDialAction } from '@mui/material'
-import { styled as muiStyled } from '@mui/material/styles'
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
-import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone'
-import TabletIcon from '@mui/icons-material/Tablet'
-import DesktopWindowsIcon from '@mui/icons-material/DesktopWindows'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
+import { Box, Paper, Tabs, Tab, Button, IconButton, Typography, Drawer, Snackbar, Alert, useMediaQuery, SpeedDial, SpeedDialIcon, SpeedDialAction } from '@mui/material'
+import { styled } from '@mui/material/styles'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
+import { FormProvider, useForm } from 'react-hook-form'
 import SaveIcon from '@mui/icons-material/Save'
 import PreviewIcon from '@mui/icons-material/Preview'
-import { useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import ShareIcon from '@mui/icons-material/Share'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import { HowToReg as HowToRegIcon } from '@mui/icons-material'
+import { Person as PersonIcon } from '@mui/icons-material'
+import { AccountBalance as AccountBalanceIcon } from '@mui/icons-material'
 
-// 컴포넌트 임포트
+import {
+   HelpOutline as HelpOutlineIcon,
+   ArrowBackIosNew as ArrowBackIosNewIcon,
+   PhoneIphone as PhoneIphoneIcon,
+   Tablet as TabletIcon,
+   DesktopWindows as DesktopWindowsIcon,
+   Title as TitleIcon,
+   Message as MessageIcon,
+   Event as EventIcon,
+   LocationOn as LocationOnIcon,
+   PhotoLibrary as PhotoLibraryIcon,
+   Group as GroupIcon,
+   Palette as PaletteIcon,
+} from '@mui/icons-material'
+
+// 에디터용 컴포넌트
 import TitleSection from './editor/components/TitleSection'
 import GreetingSection from './editor/components/GreetingSection'
 import DateTimeSection from './editor/components/DateTimeSection'
@@ -18,70 +35,110 @@ import LocationSection from './editor/components/LocationSection'
 import GallerySection from './editor/components/GallerySection'
 import RSVPSection from './editor/components/RSVPSection'
 import ThemeSection from './editor/components/ThemeSection'
+import AccountSection from './editor/components/AccountSection'
+import ProfileSection from './editor/components/ProfileSection'
 import PreviewPanel from './editor/preview/PreviewPanel'
 import PreviewLoading from './editor/preview/PreviewLoading'
 
-// 커스텀 훅 임포트
-import useTemplateForm from './editor/hooks/useTemplateForm'
+// 커스텀 훅
+import useTemplateStore from '../../store/templateStore'
 import useThemeControl from './editor/hooks/useThemeControl'
 import useImageGallery from './editor/hooks/useImageGallery'
+import { COLORS } from './editor/styles/commonStyles'
 
-// 스타일 컴포넌트
-const EditorContainer = muiStyled(Container)(({ theme }) => ({
+// ===================== styled components =====================
+
+/**
+ * 최상위 EditorContainer
+ * - 배경 그라디언트, 반응형 레이아웃
+ */
+const EditorContainer = styled(Box)(({ theme }) => ({
    display: 'flex',
-   gap: '2rem',
-   padding: '2rem',
+   gap: theme.spacing(4),
+   padding: theme.spacing(4),
    minHeight: '100vh',
-   backgroundColor: '#f5f5f5',
-   [theme.breakpoints.down('lg')]: {
-      padding: '1.5rem',
-      gap: '1.5rem',
-   },
+   background: COLORS.background.gradient,
+   position: 'relative',
    [theme.breakpoints.down('md')]: {
       flexDirection: 'column',
-      padding: '1rem',
-      gap: '1rem',
+      padding: theme.spacing(2),
    },
 }))
 
-const EditorSection = muiStyled(motion.div)(({ theme }) => ({
+/**
+ * 오른쪽 패널(에디터 UI)
+ * - Paper로 감싸고, 탭과 섹션 내용 표시
+ */
+const EditorPanel = styled(Box)(({ theme }) => ({
    flex: 1,
-   backgroundColor: 'white',
-   padding: '2rem',
-   borderRadius: theme.shape.borderRadius,
-   boxShadow: theme.shadows[1],
+   display: 'flex',
+   flexDirection: 'column',
+   gap: theme.spacing(3),
+   maxWidth: '50%',
    [theme.breakpoints.down('md')]: {
-      padding: '1.5rem',
-   },
-   [theme.breakpoints.down('sm')]: {
-      padding: '1rem',
+      maxWidth: '100%',
+      order: 2,
    },
 }))
 
-const PreviewSection = muiStyled(motion.div)(({ theme, previewSize }) => ({
-   flex: previewSize === 'desktop' ? 1 : 'none',
-   width: previewSize === 'mobile' ? '375px' : previewSize === 'tablet' ? '768px' : '100%',
-   height: previewSize === 'mobile' ? '667px' : previewSize === 'tablet' ? '1024px' : '100%',
+/**
+ * 왼쪽 미리보기 패널
+ * - 모바일 사이즈로 표시하고, Sticky 등 적용(데스크톱 전용)
+ */
+const PreviewContainer = styled(Box)(({ theme }) => ({
    position: 'sticky',
-   top: '2rem',
-   backgroundColor: 'white',
-   borderRadius: theme.shape.borderRadius,
-   boxShadow: theme.shadows[1],
-   overflow: 'hidden',
-   transition: 'all 0.3s ease',
+   top: theme.spacing(4),
+   height: 'calc(100vh - 64px)',
+   display: 'flex',
+   justifyContent: 'center',
+   alignItems: 'center',
+   flex: 1,
+   perspective: '1000px',
+   '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: '80%',
+      height: '80%',
+      background: 'radial-gradient(circle at center, rgba(192,165,131,0.1) 0%, rgba(255,255,255,0) 70%)',
+      zIndex: -1,
+   },
    [theme.breakpoints.down('md')]: {
       position: 'relative',
       top: 0,
-      width: '100%',
       height: '600px',
+      order: 1,
    },
 }))
 
-const PreviewFrame = muiStyled(Box)(({ theme }) => ({
+/**
+ * 미리보기 프레임(가로 375, 세로 667)
+ */
+const PreviewFrame = styled(motion.div)(({ theme }) => ({
    width: '100%',
+   maxWidth: 375,
    height: '100%',
+   maxHeight: 667,
+   backgroundColor: '#FFFFFF',
+   borderRadius: '44px', // 아이폰 스타일의 라운드 코너
+   boxShadow: '0 25px 45px rgba(0, 0, 0, 0.1)',
    overflow: 'hidden',
    position: 'relative',
+   '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: '35%',
+      height: '25px',
+      backgroundColor: '#F5F5F7',
+      borderBottomLeftRadius: '20px',
+      borderBottomRightRadius: '20px',
+      zIndex: 10,
+   },
    '&::after': {
       content: '""',
       position: 'absolute',
@@ -89,214 +146,402 @@ const PreviewFrame = muiStyled(Box)(({ theme }) => ({
       left: 0,
       right: 0,
       bottom: 0,
-      boxShadow: 'inset 0 0 10px rgba(0,0,0,0.1)',
-      pointerEvents: 'none',
+      background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%)',
+      borderRadius: 'inherit',
+      zIndex: 1,
    },
 }))
 
-const PreviewControls = muiStyled(Box)(({ theme }) => ({
-   position: 'absolute',
-   top: theme.spacing(2),
+/**
+ * 탭 패널 내부
+ */
+const TabPanelContent = styled(Box)(({ theme }) => ({
+   backgroundColor: 'transparent',
+   borderRadius: theme.shape.borderRadius * 2,
+   minHeight: '400px',
+}))
+
+const StyledTabs = styled(Tabs)(({ theme }) => ({
+   borderBottom: `1px solid ${COLORS.accent.main}15`,
+   '& .MuiTab-root': {
+      textTransform: 'none',
+      fontFamily: 'Pretendard, sans-serif',
+      fontSize: '0.9rem',
+      minHeight: 48,
+      padding: '6px 16px',
+      color: COLORS.text.secondary,
+      '&.Mui-selected': {
+         color: COLORS.accent.main,
+         fontWeight: 500,
+      },
+   },
+   '& .MuiTabs-indicator': {
+      backgroundColor: COLORS.accent.main,
+   },
+}))
+
+const TabPanel = styled(Box)({
+   padding: '24px 0',
+})
+
+const MobileSpeedDial = styled(SpeedDial)(({ theme }) => ({
+   position: 'fixed',
+   bottom: theme.spacing(2),
    right: theme.spacing(2),
-   zIndex: 10,
-   display: 'flex',
-   gap: theme.spacing(1),
-   [theme.breakpoints.down('md')]: {
-      display: 'none',
+   '& .MuiSpeedDial-fab': {
+      backgroundColor: COLORS.accent.main,
+      '&:hover': {
+         backgroundColor: COLORS.accent.dark,
+      },
    },
 }))
 
-const TabPanel = ({ children, value, index }) => (
-   <div role="tabpanel" hidden={value !== index} id={`tabpanel-${index}`} aria-labelledby={`tab-${index}`}>
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-   </div>
-)
+const GreetingPreview = styled(motion.div)(({ theme }) => ({
+   padding: theme.spacing(4),
+   backgroundColor: '#FFFFFF',
+   borderRadius: theme.shape.borderRadius * 2,
+   position: 'relative',
+   '&::before': {
+      content: '"""',
+      position: 'absolute',
+      top: theme.spacing(2),
+      left: theme.spacing(2),
+      color: '#C0A583',
+      fontSize: '2rem',
+      fontFamily: 'serif',
+      opacity: 0.2,
+   },
+   '&::after': {
+      content: '"""',
+      position: 'absolute',
+      bottom: theme.spacing(2),
+      right: theme.spacing(2),
+      color: '#C0A583',
+      fontSize: '2rem',
+      fontFamily: 'serif',
+      opacity: 0.2,
+   },
+}))
+
+const GreetingText = styled(Typography)(({ theme }) => ({
+   fontSize: '1.1rem',
+   lineHeight: 1.8,
+   color: theme.palette.text.primary,
+   textAlign: 'center',
+   whiteSpace: 'pre-line',
+   fontFamily: 'Noto Serif KR, serif',
+   '& strong': {
+      color: '#C0A583',
+      fontWeight: 500,
+   },
+}))
+
+const TabsContainer = styled(Box)(({ theme }) => ({
+   display: 'flex',
+   gap: '8px',
+   padding: '16px',
+   overflowX: 'auto',
+   '&::-webkit-scrollbar': {
+      height: '4px',
+   },
+   '&::-webkit-scrollbar-track': {
+      background: 'transparent',
+   },
+   '&::-webkit-scrollbar-thumb': {
+      background: COLORS.accent.main,
+      borderRadius: '2px',
+   },
+}))
+
+const TabButton = styled(Button)(({ theme, selected }) => ({
+   minWidth: 'unset',
+   padding: '8px 16px',
+   borderRadius: '8px',
+   backgroundColor: selected ? `${COLORS.accent.main}15` : 'transparent',
+   color: selected ? COLORS.accent.main : COLORS.text.secondary,
+   border: `1px solid ${selected ? COLORS.accent.main : 'transparent'}`,
+   '&:hover': {
+      backgroundColor: selected ? `${COLORS.accent.main}25` : 'rgba(0, 0, 0, 0.04)',
+   },
+   whiteSpace: 'nowrap',
+}))
+
+// ===================== sections / 탭 구성 =====================
+function createSections(control, watch, themeProps) {
+   return [
+      { id: 'profile', label: '기본 정보', icon: <PersonIcon /> },
+      { id: 'title', label: '제목', icon: <TitleIcon /> },
+      { id: 'greeting', label: '인사말', icon: <MessageIcon /> },
+      { id: 'datetime', label: '날짜/시간', icon: <EventIcon /> },
+      { id: 'location', label: '장소', icon: <LocationOnIcon /> },
+      { id: 'gallery', label: '갤러리', icon: <PhotoLibraryIcon /> },
+      { id: 'account', label: '계좌번호', icon: <AccountBalanceIcon /> },
+      { id: 'rsvp', label: 'RSVP', icon: <HowToRegIcon /> },
+      { id: 'theme', label: '테마', icon: <PaletteIcon /> },
+   ]
+}
+
+// 먼저 필요한 애니메이션 variants를 정의하겠습니다
+const containerVariants = {
+   initial: { opacity: 0 },
+   animate: {
+      opacity: 1,
+      transition: {
+         staggerChildren: 0.1,
+      },
+   },
+}
+
+const previewVariants = {
+   initial: {
+      opacity: 0,
+      x: -50,
+   },
+   animate: {
+      opacity: 1,
+      x: 0,
+      transition: {
+         type: 'spring',
+         stiffness: 300,
+         damping: 30,
+      },
+   },
+}
+
+const editorVariants = {
+   initial: {
+      opacity: 0,
+      x: 50,
+   },
+   animate: {
+      opacity: 1,
+      x: 0,
+      transition: {
+         type: 'spring',
+         stiffness: 300,
+         damping: 30,
+      },
+   },
+}
 
 const TemplateEditor = () => {
    const navigate = useNavigate()
+   const isMobile = useMediaQuery((theme) => theme.breakpoints.down('md'))
+
+   // Zustand store
+   const { template, isLoading, error, updateTemplate, saveTemplate } = useTemplateStore()
+
+   // react-hook-form
+   const methods = useForm({
+      defaultValues: {
+         // 기본 정보
+         profiles: [],
+         showProfiles: false,
+         // 제목
+         title: '',
+         // 인사말
+         greeting: '',
+         // 날짜/시간
+         date: null,
+         time: null,
+         // 장소
+         location: '',
+         address: '',
+         showMap: true,
+         showDirections: true,
+         // 갤러리
+         gallery: [],
+         // 계좌번호
+         accounts: [],
+         showAccounts: false,
+         // RSVP
+         rsvpTitle: '',
+         rsvpDescription: '',
+         rsvpOptions: [],
+         rsvpButtonText: '',
+         useKakaoTalk: false,
+         // 테마
+         backgroundColor: '#ffffff',
+         primaryColor: '#000000',
+         secondaryColor: '#666666',
+         fontFamily: 'Malgun Gothic',
+         animation: null,
+      },
+   })
+
+   const {
+      control,
+      watch,
+      handleSubmit,
+      formState: { isDirty },
+      getValues,
+      reset,
+   } = methods
+
+   // 테마 훅
+   const { theme: themeSettings, handleThemeChange, resetTheme, undo, redo, canUndo, canRedo } = useThemeControl()
+
+   // 이미지 갤러리 훅
+   const { images, handleImageUpload, handleImageDelete, reorderImages } = useImageGallery()
+
+   // sections
+   const themeProps = {
+      handleThemeChange,
+      resetTheme,
+      undo,
+      redo,
+      canUndo,
+      canRedo,
+      theme: themeSettings,
+   }
+
+   const sections = useMemo(() => createSections(control, watch, themeProps), [control, watch, themeProps])
    const [currentTab, setCurrentTab] = useState(0)
    const [isPreviewLoading, setIsPreviewLoading] = useState(false)
    const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' })
-   const [previewSize, setPreviewSize] = useState('mobile')
+   const [autoSaveStatus, setAutoSaveStatus] = useState('idle') // 'idle', 'saving', 'saved', 'error'
    const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-   const isMobile = useMediaQuery((theme) => theme.breakpoints.down('md'))
+   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false)
+   const [previewSize, setPreviewSize] = useState('mobile') // mobile, tablet, desktop
+   const [activeSection, setActiveSection] = useState('title')
 
-   // 커스텀 훅 사용
-   const {
-      control,
-      handleSubmit,
-      watch,
-      formState: { errors, isDirty },
-      saveDraft,
-      loadDraft,
-      autoSaveStatus,
-   } = useTemplateForm()
-   const { theme, handleThemeChange, resetTheme, undo, redo, canUndo, canRedo } = useThemeControl()
-   const { images, handleImageUpload, handleImageDelete, reorderImages } = useImageGallery()
-
-   // 폼 데이터 감시
-   const formData = watch()
-
-   const showNotification = useCallback((message, severity = 'success') => {
-      setNotification({ open: true, message, severity })
+   // 미디어쿼리나 상태에 따라 탭 변경
+   const handleTabChange = useCallback((event, newValue) => {
+      setIsPreviewLoading(true)
+      setCurrentTab(newValue)
+      setTimeout(() => setIsPreviewLoading(false), 500)
    }, [])
 
-   const handleTabChange = (event, newValue) => {
-      setCurrentTab(newValue)
-   }
-
-   const handleBack = () => {
+   // 뒤로가기 처리
+   const handleBack = useCallback(() => {
       if (isDirty) {
-         // 저장하지 않은 변경사항이 있을 경우 확인
          if (window.confirm('저장하지 않은 변경사항이 있습니다. 정말 나가시겠습니까?')) {
             navigate(-1)
          }
       } else {
          navigate(-1)
       }
-   }
+   }, [navigate, isDirty])
 
-   const handleTempSave = async () => {
+   // 알림 표시
+   const showNotification = useCallback((message, severity = 'success') => {
+      setNotification({ open: true, message, severity })
+   }, [])
+
+   // 임시 저장
+   const handleTempSave = useCallback(async () => {
+      setIsPreviewLoading(true)
       try {
-         setIsPreviewLoading(true)
-         const result = await handleSubmit((data) => {
-            saveDraft(data)
-            return { success: true }
-         })()
-
-         if (result.success) {
-            showNotification('임시저장되었습니다.')
-         }
+         const data = getValues()
+         await updateTemplate(data)
+         await saveTemplate()
+         setAutoSaveStatus('saved')
+         showNotification('임시저장되었습니다.')
       } catch (error) {
-         showNotification('임시저장에 실패했습니다.', 'error')
+         setAutoSaveStatus('error')
+         showNotification('임시저장 실패', 'error')
       } finally {
          setIsPreviewLoading(false)
       }
-   }
+   }, [getValues, updateTemplate, saveTemplate, showNotification])
 
-   const onSubmit = async (data) => {
-      try {
-         setIsPreviewLoading(true)
-         const result = await handleSubmit((formData) => {
-            // 실제 저장 로직
-            return new Promise((resolve) => {
-               setTimeout(() => {
-                  resolve({ success: true })
-               }, 1500)
-            })
-         })()
-
-         if (result.success) {
+   // 폼 제출
+   const onSubmit = useCallback(
+      async (data) => {
+         try {
+            setIsPreviewLoading(true)
+            // 실제 API 연동 대신, 가짜 처리
+            await new Promise((resolve) => setTimeout(resolve, 1500))
             showNotification('템플릿이 저장되었습니다.')
             navigate(-1)
+         } catch (error) {
+            showNotification('저장에 실패했습니다.', 'error')
+         } finally {
+            setIsPreviewLoading(false)
          }
-      } catch (error) {
-         showNotification('저장에 실패했습니다.', 'error')
-      } finally {
-         setIsPreviewLoading(false)
-      }
-   }
+      },
+      [navigate, showNotification]
+   )
 
+   // 미리보기 사이즈 아이콘
    const previewSizeIcons = {
       mobile: <PhoneIphoneIcon />,
       tablet: <TabletIcon />,
       desktop: <DesktopWindowsIcon />,
    }
 
+   // SpeedDial 액션
    const speedDialActions = [
-      { icon: <SaveIcon />, name: '저장', onClick: handleSubmit(onSubmit) },
-      { icon: <PreviewIcon />, name: '미리보기', onClick: () => setIsPreviewOpen(true) },
+      { icon: <SaveIcon />, name: '저장하기', action: handleSubmit(onSubmit) },
+      { icon: <PreviewIcon />, name: '미리보기', action: () => setIsPreviewOpen(true) },
+      { icon: <ShareIcon />, name: '공유하기', action: () => console.log('공유') },
    ]
 
    return (
-      <EditorContainer maxWidth="xl">
-         <EditorSection initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
-            <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-               <IconButton onClick={handleBack}>
-                  <ArrowBackIosNewIcon />
-               </IconButton>
-               {!isMobile && (
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                     <Button variant="outlined" onClick={handleTempSave} disabled={!isDirty}>
-                        임시저장
-                     </Button>
-                     <Button variant="contained" onClick={handleSubmit(onSubmit)} disabled={!isDirty}>
-                        저장하기
-                     </Button>
-                  </Box>
-               )}
-            </Box>
+      <FormProvider {...methods}>
+         <EditorContainer variants={containerVariants} initial="initial" animate="animate">
+            <PreviewContainer variants={previewVariants}>
+               <PreviewFrame>
+                  <PreviewPanel formData={watch()} previewSize={previewSize} theme={themeSettings} />
+               </PreviewFrame>
+            </PreviewContainer>
 
-            <Tabs value={currentTab} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-               <Tab label="기본 정보" />
-               <Tab label="테마 설정" />
-            </Tabs>
-
-            <TabPanel value={currentTab} index={0}>
-               <TitleSection control={control} />
-               <GreetingSection control={control} />
-               <DateTimeSection control={control} />
-               <LocationSection control={control} />
-               <GallerySection value={images} onChange={handleImageUpload} onDelete={handleImageDelete} onReorder={reorderImages} />
-               <RSVPSection control={control} />
-            </TabPanel>
-
-            <TabPanel value={currentTab} index={1}>
-               <ThemeSection theme={theme} onThemeChange={handleThemeChange} onReset={resetTheme} onUndo={undo} onRedo={redo} canUndo={canUndo} canRedo={canRedo} />
-            </TabPanel>
-         </EditorSection>
-
-         {!isMobile && (
-            <PreviewSection previewSize={previewSize} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
-               <PreviewControls>
-                  {Object.entries(previewSizeIcons).map(([size, icon]) => (
-                     <IconButton key={size} onClick={() => setPreviewSize(size)} color={previewSize === size ? 'primary' : 'default'}>
-                        {icon}
-                     </IconButton>
+            <EditorPanel variants={editorVariants}>
+               <TabsContainer>
+                  {sections.map((section) => (
+                     <TabButton key={section.id} selected={activeSection === section.id} onClick={() => setActiveSection(section.id)} startIcon={section.icon}>
+                        {section.label}
+                     </TabButton>
                   ))}
-               </PreviewControls>
-               <PreviewFrame>{isPreviewLoading ? <PreviewLoading /> : <PreviewPanel formData={formData} theme={theme} />}</PreviewFrame>
-            </PreviewSection>
-         )}
+               </TabsContainer>
+               <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+                  <AnimatePresence mode="wait">
+                     {activeSection === 'profile' && <ProfileSection key="profile" />}
+                     {activeSection === 'title' && <TitleSection key="title" />}
+                     {activeSection === 'greeting' && <GreetingSection key="greeting" />}
+                     {activeSection === 'datetime' && <DateTimeSection key="datetime" />}
+                     {activeSection === 'location' && <LocationSection key="location" />}
+                     {activeSection === 'gallery' && <GallerySection key="gallery" />}
+                     {activeSection === 'account' && <AccountSection key="account" />}
+                     {activeSection === 'rsvp' && <RSVPSection key="rsvp" />}
+                     {activeSection === 'theme' && <ThemeSection key="theme" />}
+                  </AnimatePresence>
+               </Box>
+            </EditorPanel>
 
-         {/* 모바일 환경에서의 미리보기 드로어 */}
-         <Drawer
-            anchor="right"
-            open={isPreviewOpen}
-            onClose={() => setIsPreviewOpen(false)}
-            sx={{
-               '& .MuiDrawer-paper': {
-                  width: '100%',
-                  maxWidth: '375px',
-                  height: '100%',
-               },
-            }}
-         >
-            <PreviewFrame>{isPreviewLoading ? <PreviewLoading /> : <PreviewPanel formData={formData} theme={theme} />}</PreviewFrame>
-         </Drawer>
+            {/* 모바일에서의 드로어 미리보기 */}
+            <Drawer
+               anchor="right"
+               open={isPreviewOpen}
+               onClose={() => setIsPreviewOpen(false)}
+               sx={{
+                  '& .MuiDrawer-paper': {
+                     width: '100%',
+                     maxWidth: 375,
+                     height: '100%',
+                  },
+               }}
+            >
+               {isPreviewLoading ? <PreviewLoading /> : <PreviewPanel formData={watch()} theme={themeSettings} />}
+            </Drawer>
 
-         {/* 모바일 환경에서의 SpeedDial */}
-         {isMobile && (
-            <SpeedDial ariaLabel="템플릿 에디터 작업" sx={{ position: 'fixed', bottom: 16, right: 16 }} icon={<SpeedDialIcon />}>
-               {speedDialActions.map((action) => (
-                  <SpeedDialAction key={action.name} icon={action.icon} tooltipTitle={action.name} onClick={action.onClick} />
-               ))}
-            </SpeedDial>
-         )}
+            {/* 모바일 환경 SpeedDial */}
+            {isMobile && (
+               <MobileSpeedDial ariaLabel="SpeedDial" icon={<SpeedDialIcon openIcon={<MoreVertIcon />} />} direction="up">
+                  {speedDialActions.map((action) => (
+                     <SpeedDialAction key={action.name} icon={action.icon} tooltipTitle={action.name} onClick={action.action} />
+                  ))}
+               </MobileSpeedDial>
+            )}
+         </EditorContainer>
 
-         <Snackbar open={notification.open} autoHideDuration={3000} onClose={() => setNotification({ ...notification, open: false })} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+         {/* 알림 메시지 */}
+         <Snackbar open={notification.open} autoHideDuration={3000} onClose={() => setNotification((prev) => ({ ...prev, open: false }))} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
             <Alert severity={notification.severity} sx={{ width: '100%' }}>
                {notification.message}
             </Alert>
          </Snackbar>
-
-         {/* 자동 저장 상태 표시 */}
-         <Snackbar open={autoSaveStatus === 'saving'} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-            <Alert severity="info" sx={{ width: '100%' }}>
-               변경사항 저장 중...
-            </Alert>
-         </Snackbar>
-      </EditorContainer>
+      </FormProvider>
    )
 }
 

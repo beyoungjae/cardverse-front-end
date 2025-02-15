@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { useCallback, useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useState, useRef, useMemo } from 'react'
 import useTemplateStore from '../../../../store/templateStore'
 import { debounce } from 'lodash'
 import dayjs from 'dayjs'
@@ -106,6 +106,33 @@ const useTemplateForm = () => {
       return JSON.stringify(newData) !== JSON.stringify(previousData.current)
    }, [])
 
+   // 폼 데이터 캐싱 최적화
+   const formCache = useMemo(() => {
+      const cache = new Map()
+
+      return {
+         set: (key, value) => {
+            cache.set(key, {
+               value,
+               timestamp: Date.now(),
+            })
+         },
+         get: (key) => {
+            const data = cache.get(key)
+            if (!data) return null
+
+            // 1시간 후 캐시 만료
+            if (Date.now() - data.timestamp > 3600000) {
+               cache.delete(key)
+               return null
+            }
+
+            return data.value
+         },
+         clear: () => cache.clear(),
+      }
+   }, [])
+
    // 임시 저장 처리
    const saveDraft = useCallback(
       debounce(async (data) => {
@@ -206,25 +233,6 @@ const useTemplateForm = () => {
       }
    }
 
-   // 폼 제출 처리
-   const onSubmit = async (data) => {
-      try {
-         setIsLoading(true)
-         const result = await mockApiCall(data)
-         if (result.success) {
-            updateTemplate(data)
-            localStorage.removeItem(STORAGE_KEY)
-            previousData.current = null
-            return { success: true }
-         }
-      } catch (error) {
-         console.error('Template submission error:', error)
-         return { success: false, error }
-      } finally {
-         setIsLoading(false)
-      }
-   }
-
    // 이미지 업로드 처리
    const handleImageUpload = useCallback(
       async (files) => {
@@ -259,6 +267,112 @@ const useTemplateForm = () => {
       [methods]
    )
 
+   // 이미지 최적화 개선
+   const optimizeImage = useCallback(async (file) => {
+      // 이미지 크기 제한
+      const MAX_WIDTH = 1200
+      const MAX_HEIGHT = 1200
+
+      return new Promise((resolve) => {
+         const reader = new FileReader()
+         reader.onload = (e) => {
+            const img = new Image()
+            img.onload = () => {
+               let width = img.width
+               let height = img.height
+
+               // 비율 유지하면서 크기 조정
+               if (width > MAX_WIDTH) {
+                  height = (height * MAX_WIDTH) / width
+                  width = MAX_WIDTH
+               }
+               if (height > MAX_HEIGHT) {
+                  width = (width * MAX_HEIGHT) / height
+                  height = MAX_HEIGHT
+               }
+
+               const canvas = document.createElement('canvas')
+               canvas.width = width
+               canvas.height = height
+
+               const ctx = canvas.getContext('2d')
+               ctx.imageSmoothingQuality = 'high'
+               ctx.drawImage(img, 0, 0, width, height)
+
+               // WebP 지원 확인
+               const isWebPSupported = canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0
+
+               canvas.toBlob(
+                  (blob) => {
+                     const optimizedFile = new File([blob], file.name, {
+                        type: isWebPSupported ? 'image/webp' : 'image/jpeg',
+                        lastModified: Date.now(),
+                     })
+                     resolve(optimizedFile)
+                  },
+                  isWebPSupported ? 'image/webp' : 'image/jpeg',
+                  0.8
+               )
+            }
+            img.src = e.target.result
+         }
+         reader.readAsDataURL(file)
+      })
+   }, [])
+
+   const clearFormCache = () => {
+      localStorage.removeItem(STORAGE_KEY)
+      previousData.current = null
+   }
+
+   const submitForm = async (data) => {
+      try {
+         const result = await mockApiCall(data)
+         return result
+      } catch (error) {
+         console.error('Form submission failed:', error)
+         return { success: false, error }
+      }
+   }
+
+   // 폼 상태 변경 추적을 위한 ref 추가
+   const formStateRef = useRef({
+      isDirty: false,
+      isSubmitting: false,
+      submitCount: 0,
+   })
+
+   // 폼 제출 시 추가 검증
+   const onSubmit = async (data) => {
+      try {
+         setIsLoading(true)
+         formStateRef.current.isSubmitting = true
+
+         // 이미지 최적화 처리
+         const optimizedImages = await Promise.all(data.gallery.map((file) => optimizeImage(file)))
+
+         const submissionData = {
+            ...data,
+            gallery: optimizedImages,
+         }
+
+         const result = await submitForm(submissionData)
+
+         if (result.success) {
+            clearFormCache()
+            return { success: true }
+         }
+
+         throw new Error(result.error)
+      } catch (error) {
+         console.error('Form submission failed:', error)
+         return { success: false, error }
+      } finally {
+         setIsLoading(false)
+         formStateRef.current.isSubmitting = false
+      }
+   }
+
    return {
       ...methods,
       onSubmit,
@@ -269,6 +383,7 @@ const useTemplateForm = () => {
       lastSaved,
       previewData,
       isLoading,
+      formState: formStateRef.current,
    }
 }
 

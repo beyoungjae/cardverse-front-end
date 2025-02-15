@@ -1,7 +1,7 @@
-import React, { useMemo, useEffect } from 'react'
-import { Box, Typography, ImageList, ImageListItem, Divider, Chip, Button, IconButton, Tooltip } from '@mui/material'
+import React, { useMemo, useEffect, useState, useCallback } from 'react'
+import { Box, Typography, ImageList, ImageListItem, Divider, Chip, Button, IconButton, Tooltip, Skeleton } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
+import { motion, AnimatePresence, LayoutGroup, LazyMotion, domAnimation } from 'framer-motion'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ko'
 import EventIcon from '@mui/icons-material/Event'
@@ -11,38 +11,39 @@ import GroupIcon from '@mui/icons-material/Group'
 import ShareIcon from '@mui/icons-material/Share'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import { PreviewFrame, fadeInUp, COLORS } from '../styles/commonStyles'
 
 // dayjs 한글 설정
 dayjs.locale('ko')
 
 const PreviewContainer = styled(Box)(({ theme }) => ({
-   width: '100%',
-   height: '100%',
+   width: '375px',
+   height: '667px',
    padding: '24px',
    backgroundColor: 'white',
-   borderRadius: theme.shape.borderRadius,
-   boxShadow: theme.shadows[1],
-   overflow: 'auto',
-   scrollBehavior: 'smooth',
+   borderRadius: '36px',
+   boxShadow: '0 12px 24px rgba(0, 0, 0, 0.1)',
    position: 'relative',
-   '&::-webkit-scrollbar': {
-      width: '8px',
-   },
-   '&::-webkit-scrollbar-track': {
-      background: theme.palette.grey[100],
-      borderRadius: '4px',
-   },
-   '&::-webkit-scrollbar-thumb': {
-      background: theme.palette.grey[400],
-      borderRadius: '4px',
-      '&:hover': {
-         background: theme.palette.grey[500],
-      },
+   margin: '0 auto',
+   border: '12px solid #2C2C2C',
+   display: 'flex',
+   flexDirection: 'column',
+   '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: '-2px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: '150px',
+      height: '24px',
+      backgroundColor: '#2C2C2C',
+      borderBottomLeftRadius: '12px',
+      borderBottomRightRadius: '12px',
    },
 }))
 
 const PreviewSection = styled(motion.div)(({ theme }) => ({
-   marginBottom: '32px',
+   marginBottom: '24px',
    '&:last-child': {
       marginBottom: 0,
    },
@@ -123,11 +124,72 @@ const ActionBar = styled(Box)(({ theme }) => ({
    zIndex: 10,
 }))
 
+const PreviewContent = styled(Box)(({ theme }) => ({
+   flex: 1,
+   overflow: 'auto',
+   padding: '20px 0',
+   '&::-webkit-scrollbar': {
+      width: '6px',
+   },
+   '&::-webkit-scrollbar-track': {
+      background: 'transparent',
+   },
+   '&::-webkit-scrollbar-thumb': {
+      background: COLORS.accent.main,
+      borderRadius: '3px',
+      '&:hover': {
+         background: COLORS.accent.dark,
+      },
+   },
+}))
+
+const GreetingPreview = styled(Box)(({ theme }) => ({
+   padding: theme.spacing(4),
+   backgroundColor: COLORS.background,
+   '&::before': {
+      content: '""',
+      display: 'block',
+      width: '40px',
+      height: '2px',
+      background: COLORS.primary,
+      marginBottom: theme.spacing(2),
+   },
+}))
+
+const GreetingText = styled(Box)(({ theme }) => ({
+   fontFamily: 'Noto Serif KR, serif',
+   fontSize: '1rem',
+   lineHeight: 1.8,
+   color: COLORS.text,
+   whiteSpace: 'pre-wrap',
+}))
+
 const getRandomRotation = () => {
    return Math.random() * 6 - 3 + 'deg'
 }
 
-const PreviewPanel = ({ formData, theme }) => {
+const PreviewPanel = React.memo(({ formData, theme }) => {
+   const [loadedImages, setLoadedImages] = useState(new Set())
+
+   const handleImageLoad = useCallback((index) => {
+      setLoadedImages((prev) => new Set([...prev, index]))
+   }, [])
+
+   const imageUrls = useMemo(() => {
+      return (
+         formData.gallery?.map((image) => ({
+            url: URL.createObjectURL(image),
+            id: `${image.name}-${image.lastModified}`,
+         })) || []
+      )
+   }, [formData.gallery])
+
+   useEffect(() => {
+      return () => {
+         imageUrls.forEach(({ url }) => URL.revokeObjectURL(url))
+      }
+   }, [imageUrls])
+
    const formatDate = (dateString) => {
       if (!dateString) return ''
       const d = dayjs(dateString)
@@ -142,224 +204,248 @@ const PreviewPanel = ({ formData, theme }) => {
    const formattedDate = useMemo(() => formatDate(formData.date), [formData.date])
 
    // 애니메이션 variants
-   const containerVariants = {
-      initial: { opacity: 0 },
+   const ANIMATION_VARIANTS = {
+      initial: {
+         opacity: 0,
+         y: 20,
+      },
       animate: {
          opacity: 1,
+         y: 0,
          transition: {
-            staggerChildren: 0.1,
+            duration: 0.6,
+            ease: [0.43, 0.13, 0.23, 0.96],
          },
       },
-      exit: { opacity: 0 },
+      exit: {
+         opacity: 0,
+         y: -20,
+         transition: {
+            duration: 0.5,
+            ease: [0.43, 0.13, 0.23, 0.96],
+         },
+      },
    }
 
-   const sectionVariants = {
+   const HOVER_VARIANTS = {
+      rest: { scale: 1 },
+      hover: { scale: 1.02, transition: { duration: 0.3, ease: 'easeOut' } },
+   }
+
+   const IMAGE_VARIANTS = {
       initial: { opacity: 0, y: 20 },
       animate: {
          opacity: 1,
          y: 0,
          transition: {
             type: 'spring',
-            stiffness: 300,
-            damping: 30,
-         },
-      },
-      exit: { opacity: 0, y: -20 },
-   }
-
-   const itemVariants = {
-      initial: { opacity: 0, x: -20 },
-      animate: {
-         opacity: 1,
-         x: 0,
-         transition: {
-            type: 'spring',
             stiffness: 500,
             damping: 30,
+            mass: 1,
          },
       },
-      exit: { opacity: 0, x: 20 },
+      exit: {
+         opacity: 0,
+         y: -20,
+         transition: {
+            duration: 0.2,
+         },
+      },
    }
 
+   const memoizedContent = useMemo(
+      () => (
+         <PreviewFrame component={motion.div} variants={fadeInUp} initial="initial" animate="animate" exit="exit">
+            <PreviewContent>
+               <GreetingPreview>
+                  <GreetingText>{formData.greeting || '인사말을 입력해주세요'}</GreetingText>
+               </GreetingPreview>
+            </PreviewContent>
+         </PreviewFrame>
+      ),
+      [formData.greeting]
+   )
+
+   const containerStyle = useMemo(
+      () => ({
+         backgroundColor: theme.backgroundColor,
+      }),
+      [theme.backgroundColor]
+   )
+
+   const handleShare = useCallback(() => {
+      // 공유 로직
+   }, [])
+
    return (
-      <PreviewContainer style={{ backgroundColor: theme.backgroundColor }} component={motion.div} variants={containerVariants} initial="initial" animate="animate" exit="exit">
-         <LayoutGroup>
-            <AnimatePresence mode="wait">
-               {/* 제목 섹션 */}
-               <PreviewSection key="title" variants={sectionVariants} layout layoutId="title-section">
+      <PreviewContainer style={containerStyle}>
+         <PreviewContent>
+            {formData.title && (
+               <PreviewSection>
                   <Typography
-                     variant="h4"
-                     component={motion.h4}
-                     style={{
+                     variant="h5"
+                     sx={{
                         color: theme.primaryColor,
                         fontFamily: theme.fontFamily,
                         textAlign: 'center',
-                        marginBottom: '2rem',
+                        mb: 3,
                      }}
-                     variants={itemVariants}
-                     whileHover={{ scale: 1.02 }}
-                     transition={{ duration: 0.3 }}
-                     layout
-                     layoutId="title-text"
                   >
-                     {formData.title || '제목을 입력하세요'}
+                     {formData.title}
                   </Typography>
                </PreviewSection>
+            )}
 
-               {/* 인사말 섹션 */}
-               {formData.greeting && (
-                  <PreviewSection key="greeting" variants={sectionVariants} layout layoutId="greeting-section">
-                     <motion.div variants={itemVariants} layout>
-                        <SectionTitle style={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}>
-                           <MessageIcon /> 인사말
-                        </SectionTitle>
+            {formData.greeting && (
+               <PreviewSection>
+                  <Box
+                     sx={{
+                        p: 3,
+                        backgroundColor: `${theme.backgroundColor}80`,
+                        borderRadius: '12px',
+                        border: `1px solid ${theme.primaryColor}20`,
+                     }}
+                  >
+                     <Typography
+                        sx={{
+                           color: theme.primaryColor,
+                           fontFamily: theme.fontFamily,
+                           whiteSpace: 'pre-line',
+                           lineHeight: 1.8,
+                        }}
+                     >
+                        {formData.greeting}
+                     </Typography>
+                  </Box>
+               </PreviewSection>
+            )}
+
+            {formData.date && (
+               <PreviewSection>
+                  <Box
+                     sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        mb: 2,
+                     }}
+                  >
+                     <EventIcon sx={{ color: theme.primaryColor }} />
+                     <Typography
+                        sx={{
+                           color: theme.primaryColor,
+                           fontFamily: theme.fontFamily,
+                        }}
+                     >
+                        {dayjs(formData.date).format('YYYY년 MM월 DD일 HH:mm')}
+                     </Typography>
+                  </Box>
+               </PreviewSection>
+            )}
+
+            {formData.location && (
+               <PreviewSection>
+                  <Box
+                     sx={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 1,
+                        mb: 2,
+                     }}
+                  >
+                     <LocationOnIcon sx={{ color: theme.primaryColor }} />
+                     <Box>
                         <Typography
-                           component={motion.div}
-                           style={{
-                              color: theme.secondaryColor,
+                           sx={{
+                              color: theme.primaryColor,
                               fontFamily: theme.fontFamily,
-                              whiteSpace: 'pre-line',
+                              fontWeight: 500,
+                              mb: 0.5,
                            }}
-                           whileHover={{ scale: 1.01 }}
-                           transition={{ duration: 0.3 }}
-                           layout
-                           layoutId="greeting-text"
                         >
-                           {formData.greeting}
+                           {formData.location}
                         </Typography>
-                     </motion.div>
-                     <PreviewDivider />
-                  </PreviewSection>
-               )}
-
-               {/* 날짜 및 장소 섹션 */}
-               {(formData.date || formData.location) && (
-                  <PreviewSection key="details" variants={sectionVariants} layout layoutId="details-section">
-                     {formData.date && (
-                        <InfoItem component={motion.div} variants={itemVariants} whileHover={{ scale: 1.02 }} layout layoutId="date-item">
-                           <EventIcon style={{ color: theme.primaryColor }} />
-                           <Box>
-                              <Typography variant="subtitle1" style={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}>
-                                 {formattedDate.full}
-                              </Typography>
-                              <Typography variant="body2" style={{ color: theme.secondaryColor, fontFamily: theme.fontFamily }}>
-                                 {formattedDate.day}요일
-                              </Typography>
-                           </Box>
-                        </InfoItem>
-                     )}
-
-                     {formData.location && (
-                        <InfoItem component={motion.div} variants={itemVariants} whileHover={{ scale: 1.02 }} layout layoutId="location-item">
-                           <LocationOnIcon style={{ color: theme.primaryColor }} />
-                           <Box>
-                              <Typography variant="subtitle1" style={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}>
-                                 {formData.location}
-                              </Typography>
-                              {formData.traffic && (
-                                 <Typography
-                                    variant="body2"
-                                    style={{
-                                       color: theme.secondaryColor,
-                                       fontFamily: theme.fontFamily,
-                                       whiteSpace: 'pre-line',
-                                    }}
-                                 >
-                                    {formData.traffic}
-                                 </Typography>
-                              )}
-                           </Box>
-                        </InfoItem>
-                     )}
-                     <PreviewDivider />
-                  </PreviewSection>
-               )}
-
-               {/* 갤러리 섹션 */}
-               {formData.gallery?.length > 0 && (
-                  <PreviewSection key="gallery" variants={sectionVariants} layout layoutId="gallery-section">
-                     <motion.div variants={itemVariants} layout>
-                        <SectionTitle style={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}>갤러리</SectionTitle>
-                        <ImageGrid layout={formData.galleryLayout || 'grid'} cols={3} gap={16}>
-                           <AnimatePresence>
-                              {formData.gallery.map((image, index) => (
-                                 <ImageListItem
-                                    key={index}
-                                    component={motion.div}
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    transition={{ duration: 0.3 }}
-                                    layout
-                                    layoutId={`gallery-item-${index}`}
-                                    style={{
-                                       '--rotation': getRandomRotation(),
-                                    }}
-                                 >
-                                    <motion.img
-                                       src={URL.createObjectURL(image)}
-                                       alt={`갤러리 이미지 ${index + 1}`}
-                                       loading="lazy"
-                                       style={{
-                                          width: '100%',
-                                          height: '100%',
-                                          objectFit: 'cover',
-                                          borderRadius: '4px',
-                                       }}
-                                       whileHover={{ scale: 1.05 }}
-                                       transition={{ duration: 0.3 }}
-                                    />
-                                 </ImageListItem>
-                              ))}
-                           </AnimatePresence>
-                        </ImageGrid>
-                     </motion.div>
-                     <PreviewDivider />
-                  </PreviewSection>
-               )}
-
-               {/* RSVP 섹션 */}
-               {formData.rsvpEnabled && (
-                  <PreviewSection key="rsvp" variants={sectionVariants} layout layoutId="rsvp-section">
-                     <motion.div variants={itemVariants} layout>
-                        <SectionTitle style={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}>
-                           <GroupIcon /> 참석 여부
-                        </SectionTitle>
-                        {formData.attendance && (
+                        {formData.address && (
                            <Typography
-                              style={{
+                              sx={{
                                  color: theme.secondaryColor,
                                  fontFamily: theme.fontFamily,
-                                 marginBottom: '16px',
+                                 fontSize: '0.9rem',
                               }}
                            >
-                              {formData.attendance}
+                              {formData.address}
                            </Typography>
                         )}
-                        {formData.rsvpDeadline && <Chip label={`회신 마감일: ${formatDate(formData.rsvpDeadline).date}`} color="primary" size="small" style={{ marginBottom: '16px' }} />}
-                        <RSVPButton
-                           variant="contained"
-                           fullWidth
-                           style={{
-                              backgroundColor: theme.primaryColor,
-                              color: '#fff',
-                              fontFamily: theme.fontFamily,
+                     </Box>
+                  </Box>
+               </PreviewSection>
+            )}
+
+            {formData.gallery?.length > 0 && (
+               <PreviewSection>
+                  <ImageList
+                     sx={{
+                        width: '100%',
+                        m: 0,
+                     }}
+                     cols={2}
+                     rowHeight={164}
+                  >
+                     {formData.gallery.map((image, index) => (
+                        <ImageListItem key={index}>
+                           <img
+                              src={URL.createObjectURL(image)}
+                              alt={`Gallery ${index + 1}`}
+                              loading="lazy"
+                              style={{
+                                 borderRadius: '8px',
+                                 objectFit: 'cover',
+                              }}
+                           />
+                        </ImageListItem>
+                     ))}
+                  </ImageList>
+               </PreviewSection>
+            )}
+
+            {formData.rsvpEnabled && (
+               <PreviewSection>
+                  <Box
+                     sx={{
+                        p: 3,
+                        backgroundColor: `${theme.backgroundColor}80`,
+                        borderRadius: '12px',
+                        border: `1px solid ${theme.primaryColor}20`,
+                        textAlign: 'center',
+                     }}
+                  >
+                     <Typography
+                        sx={{
+                           color: theme.primaryColor,
+                           fontFamily: theme.fontFamily,
+                           mb: 2,
+                        }}
+                     >
+                        {formData.rsvpMessage}
+                     </Typography>
+                     {formData.rsvpDeadline && (
+                        <Chip
+                           icon={<EventIcon />}
+                           label={`마감: ${dayjs(formData.rsvpDeadline).format('MM/DD HH:mm')}`}
+                           sx={{
+                              backgroundColor: `${theme.primaryColor}15`,
+                              color: theme.primaryColor,
                            }}
-                           component={motion.button}
-                           whileHover={{ scale: 1.02 }}
-                           whileTap={{ scale: 0.98 }}
-                           layout
-                           layoutId="rsvp-button"
-                        >
-                           참석 여부 응답하기
-                        </RSVPButton>
-                     </motion.div>
-                  </PreviewSection>
-               )}
-            </AnimatePresence>
-         </LayoutGroup>
+                        />
+                     )}
+                  </Box>
+               </PreviewSection>
+            )}
+         </PreviewContent>
       </PreviewContainer>
    )
-}
+})
+
+PreviewPanel.displayName = 'PreviewPanel'
 
 export default PreviewPanel
