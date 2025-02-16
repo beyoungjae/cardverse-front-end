@@ -138,48 +138,48 @@ const StyledTab = styled(Link, { shouldForwardProp: (prop) => prop !== '$selecte
     background: $selected ? 'linear-gradient(to right, rgba(242, 241, 239, 1) 0%,rgb(100,100,100) 1%,rgb(100,100,100) 99%, rgba(242, 241, 239, 1) 100%)' : 'transparent',
     transition: 'all 0.3s ease',
 
-    // '&::after': {
-    //     content: '""',
-    //     bordorRadius: '8px 0 0 8px',
-    //     position: 'absolute',
-    //     bottom: '1px',
-    //     left: '50%',
-    //     width: $selected ? '100%' : '0%',
-    //     height: '2px',
-    //     transition: 'width 0.3s ease-in-out, left 0.3s ease-in-out, transform 0.3s ease-in-out',
-    //     background: 'linear-gradient(to right, rgba(255,255,255, 0) 0%, rgba(210,210,210, 1) 30%, rgba(240,240,240,1) 50%,rgba(210,210,210,1) 70%,  rgba(255,255,255, 0) 100%)',
-    //     transform: 'translateX(-50%)',
-    // },
-    // '&:hover': $selected
-    //     ? {} // 선택된 상태에서는 아무 스타일도 변경하지 않음
-    //     : {
-    //           bordorRadius: '8px 0 0 8px',
-    //           color: theme.palette.text.primary,
-    //           background: 'linear-gradient(to right, rgba(242, 241, 239, 0) 0%, rgba(170,170,170, 1) 1%,rgba(170,170,170, 1) 99%, rgba(242, 241, 239, 0) 100%)',
-    //           transition: 'all 0.2s ease',
-    //           opacity: 1, // ✅ hover 상태에서 opacity를 1로 유지
-    //       },
+    '&::after': {
+        content: '""',
+        bordorRadius: '8px 0 0 8px',
+        position: 'absolute',
+        bottom: '1px',
+        left: '50%',
+        width: $selected ? '100%' : '0%',
+        height: '2px',
+        transition: 'width 0.3s ease-in-out, left 0.3s ease-in-out, transform 0.3s ease-in-out',
+        background: 'linear-gradient(to right, rgba(255,255,255, 0) 0%, rgba(210,210,210, 1) 30%, rgba(240,240,240,1) 50%,rgba(210,210,210,1) 70%,  rgba(255,255,255, 0) 100%)',
+        transform: 'translateX(-50%)',
+    },
+    '&:hover': $selected
+        ? {} // 선택된 상태에서는 아무 스타일도 변경하지 않음
+        : {
+              bordorRadius: '8px 0 0 8px',
+              color: theme.palette.text.primary,
+              background: 'linear-gradient(to right, rgba(242, 241, 239, 0) 0%, rgba(170,170,170, 1) 1%,rgba(170,170,170, 1) 99%, rgba(242, 241, 239, 0) 100%)',
+              transition: 'all 0.2s ease',
+              opacity: 1, // ✅ hover 상태에서 opacity를 1로 유지
+          },
 
-    // '&::before': $selected
-    //     ? {}
-    //     : {
-    //           content: `"${children}"`,
-    //           position: 'absolute',
-    //           top: '49%',
-    //           left: '50%',
-    //           width: '100%',
-    //           height: '100%',
-    //           display: 'flex',
-    //           alignItems: 'center',
-    //           justifyContent: 'center',
-    //           transform: 'translate(-50%, -50%)',
-    //           opacity: 0,
-    //           transition: 'opacity 0.2s ease',
-    //       },
+    '&::before': $selected
+        ? {}
+        : {
+              content: `"${children}"`,
+              position: 'absolute',
+              top: '49%',
+              left: '50%',
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transform: 'translate(-50%, -50%)',
+              opacity: 0,
+              transition: 'opacity 0.2s ease',
+          },
 
-    // '&:hover::before': {
-    //     opacity: 1, // ✅ hover 시 배경이 부드럽게 나타남
-    // },
+    '&:hover::before': {
+        opacity: 1, // ✅ hover 시 배경이 부드럽게 나타남
+    },
 }))
 
 const MyPage = () => {
