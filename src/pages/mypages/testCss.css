@@ -2,23 +2,23 @@
     color: rgb(228, 231, 236);
     color: #e4e7ec00;
     color: rgb(245, 247, 250);
-    color: #F5F7FA;
+    color: #f5f7fa;
     /* color: rgb(137, 152, 167); */
     color: rgba(245, 253, 255, 0.579);
-    
 }
 
 .background {
-   color: rgb(245, 245, 245);
-   color: #f4f3f1;
-   color: rgb(244, 243, 241);
-   color: rgb(244, 243, 241);
-   
-   color: rgb(242, 241, 239);
-   color: rgb(235, 234, 232);
-   
-   color: rgb(42, 241, 239);
-   color: rgb(202, 255, 254);
+    color: rgb(245, 245, 245);
+    color: #f4f3f1;
+    color: rgb(244, 243, 241);
+    color: rgb(244, 243, 241);
+
+    color: rgb(242, 241, 239);
+    color: rgb(235, 234, 232);
+
+    color: rgb(42, 241, 239);
+    color: rgb(202, 255, 254);
+    color: #c8c8c8;
 }
 /* 
     background: $selected ? 'linear-gradient(to right, rgba(228, 231, 236, 0) 0%, rgba(228, 231, 236, 1) 10%,rgba(228, 231, 236, 1) 90%,  rgba(228, 231, 236, 0) 100%)' : 'trans',
@@ -85,5 +85,3 @@
         },
     },
 */
-
-

@@ -1,21 +1,23 @@
 import { useEffect } from 'react'
-import { fontWeight, styled } from '@mui/system'
+import { borderRadius, fontWeight, styled } from '@mui/system'
 
 import { Box, Typography } from '@mui/material'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { MyCoupon, MyReview, MyProfile, MyTemplate } from './layouts'
 import { createBox, createText } from '../../utils/muiSystem'
 
-const Container = createBox((theme) => ({
+const Container = styled(Box)(({ theme }) => ({
     backgroundColor: '#f5f5f5',
-    // backgroundColor: '#f4f3f1',
     padding: '40px',
     border: 'none',
     minWidth: '375px',
-    breakpoint: [{ down: 'sm', padding: '16px' }],
+    [theme.bps.sm]: {
+        padding: '0px',
+        backgroundColor: '#ffffff',
+    },
 }))
 
-const MyPageContainer = createBox((theme) => ({
+const MyPageContainer = styled(Box)(({ theme }) => ({
     width: '100%',
     maxWidth: '1000px',
     margin: '0 auto',
@@ -26,10 +28,9 @@ const MyPageContainer = createBox((theme) => ({
     backgroundColor: '#ffffff',
     boxShadow: '0 0 0px 0.3px black',
     borderRadius: '8px',
-    breakpoint: [
-        { down: 'md', gap: '32px' },
-        { down: 'sm', padding: '12px', gap: '16px' },
-    ],
+    [theme.bps.md]: { gap: '32px' },
+    [theme.bps.sm]: { padding: '12px', gap: '16px' },
+    [theme.bps.xs]: { borderRadius: 0 },
 }))
 
 // ** Text 스타일

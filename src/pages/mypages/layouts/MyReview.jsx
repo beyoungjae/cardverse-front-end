@@ -1,20 +1,27 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import { createText, createBox } from '../../../utils/muiSystem'
 import { Layout, StatusContainer, SubTitle, Container } from './'
-import { styled } from '@mui/system'
+import { borderBottom, borderRadius, letterSpacing, styled } from '@mui/system'
 import { Box, Typography } from '@mui/material'
 
-const LabelWrap = createBox((theme) => ({
+const LabelWrap = styled(Box)(({ theme }) => ({
     display: 'flex',
     backgroundColor: theme.palette.background.default,
     width: '100%',
     gap: theme.spacing(2),
     padding: theme.palette.spacing.md,
     border: 'none',
-    breakpoint: [
-        { down: 'md', borderRadius: theme.palette.borderRadius.md },
-        { down: 'sm', padding: '4px' },
-    ],
+    [theme.bps.md]: {
+        borderRadius: theme.palette.borderRadius.medium,
+    },
+    [theme.bps.sm]: {
+        padding: '8px',
+    },
+    [theme.bps.xs]: {
+        boxShadow: 'none',
+        border: '1px solid #dddddd',
+        borderRadius: '4px',
+    },
 }))
 
 const Label = createText((theme) => ({
@@ -42,7 +49,7 @@ const TabContainer = createBox((theme) => ({
 }))
 
 /** 네비탭 스타일 **/
-const StyledTab = createBox((theme, { $active, $position }) => {
+const StyledTabs = createBox((theme, { $active, $position }) => {
     const borderColor = '1px solid rgba(0,0,0,0.2)' // ✅ 기본 테두리 색상
     const transparentBorder = '1px solid rgba(0,0,0,0)' // ✅ 투명한 테두리
     // rtype
@@ -92,6 +99,53 @@ const StyledTab = createBox((theme, { $active, $position }) => {
     }
 })
 
+const StyledTab = styled(Box)(({ theme, $active, $position }) => {
+    const borderColor = '1px solid rgba(0,0,0,0.2)' // ✅ 기본 테두리 색상
+    const transparentBorder = '1px solid rgba(0,0,0,0)' // ✅ 투명한 테두리
+
+    return {
+        fontSize: 'clamp(0.8rem, 1.8vw, 1rem)',
+        width: '50%',
+        flex: '0.5',
+        textAlign: 'center',
+        justifyContent: 'center',
+        userSelect: 'none',
+        cursor: 'pointer',
+        fontWeight: $active ? 600 : 400,
+        color: $active ? theme.palette.text.primary : theme.palette.text.secondary,
+        backgroundColor: $active ? theme.palette.background.grey : '#ffffff',
+        padding: '16px 0',
+        borderRadius: '8px 8px 0 0',
+        position: 'relative',
+        letterSpacing: '12px',
+
+        // ** 동적 보더 설정
+        // 보더 탑
+        borderTop: $position === 'right' && $active ? borderColor : $position === 'left' && $active ? borderColor : transparentBorder,
+
+        // 보더 라이트
+        borderRight: $position === 'right' && $active ? borderColor : $position === 'left' && $active ? borderColor : transparentBorder,
+
+        // 보더 레프트
+        borderLeft: $position === 'left' && $active ? borderColor : 'right' && $active ? borderColor : transparentBorder,
+
+        '&::after': {
+            position: 'absolute',
+            content: '""',
+            width: $position === 'left' ? '101%' : '100.5%',
+            bottom: '0px',
+            left: $position === 'left' ? '0%' : '-1px',
+            height: '1px',
+            backgroundColor: $active
+                ? 'transparent' // 활성화된 탭은 안 보이도록 투명 처리
+                : 'rgba(0, 0, 0, 0.2)', // 비활성화된 탭은 아래줄 유지
+        },
+
+        [theme.bps.md]: { padding: '12px 0' },
+        [theme.bps.sm]: { padding: '8px 0', letterSpacing: '6px' },
+    }
+})
+
 const ListContainer = styled(Box)(({ theme }) => ({
     width: '100%',
     display: 'flex',
@@ -108,7 +162,7 @@ const ListContainer = styled(Box)(({ theme }) => ({
 }))
 
 const ListWrap = styled(Box)(({ theme }) => ({
-    padding: '0px 4px',
+    padding: '16px 8px 0px 8px',
     backgroundColor: 'white',
     display: 'flex',
     flexDirection: 'column',
@@ -123,20 +177,78 @@ const ListWrap = styled(Box)(({ theme }) => ({
     },
 }))
 
-const ListItem = styled(Box)(({ theme }) => ({
+const ListItemBox = styled(Box)(({ theme }) => ({
     width: '100%',
-    boxSizing: 'border-box',
-    aspectRatio: '3 / 0.3',
-    // backgroundColor: 'rgb(250,249,247)',
+    aspectRatio: '3 / 1',
     display: 'flex',
-    // borderRadius: '8px',
+    flexDirection: 'column',
     borderBottom: `1px solid ${theme.palette.divider}`,
-    // border: '0px 0px 1px 0px',
-    // borderBottom: theme.palette.divider,
-    // boxShadow: '2px 3px 2px 1px rgba(0,0,0,0.2)',
+    [theme.bps.xs]: {
+        aspectRatio: '3 / 0.9',
+    },
 }))
 
-const MyTemplate = () => {
+const Item = styled(Box)(({ theme }) => ({
+    width: '100%',
+    padding: '8px',
+    border: '1px solid red',
+    display: 'flex',
+    alignItems: 'center',
+    fontSize: '1.2rem',
+
+    '&.item-title': {
+        flex: '0.2',
+        position: 'relative',
+    },
+
+    '&.item-title::after': {
+        content: '""',
+        height: '1px',
+        width: '99%',
+        position: 'absolute',
+        left: '50%',
+        bottom: 0,
+        backgroundColor: '#eeeeee',
+        transform: 'translateX(-50%)',
+    },
+
+    '&.item-content': {
+        flex: '0.8',
+    },
+    [theme.bps.md]: {
+        fontSize: '1rem',
+    },
+    [theme.bps.sm]: {
+        fontSize: '0.8rem',
+    },
+    [theme.bps.xs]: {
+        fontSize: '0.75rem',
+        padding: '4px 6px',
+
+        '&.item-title': {
+            fontSize: '0.7rem',
+            flex: '0.3',
+            position: 'relative',
+        },
+
+        '&.item-title::after': {
+            content: '""',
+            height: '0px',
+            width: '99%',
+            position: 'absolute',
+            left: '50%',
+            bottom: 0,
+            backgroundColor: '#eeeeee',
+            transform: 'translateX(-50%)',
+        },
+
+        '&.item-content': {
+            flex: '0.7',
+        },
+    },
+}))
+
+function MyTemplate() {
     const [activeTab, setActiveTab] = useState(true)
     const [visibleCount, setVisibleCount] = useState(4)
     const [type, setType] = useState('review')
@@ -149,7 +261,7 @@ const MyTemplate = () => {
     const posts = [
         { id: 1, type: 'review', title: '리뷰 1', status: 'active', isPaid: true },
         { id: 2, type: 'review', title: '리뷰 2', status: 'active', isPaid: true },
-        { id: 3, type: 'qna', title: '문의 1', status: 'draft', isPaid: false },
+        { id: 3, type: 'qna', title: '문의 1', status: 'acitve', isPaid: false },
         { id: 4, type: 'qna', title: '문의 2', status: 'active', isPaid: true },
         { id: 5, type: 'qna', title: '문의 3', status: 'active', isPaid: false },
         { id: 6, type: 'review', title: '리뷰 3', status: 'active', isPaid: false },
@@ -162,20 +274,22 @@ const MyTemplate = () => {
         { id: 13, type: 'review', title: '리뷰 8', status: 'active', isPaid: true },
     ]
 
+    // 필터링된 포스트 메모이제이션
+    const filteredPosts = useMemo(() => posts.filter((post) => post.type === (activeTab ? 'review' : 'qna')), [posts, activeTab])
+
+    const reviewCount = useMemo(() => posts.filter((post) => post.type === 'review').length, [posts])
+
+    const qnaCount = useMemo(() => posts.filter((post) => post.type === 'qna').length, [posts])
+
     const handleShowMore = () => {
         setVisibleCount((prev) => prev + 10)
     }
 
-    // 필터링된 포스트 메모이제이션
-    // const filteredPosts = useMemo(() => posts.filter((post) => post.type === activeTab), [posts, activeTab])
-    const filteredPosts = useMemo(() => posts.filter((post) => post.type === (activeTab ? 'review' : 'qna')), [posts, activeTab])
-
-    const reviewCount = useMemo(() => posts.map((post) => post.type === 'review').length, [posts])
-
     const handleActiveTab = useCallback(
         (key, type) => {
             if (activeTab !== key) {
-                setActiveTab((prev) => !prev)
+                // setActiveTab((prev) => !prev)
+                setActiveTab(key)
                 setVisibleCount(4)
                 setType(type)
             } else {
@@ -187,16 +301,18 @@ const MyTemplate = () => {
         <Layout>
             <Container>
                 <SubTitle>MY 리뷰 & 문의</SubTitle>
+
                 <StatusContainer>
                     <LabelWrap>
-                        <Label>작성 리뷰 : </Label>
+                        <Label>내 리뷰 : </Label>
                         <LabelValue></LabelValue>
                     </LabelWrap>{' '}
                     <LabelWrap>
-                        <Label>문의 내역 : </Label>
+                        <Label>내 문의 : </Label>
                         <LabelValue></LabelValue>
                     </LabelWrap>
                 </StatusContainer>
+
                 <DetailContainer>
                     <TabContainer>
                         {tabs.map(({ key, label, position, type }) => (
@@ -209,15 +325,20 @@ const MyTemplate = () => {
                             </StyledTab>
                         ))}
                     </TabContainer>
+
                     <ListContainer>
                         <ListWrap>
                             {filteredPosts.slice(0, visibleCount).map(({ id, type, status, title }) => (
-                                <ListItem key={id} className={type}>
-                                    {title}
-                                </ListItem>
+                                <ListItemBox key={id} className={type}>
+                                    {/* <Item className="item-title"></Item> */}
+                                    {/* <Item className="item-content"></Item> */}
+                                    <Item className="item-title">{title}</Item>
+                                    <Item className="item-content">아이템내용</Item>
+                                </ListItemBox>
                             ))}
                         </ListWrap>
-                        {visibleCount < posts.length && <MoreButton onClick={handleShowMore}>더보기 ({reviewCount}개)</MoreButton>}
+
+                        {filteredPosts.length > visibleCount && <MoreButton onClick={handleShowMore}>더보기 ({(activeTab ? reviewCount : qnaCount) - visibleCount}개)</MoreButton>}
                     </ListContainer>
                 </DetailContainer>
             </Container>

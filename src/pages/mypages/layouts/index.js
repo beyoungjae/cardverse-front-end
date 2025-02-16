@@ -12,11 +12,11 @@ const commonStyles = (theme) => ({
     width: '100%',
     border: 'none',
     borderRadius: theme.palette.borderRadius.small,
-    boxShadow: '0 0 1px 0.2px rgba(0,0,0,0.54)',
+    boxShadow: '0 0 1px 1px rgba(0,0,0,0.2)',
 })
 
 // ** 레이아웃
-export const Layout = createBox((theme) => ({
+export const Layouts = createBox((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
@@ -27,6 +27,21 @@ export const Layout = createBox((theme) => ({
     gap: '24px',
     padding: theme.palette.spacing.lg,
     breakpoint: [{ down: 848, width: '100%' }],
+}))
+
+export const Layout = styled(Box)(({ theme }) => ({
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    margin: '0 auto',
+    border: 'none',
+    boxShadow: '0 0 0px 0.3px black',
+    borderRadius: '5px',
+    gap: '24px',
+    padding: theme.palette.spacing.lg,
+    [theme.bps.md]: {},
+    [theme.bps.sm]: {},
+    [theme.bps.xs]: { padding: '12px' },
 }))
 
 // 기본 컨테이너
@@ -54,15 +69,34 @@ export const Container = styled(Box)(({ theme }) => ({
 }))
 
 // ** 상태 컨테이너
-export const StatusContainer = createBox((theme) => ({
+export const StatusContainers = createBox((theme) => ({
     ...commonStyles(theme),
     padding: '16px',
-    display:'flex',
+    display: 'flex',
     breakpoint: [
         { down: 'md', padding: '12px' },
         { down: 'sm', padding: '10px' },
         { down: '480', padding: '8px' },
     ],
+}))
+
+export const StatusContainer = styled(Box)(({ theme }) => ({
+    ...commonStyles(theme),
+    padding: '16px',
+    display: 'flex',
+    [theme.bps.md]: {
+        padding: '12px',
+    },
+    [theme.bps.sm]: {
+        padding: '10px',
+    },
+    [theme.bps.xs]: {
+        padding: '0px',
+        gap: '8px',
+        flexDirection: 'column',
+        boxShadow: 'initial',
+    },
+    [theme.bps.xxs]: {},
 }))
 
 // ** 디테일 컨테이너
