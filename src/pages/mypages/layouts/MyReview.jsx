@@ -99,7 +99,7 @@ const StyledTabs = createBox((theme, { $active, $position }) => {
     }
 })
 
-const StyledTab = styled(Box)(({ theme, $active, $position }) => {
+const StyledTab = styled('div')(({ theme, $active, $position }) => {
     const borderColor = '1px solid rgba(0,0,0,0.2)' // ✅ 기본 테두리 색상
     const transparentBorder = '1px solid rgba(0,0,0,0)' // ✅ 투명한 테두리
 
@@ -151,18 +151,18 @@ const ListContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
-    padding: '16px',
+    padding: '8px',
     backgroundColor: theme.palette.background.grey,
     borderLeft: '1px solid rgba(0,0,0,0.2)',
     borderRight: '1px solid rgba(0,0,0,0.2)',
     borderBottom: '1px solid rgba(0,0,0,0.2)',
 
     borderRadius: '0 0 8px 8px',
-    [theme.bps.sm]: { padding: '8px' },
+    [theme.bps.sm]: { padding: '3px' },
 }))
 
 const ListWrap = styled(Box)(({ theme }) => ({
-    padding: '16px 8px 0px 8px',
+    padding: '0px 8px',
     backgroundColor: 'white',
     display: 'flex',
     flexDirection: 'column',
@@ -179,7 +179,7 @@ const ListWrap = styled(Box)(({ theme }) => ({
 
 const ListItemBox = styled(Box)(({ theme }) => ({
     width: '100%',
-    aspectRatio: '3 / 1',
+    aspectRatio: '3 / 0.9',
     display: 'flex',
     flexDirection: 'column',
     borderBottom: `1px solid ${theme.palette.divider}`,
@@ -191,7 +191,7 @@ const ListItemBox = styled(Box)(({ theme }) => ({
 const Item = styled(Box)(({ theme }) => ({
     width: '100%',
     padding: '8px',
-    border: '1px solid red',
+    // border: '1px solid red',
     display: 'flex',
     alignItems: 'center',
     fontSize: '1.2rem',
