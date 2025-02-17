@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { TextField, Typography, Box } from '@mui/material'
 import { Link, useNavigate } from 'react-router-dom'
-import KakaoLogin from './KakaoLogin'
-import { fontWeight, styled, textAlign } from '@mui/system'
-import { transform } from 'framer-motion'
+import { styled } from '@mui/system'
 
 const Container = styled(Box)(({ theme }) => ({
     padding: '32px',
