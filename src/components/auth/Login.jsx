@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { TextField, Typography, Box } from '@mui/material'
 import { Link, useNavigate } from 'react-router-dom'
-import { styled } from '@mui/system'
+import { fontWeight, maxHeight, styled, textAlign } from '@mui/system'
 
 const Container = styled(Box)(({ theme }) => ({
     padding: '32px',
     width: '100%',
     maxWidth: '500px',
-    margin: '100px auto',
+    margin: '0 auto',
     border: '1px solid #bbbbbb',
     borderRadius: '8px',
     minWidth: '300px',
@@ -22,35 +22,35 @@ const Container = styled(Box)(({ theme }) => ({
         textAlign: 'center',
     },
 
-    [theme.breakpoints.down('md')]: {
-        margin: '80px auto',
-    },
+    [theme.breakpoints.down('md')]: {},
     [theme.breakpoints.down('sm')]: {
-        gap: '40px',
-        padding: '24px 40px',
+        gap: '60px',
+        padding: '24px',
         margin: '0 auto',
         border: 'none',
         borderRadius: 0,
         backgroundColor: 'transparent',
+        height: '100%',
+        // border: '1px solid green',
     },
 }))
 
 const Title = styled(Typography)(({ theme }) => ({
-    position: 'relative',
+    // position: 'relative',
 
-    '&::after': {
-        content: '"CARDVERSE에 오신 것을 환영합니다."',
-        position: 'absolute',
-        left: '50%',
-        width: '100%',
-        bottom: '-80%',
-        fontSize: '1.0rem',
-        fontWeight: 'normal',
-        color: '#c0c0c0',
-        transform: 'translateX(-50%)',
-        [theme.breakpoints.down('md')]: { bottom: '-110%', fontSize: '0.9rem' },
-        [theme.breakpoints.down('sm')]: { bottom: '-90%', fontSize: '0.7rem' },
-    },
+    // '&::after': {
+    //     content: '"CARDVERSE에 오신 것을 환영합니다."',
+    //     position: 'absolute',
+    //     left: '50%',
+    //     width: '100%',
+    //     bottom: '-80%',
+    //     fontSize: '1.0rem',
+    //     fontWeight: 'normal',
+    //     color: '#c0c0c0',
+    //     transform: 'translateX(-50%)',
+    //     [theme.breakpoints.down('md')]: { bottom: '-110%', fontSize: '0.9rem' },
+    //     [theme.breakpoints.down('sm')]: { bottom: '-70%', fontSize: '0.7rem' },
+    // },
     [theme.breakpoints.down('md')]: { fontSize: '1.5rem' },
     [theme.breakpoints.down('sm')]: { fontSize: '1.3rem' },
 }))
@@ -58,6 +58,8 @@ const Title = styled(Typography)(({ theme }) => ({
 const InputField = styled(TextField)(({ theme }) => ({
     '& .MuiInputBase-input': {
         fontSize: '1rem', // 기본 폰트 크기
+        padding: '12px',
+
         [theme.breakpoints.down('md')]: {
             fontSize: '0.9rem', // md 이하에서는 작게
         },
@@ -70,10 +72,15 @@ const InputField = styled(TextField)(({ theme }) => ({
             padding: '12px',
         },
     },
+    '&:first-of-type': {
+        paddingBottom: '16px',
+        [theme.breakpoints.down('sm')]: {
+            paddingBottom: '6px',
+        },
+    },
 
     [theme.breakpoints.down('md')]: {},
     [theme.breakpoints.down('sm')]: {},
-    [theme.breakpoints.down(480)]: {},
 }))
 
 const Button = styled('button')(({ theme }) => ({
@@ -81,7 +88,7 @@ const Button = styled('button')(({ theme }) => ({
     color: '#000',
     border: 'none',
     borderRadius: '4px',
-    padding: '10px 15px',
+    padding: '15px 15px',
     fontSize: '1rem',
     fontWeight: 'bold',
     cursor: 'pointer',
@@ -120,24 +127,24 @@ const Button = styled('button')(({ theme }) => ({
 const Form = styled('form')(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
-    gap: '32px',
+    gap: '20px',
     [theme.breakpoints.down('md')]: {
-        gap: '24px',
+        gap: '12px',
     },
     [theme.breakpoints.down('sm')]: {
-        gap: '16px',
+        // border: '1px solid pink',
+        justifyContent: 'space-between',
     },
 }))
 
 const FormContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px',
 
     '&.Form-btn': {
-        gap: '8px',
-        [theme.breakpoints.down('md')]: { gap: '6px' },
-        [theme.breakpoints.down('sm')]: { gap: '4px' },
+        gap: '12px',
+        [theme.breakpoints.down('md')]: { gap: '10px' },
+        [theme.breakpoints.down('sm')]: { gap: '8px' },
     },
     [theme.breakpoints.down('md')]: { gap: '12px' },
     [theme.breakpoints.down('sm')]: { gap: '8px' },
@@ -146,7 +153,50 @@ const FormContainer = styled(Box)(({ theme }) => ({
 const LoginWrapper = styled(Box)(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
-    gap: '30px',
+    gap: '12px',
+
+    [theme.breakpoints.down('sm')]: {
+        gap: 'initial',
+        justifyContent: 'space-between',
+        height: '100%',
+        // border: '1px solid red',
+    },
+}))
+
+// ━━━━━━ TEXT
+const StyledLink = styled(Link)(({ theme }) => ({
+    display: 'inline',
+    textDecoration: 'none',
+    fontSize: '0.84rem',
+
+    [theme.breakpoints.down('md')]: {
+        fontSize: '0.79rem',
+    },
+    [theme.breakpoints.down('sm')]: {
+        fontSize: '0.69rem',
+    },
+}))
+
+const StyledTypography = styled(Typography)(({ theme }) => ({
+    fontSize: '0.85rem',
+    textAlign: 'end',
+    padding: '4px 5px',
+
+    '&.kakao-comment': {
+        textAlign: 'center',
+        [theme.breakpoints.down('sm')]: {
+            display: 'none',
+        },
+    },
+
+    [theme.breakpoints.down('md')]: {
+        padding: '3px 5px',
+        fontSize: '0.8rem',
+    },
+    [theme.breakpoints.down('sm')]: {
+        padding: '1px 5px',
+        fontSize: '0.7rem',
+    },
 }))
 
 const Login = () => {
@@ -223,7 +273,7 @@ const Login = () => {
 
     return (
         <Container>
-            <Title variant="h2">로그인</Title>
+            {/* <Title variant="h2"></Title> */}
 
             {/* <Title className="title-comment" variant="body1" align="center" gutterBottom>
                 CARDVERSE에 오신 것을 환영합니다.
@@ -236,9 +286,9 @@ const Login = () => {
                             placeholder="이메일을 입력해 주세요."
                             name="email"
                             fullWidth
+                            autoComplete="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            //  variant="outlined"
                         />
                         <InputField
                             // 인풋 필드
@@ -246,32 +296,36 @@ const Login = () => {
                             type="password"
                             name="password"
                             fullWidth
+                            autoComplete="none"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            //  variant="outlined"
                         />
+                        <StyledTypography>
+                            비밀번호가 기억나지 않으세요? <StyledLink>비밀번호</StyledLink> 찾으러 가기
+                        </StyledTypography>
                     </FormContainer>
 
                     <FormContainer className="Form-btn">
                         <Button fullWidth type="submit">
                             로그인
                         </Button>
-
+                        {/* 
                         <Button className="signup-btn" component={Link} fullWidth to="/signup">
                             회원가입
-                        </Button>
+                        </Button> */}
                     </FormContainer>
                 </Form>
-                <div>
-                    <Button
-                        // 브레이크 포인트
+                {/* <div> */}
+                <StyledTypography className="kakao-comment">────────────── or ──────────────</StyledTypography>
+                <Button
+                    // 브레이크 포인트
 
-                        className="kakao-login-btn"
-                        onClick={handleKakaoLogin}>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="kakao" style={{ width: '20px', height: '20px' }} />
-                        카카오로 간편 로그인
-                    </Button>
-                </div>
+                    className="kakao-login-btn"
+                    onClick={handleKakaoLogin}>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="kakao" style={{ width: '20px', height: '20px' }} />
+                    카카오로 간편 로그인
+                </Button>
+                {/* </div> */}
             </LoginWrapper>
         </Container>
     )

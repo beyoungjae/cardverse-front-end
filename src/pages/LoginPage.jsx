@@ -6,31 +6,44 @@ import { Link } from 'react-router-dom'
 
 const LogoContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexGrow: 1,
-    position: 'absolute',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    [theme.breakpoints.down('md')]: {
-        flexGrow: 0,
-        marginRight: 'auto',
+    // justifyContent: 'center',
+    // alignItems: 'center',
+    [theme.breakpoints.down('md')]: {},
+
+    position: 'relative',
+
+    '&::after': {
+        content: '"Card Verse에 오신 것을 환영합니다."',
+        position: 'absolute',
+        textAlign: 'center',
+        right: '0',
+        width: '100%',
+        bottom: '-60%',
+        fontSize: '1.2rem',
+        fontWeight: 'normal',
+        color: '#999999',
+        // transform: 'translateX(-50%)',
+        [theme.breakpoints.down('md')]: { bottom: '-40%', fontSize: '0.9rem' },
+        [theme.breakpoints.down('sm')]: { bottom: '-40%', fontSize: '0.7rem' },
     },
 }))
 
 const LogoImgLink = styled('img')(({ theme }) => ({
-    margin: '0 auto',
+    // margin: '0 auto',
     padding: '0px',
     height: '80px',
 
     [theme.breakpoints.down('md')]: {
         height: '70px',
     },
+    [theme.breakpoints.down('sm')]: {
+        height: '50px',
+    },
 }))
 
 const Container = styled(Box)(({ theme }) => ({
     backgroundColor: 'transparent',
-    padding: '40px',
+    padding: '50px',
     border: 'none',
     minWidth: '375px',
     height: '100vh',
@@ -38,17 +51,24 @@ const Container = styled(Box)(({ theme }) => ({
     maxHeight: '100dvh',
     display: 'flex',
     flexDirection: 'column',
+    alignItems: 'center',
+    gap: '80px',
 
     backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)), url('/images/home/login-background.png')`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
     margin: '0 auto',
-    [theme.breakpoints.down('md')]: {},
+    [theme.breakpoints.down('md')]: {
+        gap: '50px',
+        padding: '40px',
+    },
     [theme.breakpoints.down('sm')]: {
         minHeight: '100svh', // ✅ 작은 뷰포트 (주소창이 보이는 상태)
         maxHeight: '100lvh', // ✅ 큰 뷰포트 (주소창이 사라진 상태)
         backgroundImage: `linear-gradient(rgba(255, 255, 255,0.8), rgba(255, 255, 255, 0.8)), url('/images/home/login-background.png')`,
+        padding: '40px 0px',
+        gap: '20px',
     },
 }))
 

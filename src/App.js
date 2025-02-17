@@ -10,9 +10,9 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 // 컴포넌트 import
 import Navbar from './components/shared/Navbar'
-import { Home, MyPage, TemplatePage, AdminPage, LoginPage, SignupPage } from './pages'
 import Footer from './components/shared/Footer'
 import { Login } from './components/auth'
+import { Home, MyPage, TemplatePage, AdminPage, LoginPage, SignupPage } from './pages'
 
 // 라우트 세팅
 import { Route, Routes, Navigate, useLocation} from 'react-router-dom'
