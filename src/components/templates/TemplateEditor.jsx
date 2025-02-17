@@ -124,20 +124,11 @@ const PreviewFrame = styled(motion.div)(({ theme }) => ({
    backgroundColor: '#FFFFFF',
    borderRadius: '44px', // 아이폰 스타일의 라운드 코너
    boxShadow: '0 25px 45px rgba(0, 0, 0, 0.1)',
-   overflow: 'hidden',
+   overflowY: 'auto',
    position: 'relative',
-   '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: '50%',
-      transform: 'translateX(-50%)',
-      width: '35%',
-      height: '25px',
-      backgroundColor: '#F5F5F7',
-      borderBottomLeftRadius: '20px',
-      borderBottomRightRadius: '20px',
-      zIndex: 10,
+   WebkitOverflowScrolling: 'touch', // iOS에서 부드러운 스크롤 적용
+   '&::-webkit-scrollbar': {
+      display: 'none',
    },
    '&::after': {
       content: '""',
@@ -241,6 +232,7 @@ const TabsContainer = styled(Box)(({ theme }) => ({
    gap: '8px',
    padding: '16px',
    overflowX: 'auto',
+   WebkitOverflowScrolling: 'touch', // iOS에서 부드러운 스크롤 적용
    '&::-webkit-scrollbar': {
       height: '4px',
    },
@@ -281,45 +273,67 @@ function createSections(control, watch, themeProps) {
    ]
 }
 
-// 먼저 필요한 애니메이션 variants를 정의하겠습니다
+// 애니메이션 variants를 정의
+
+/**
+ * 컨테이너 애니메이션
+ * - 모바일 미리보기 패널 애니메이션
+ *
+ * 컨테이너 애니메이션은 모바일 미리보기 패널 애니메이션을 정의
+ * 사용법 : <EditorContainer variants={containerVariants} initial="initial" animate="animate">
+ */
 const containerVariants = {
-   initial: { opacity: 0 },
+   initial: { opacity: 0 }, // 초기 상태
    animate: {
-      opacity: 1,
+      opacity: 1, // 애니메이션 종료 상태
       transition: {
-         staggerChildren: 0.1,
+         staggerChildren: 0.1, // 자식 요소들 간의 애니메이션 지연
       },
    },
 }
 
+/**
+ * 미리보기 애니메이션
+ * - 모바일 미리보기 패널 애니메이션
+ *
+ * 미리보기 애니메이션은 모바일 미리보기 패널 애니메이션을 정의
+ * 사용법 : <PreviewContainer variants={previewVariants} initial="initial" animate="animate">
+ */
 const previewVariants = {
    initial: {
-      opacity: 0,
-      x: -50,
+      opacity: 0, // 초기 상태
+      x: -50, // 애니메이션 시작 위치
    },
    animate: {
-      opacity: 1,
-      x: 0,
+      opacity: 1, // 애니메이션 종료 상태
+      x: 0, // 애니메이션 종료 위치
       transition: {
-         type: 'spring',
-         stiffness: 300,
-         damping: 30,
+         type: 'spring', // 스프링 애니메이션 타입
+         stiffness: 300, // 스프링 애니메이션 강도
+         damping: 30, // 스프링 애니메이션 감쇠 비율
       },
    },
 }
 
+/**
+ * 편집기 애니메이션
+ * - 모바일 편집기 패널 애니메이션
+ *
+ * 편집기 애니메이션은 모바일 편집기 패널 애니메이션을 정의
+ * 사용법 : <EditorPanel variants={editorVariants} initial="initial" animate="animate">
+ */
 const editorVariants = {
    initial: {
-      opacity: 0,
-      x: 50,
+      opacity: 0, // 초기 상태
+      x: 50, // 애니메이션 시작 위치
    },
    animate: {
-      opacity: 1,
-      x: 0,
+      opacity: 1, // 애니메이션 종료 상태
+      x: 0, // 애니메이션 종료 위치
       transition: {
-         type: 'spring',
-         stiffness: 300,
-         damping: 30,
+         type: 'spring', // 스프링 애니메이션 타입
+         stiffness: 300, // 스프링 애니메이션 강도
+         damping: 30, // 스프링 애니메이션 감쇠 비율
       },
    },
 }
@@ -337,29 +351,30 @@ const TemplateEditor = () => {
          // 기본 정보
          profiles: [],
          showProfiles: false,
+         // 초대장 타입
+         type: 'wedding',
          // 제목
          title: '',
          // 인사말
          greeting: '',
          // 날짜/시간
-         date: null,
-         time: null,
+         dateTime: null,
+         showCountdown: false,
          // 장소
-         location: '',
-         address: '',
+         location: {
+            name: '',
+            address: '',
+            detail: '',
+         },
          showMap: true,
-         showDirections: true,
          // 갤러리
-         gallery: [],
+         images: [],
          // 계좌번호
          accounts: [],
          showAccounts: false,
          // RSVP
          rsvpTitle: '',
          rsvpDescription: '',
-         rsvpOptions: [],
-         rsvpButtonText: '',
-         useKakaoTalk: false,
          // 테마
          backgroundColor: '#ffffff',
          primaryColor: '#000000',
@@ -369,13 +384,14 @@ const TemplateEditor = () => {
       },
    })
 
+   // react-hook-form 훅 : 폼 상태 관리
    const {
-      control,
-      watch,
-      handleSubmit,
-      formState: { isDirty },
-      getValues,
-      reset,
+      control, // 컨트롤러
+      watch, // 감시
+      handleSubmit, // 폼 제출
+      formState: { isDirty }, // 폼 상태
+      getValues, // 폼 값 가져오기
+      reset, // 폼 초기화
    } = methods
 
    // 테마 훅
@@ -386,13 +402,13 @@ const TemplateEditor = () => {
 
    // sections
    const themeProps = {
-      handleThemeChange,
-      resetTheme,
-      undo,
-      redo,
-      canUndo,
-      canRedo,
-      theme: themeSettings,
+      handleThemeChange, // 테마 변경
+      resetTheme, // 테마 초기화
+      undo, // 실행 취소
+      redo, // 실행 복원
+      canUndo, // 실행 취소 가능 여부
+      canRedo, // 실행 복원 가능 여부
+      theme: themeSettings, // 테마
    }
 
    const sections = useMemo(() => createSections(control, watch, themeProps), [control, watch, themeProps])
@@ -404,6 +420,24 @@ const TemplateEditor = () => {
    const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false)
    const [previewSize, setPreviewSize] = useState('mobile') // mobile, tablet, desktop
    const [activeSection, setActiveSection] = useState('title')
+
+   // type 관련 상태와 핸들러
+   const currentType = watch('type') || 'wedding'
+   const handleTypeChange = useCallback(
+      (newType) => {
+         methods.setValue('type', newType, { shouldValidate: true })
+      },
+      [methods]
+   )
+
+   // 섹션 공통 props
+   const sectionProps = useMemo(
+      () => ({
+         currentType,
+         onTypeChange: handleTypeChange,
+      }),
+      [currentType, handleTypeChange]
+   )
 
    // 미디어쿼리나 상태에 따라 탭 변경
    const handleTabChange = useCallback((event, newValue) => {
@@ -470,11 +504,10 @@ const TemplateEditor = () => {
       desktop: <DesktopWindowsIcon />,
    }
 
-   // SpeedDial 액션
+   // SpeedDial 액션 (모바일 화면에서만 보여짐)
    const speedDialActions = [
       { icon: <SaveIcon />, name: '저장하기', action: handleSubmit(onSubmit) },
       { icon: <PreviewIcon />, name: '미리보기', action: () => setIsPreviewOpen(true) },
-      { icon: <ShareIcon />, name: '공유하기', action: () => console.log('공유') },
    ]
 
    return (
@@ -482,7 +515,14 @@ const TemplateEditor = () => {
          <EditorContainer variants={containerVariants} initial="initial" animate="animate">
             <PreviewContainer variants={previewVariants}>
                <PreviewFrame>
-                  <PreviewPanel formData={watch()} previewSize={previewSize} theme={themeSettings} />
+                  <PreviewPanel
+                     formData={{
+                        ...watch(),
+                        type: currentType,
+                     }}
+                     previewSize={previewSize}
+                     theme={themeSettings}
+                  />
                </PreviewFrame>
             </PreviewContainer>
 
@@ -496,15 +536,15 @@ const TemplateEditor = () => {
                </TabsContainer>
                <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
                   <AnimatePresence mode="wait">
-                     {activeSection === 'profile' && <ProfileSection key="profile" />}
-                     {activeSection === 'title' && <TitleSection key="title" />}
-                     {activeSection === 'greeting' && <GreetingSection key="greeting" />}
-                     {activeSection === 'datetime' && <DateTimeSection key="datetime" />}
-                     {activeSection === 'location' && <LocationSection key="location" />}
-                     {activeSection === 'gallery' && <GallerySection key="gallery" />}
-                     {activeSection === 'account' && <AccountSection key="account" />}
-                     {activeSection === 'rsvp' && <RSVPSection key="rsvp" />}
-                     {activeSection === 'theme' && <ThemeSection key="theme" />}
+                     {activeSection === 'profile' && <ProfileSection key="profile" {...sectionProps} />}
+                     {activeSection === 'title' && <TitleSection key="title" {...sectionProps} />}
+                     {activeSection === 'greeting' && <GreetingSection key="greeting" {...sectionProps} />}
+                     {activeSection === 'datetime' && <DateTimeSection key="datetime" {...sectionProps} />}
+                     {activeSection === 'location' && <LocationSection key="location" {...sectionProps} />}
+                     {activeSection === 'gallery' && <GallerySection key="gallery" {...sectionProps} />}
+                     {activeSection === 'account' && <AccountSection key="account" {...sectionProps} />}
+                     {activeSection === 'rsvp' && <RSVPSection key="rsvp" {...sectionProps} />}
+                     {activeSection === 'theme' && <ThemeSection key="theme" {...sectionProps} />}
                   </AnimatePresence>
                </Box>
             </EditorPanel>
