@@ -10,7 +10,7 @@ import { Home, MyPage, TemplatePage, AdminPage, LoginPage, SignupPage } from './
 import Footer from './components/shared/Footer'
 import { Route, Routes, Navigate } from 'react-router-dom'
 
-import { KakaoLogin, Login } from './components/auth'
+import { Login } from './components/auth'
 
 // 네비바 아래 컨텐츠를 위한 컨테이너
 const MainContent = muiStyled(Box)(({ theme }) => ({
@@ -83,13 +83,7 @@ function App() {
                     </Route>
 
                     <Route path="/login" element={<LoginPage />}>
-                        {/* /login에서 Login 컴포넌트 렌더링 */}
                         <Route index element={<Login />} />
-
-                        {/* /login/kakao에서 KakaoLogin 렌더링 */}
-                        <Route path="kakao" element={<KakaoLogin />} />
-
-                        {/* 예외처리 */}
                         <Route path="*" element={<Navigate to="/login" replace />} />
                     </Route>
                 </Routes>
