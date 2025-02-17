@@ -20,8 +20,12 @@ const LogoContainer = styled(Box)(({ theme }) => ({
 
 const LogoImgLink = styled('img')(({ theme }) => ({
     margin: '0 auto',
-    padding: '10px',
+    padding: '0px',
     height: '80px',
+
+    [theme.breakpoints.down('md')]: {
+        height: '70px',
+    },
 }))
 
 const Container = styled(Box)(({ theme }) => ({
@@ -32,6 +36,8 @@ const Container = styled(Box)(({ theme }) => ({
     height: '100vh',
     minHeight: '100vh', // 일반적인 뷰포트 높이
     maxHeight: '100dvh',
+    display: 'flex',
+    flexDirection: 'column',
 
     backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)), url('/images/home/login-background.png')`,
     backgroundSize: 'cover',
