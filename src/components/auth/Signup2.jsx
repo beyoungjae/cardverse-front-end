@@ -2,6 +2,7 @@ import { TextField, Button, Container, CircularProgress, InputAdornment, IconBut
 import { useState } from 'react'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
+import { useTheme } from '@mui/material/styles'
 
 const Signup = () => {
    const [email, setEmail] = useState('')
@@ -13,6 +14,7 @@ const Signup = () => {
    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
    const [loading, setLoading] = useState(false)
    const [agreeTerms, setAgreeTerms] = useState(false)
+   const theme = useTheme()
 
    const handleChange = (e) => {
       setMembershipType(e.target.value)
@@ -41,8 +43,8 @@ const Signup = () => {
             justifyContent: 'center',
             alignItems: 'center',
             minHeight: '100vh',
-            paddingTop: { xs: '20px', sm: '30px', md: '50px' },
-            paddingBottom: '50px',
+            paddingTop: { xs: theme.spacing(2), sm: theme.spacing(3), md: theme.spacing(5) },
+            paddingBottom: theme.spacing(5),
             maxWidth: '100%',
          }}
       >
@@ -50,11 +52,11 @@ const Signup = () => {
             sx={{
                width: '100%',
                maxWidth: '600px',
-               backgroundColor: 'white',
-               borderRadius: '10px',
-               padding: { xs: '20px', sm: '30px', md: '40px' },
+               backgroundColor: theme.palette.background.paper,
+               borderRadius: theme.shape.borderRadius.large,
+               padding: { xs: theme.spacing(2), sm: theme.spacing(3), md: theme.spacing(4) },
                boxSizing: 'border-box',
-               border: '1px solid #A4A4A4',
+               border: `1px solid ${theme.palette.divider}`,
             }}
          >
             <Typography
@@ -64,7 +66,7 @@ const Signup = () => {
                sx={{
                   fontWeight: 'bold',
                   fontSize: { xs: '30px', sm: '35px', md: '40px' },
-                  marginBottom: '20px',
+                  marginBottom: theme.spacing(2),
                }}
             >
                회원가입
@@ -74,9 +76,9 @@ const Signup = () => {
                align="center"
                gutterBottom
                sx={{
-                  color: '#666666',
+                  color: theme.palette.text.secondary,
                   fontSize: { xs: '12px', sm: '14px', md: '16px' },
-                  marginBottom: '40px',
+                  marginBottom: theme.spacing(5),
                }}
             >
                회원이 되어 다양한 혜택을 경험해보세요!
@@ -153,14 +155,14 @@ const Signup = () => {
                      fullWidth
                      disabled={loading}
                      sx={{
-                        mt: 2,
-                        border: '1px solid #A4A4A4',
+                        mt: theme.spacing(2),
+                        border: `1px solid ${theme.palette.divider}`,
                         backgroundColor: '#B699BB',
-                        color: 'white',
+                        color: '#fff',
                         fontSize: { xs: '14px', sm: '16px' },
                         '&:hover': {
                            backgroundColor: '#B699BB',
-                           borderColor: '#A4A4A4',
+                           borderColor: theme.palette.divider,
                         },
                      }}
                   >
@@ -169,9 +171,9 @@ const Signup = () => {
                </Grid>
             </Grid>
 
-            <Card sx={{ marginTop: '20px', border: '1px solid #A4A4A4' }}>
+            <Card sx={{ marginTop: theme.spacing(2), border: `1px solid ${theme.palette.divider}` }}>
                <CardContent sx={{ display: 'flex', textAlign: 'center' }}>
-                  <FormControlLabel control={<Checkbox checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} name="agreeTerms" />} label="로봇이 아닙니다." />
+                  <FormControlLabel control={<Checkbox checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} />} label="로봇이 아닙니다." />
                </CardContent>
             </Card>
          </Box>
