@@ -118,10 +118,6 @@ const TitleSection = () => {
                      value: 50,
                      message: '최대 50자까지 입력 가능합니다',
                   },
-                  pattern: {
-                     value: /^[가-힣a-zA-Z0-9\s]*$/,
-                     message: '특수문자는 사용할 수 없습니다',
-                  },
                }}
                render={({ field, fieldState: { error } }) => (
                   <Box>

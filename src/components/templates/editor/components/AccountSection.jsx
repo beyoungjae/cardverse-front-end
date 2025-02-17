@@ -74,6 +74,7 @@ const AccountSection = () => {
    const handleTypeSelect = useCallback(
       (type) => {
          setSelectedType(type)
+         setValue('type', type, { shouldValidate: true })
          setValue('accounts', [], { shouldValidate: true })
       },
       [setValue]
@@ -82,6 +83,16 @@ const AccountSection = () => {
    const handleCopyAccount = useCallback((account) => {
       navigator.clipboard.writeText(`${account.bank} ${account.number} ${account.holder}`)
    }, [])
+
+   const getAccountLabel = (index) => {
+      const labels = {
+         wedding: ['신랑측', '신부측'],
+         newYear: ['보내는 분'],
+         birthday: ['자녀대표'],
+         invitation: ['대표계좌'],
+      }[selectedType]
+      return labels[index] || labels[0]
+   }
 
    return (
       <SectionContainer component={motion.div} variants={fadeInUp} initial="initial" animate="animate" exit="exit" transition={easeTransition}>
@@ -239,17 +250,6 @@ const AccountSection = () => {
                   border: `1px dashed ${COLORS.accent.main}`,
                   position: 'relative',
                   overflow: 'hidden',
-                  '&::before': {
-                     content: '""',
-                     position: 'absolute',
-                     top: 0,
-                     left: 0,
-                     right: 0,
-                     bottom: 0,
-                     background: `linear-gradient(45deg, ${COLORS.accent.main}15 25%, transparent 25%, transparent 50%, ${COLORS.accent.main}15 50%, ${COLORS.accent.main}15 75%, transparent 75%, transparent)`,
-                     backgroundSize: '20px 20px',
-                     opacity: 0.5,
-                  },
                }}
             >
                <Box sx={{ position: 'relative', zIndex: 1 }}>
@@ -276,7 +276,7 @@ const AccountSection = () => {
                                  }}
                               >
                                  <Box>
-                                    <Typography sx={{ color: COLORS.text.secondary, fontSize: '0.9rem' }}>{currentType.accounts[index].label}</Typography>
+                                    <Typography sx={{ color: COLORS.text.secondary, fontSize: '0.9rem' }}>{getAccountLabel(index)}</Typography>
                                     <Typography sx={{ color: COLORS.text.primary, mt: 0.5 }}>
                                        {account.bank} {account.number}
                                     </Typography>

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { Box, Typography, Slider, IconButton, Grid, Chip, Tooltip, Collapse } from '@mui/material'
 import { motion, AnimatePresence } from 'framer-motion'
 import { styled } from '@mui/material/styles'
@@ -137,6 +137,7 @@ const animationPresets = [
 const ThemeSection = () => {
    const [showHelp, setShowHelp] = useState(false)
    const [selectedPreset, setSelectedPreset] = useState(null)
+   const [selectedType, setSelectedType] = useState('wedding')
    const { setValue, watch } = useFormContext()
 
    const theme = {
@@ -145,7 +146,58 @@ const ThemeSection = () => {
       backgroundColor: watch('backgroundColor'),
       fontFamily: watch('fontFamily'),
       animation: watch('animation'),
+      type: watch('type'),
    }
+
+   const handleTypeSelect = useCallback(
+      (type) => {
+         setSelectedType(type)
+         setValue('type', type, { shouldValidate: true })
+         const defaultTheme = {
+            wedding: {
+               primaryColor: '#FF69B4',
+               secondaryColor: '#FFA8A8',
+               backgroundColor: '#FFF5F5',
+               fontFamily: 'Noto Serif KR, serif',
+               animation: 'fade',
+            },
+            newYear: {
+               primaryColor: '#FFD700',
+               secondaryColor: '#FFD8A8',
+               backgroundColor: '#FFFAF0',
+               fontFamily: 'Pretendard, sans-serif',
+               animation: 'slide',
+            },
+            birthday: {
+               primaryColor: '#9370DB',
+               secondaryColor: '#E6E6FA',
+               backgroundColor: '#F0E6FF',
+               fontFamily: 'Noto Sans KR, sans-serif',
+               animation: 'zoom',
+            },
+            invitation: {
+               primaryColor: '#4169E1',
+               secondaryColor: '#B0E0E6',
+               backgroundColor: '#F0F8FF',
+               fontFamily: 'Pretendard, sans-serif',
+               animation: 'bounce',
+            },
+         }[type]
+
+         Object.entries(defaultTheme).forEach(([key, value]) => {
+            setValue(key, value, { shouldValidate: true })
+         })
+         setSelectedPreset(null)
+      },
+      [setValue]
+   )
+
+   // 초기 테마 설정 동기화
+   useEffect(() => {
+      if (theme.type && theme.type !== selectedType) {
+         handleTypeSelect(theme.type)
+      }
+   }, [theme.type, selectedType, handleTypeSelect])
 
    const handleThemeChange = useCallback(
       (type, value) => {

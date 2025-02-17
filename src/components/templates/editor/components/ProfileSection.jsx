@@ -25,7 +25,8 @@ const invitationTypes = [
             fields: [
                { name: 'name', label: '이름', placeholder: '신랑 이름을 입력해주세요' },
                { name: 'phone', label: '연락처', placeholder: '신랑 연락처를 입력해주세요' },
-               { name: 'parents', label: '부모님', placeholder: '신랑 부모님 성함을 입력해주세요 (예: 아버지 홍길동, 어머니 김말숙)' },
+               { name: 'parents_father', label: '아버지', placeholder: '신랑 아버지 성함을 입력해주세요' },
+               { name: 'parents_mother', label: '어머니', placeholder: '신랑 어머니 성함을 입력해주세요' },
             ],
          },
          {
@@ -33,7 +34,8 @@ const invitationTypes = [
             fields: [
                { name: 'name', label: '이름', placeholder: '신부 이름을 입력해주세요' },
                { name: 'phone', label: '연락처', placeholder: '신부 연락처를 입력해주세요' },
-               { name: 'parents', label: '부모님', placeholder: '신부 부모님 성함을 입력해주세요 (예: 아버지 홍길동, 어머니 김말숙)' },
+               { name: 'parents_father', label: '아버지', placeholder: '신부 아버지 성함을 입력해주세요' },
+               { name: 'parents_mother', label: '어머니', placeholder: '신부 어머니 성함을 입력해주세요' },
             ],
          },
       ],
@@ -91,12 +93,11 @@ const invitationTypes = [
    },
 ]
 
-const ProfileSection = () => {
+const ProfileSection = ({ currentType: propType, onTypeChange }) => {
    const [showHelp, setShowHelp] = useState(false)
-   const [selectedType, setSelectedType] = useState('wedding')
    const { control, setValue, watch } = useFormContext()
 
-   const currentType = invitationTypes.find((type) => type.id === selectedType)
+   const currentType = invitationTypes.find((type) => type.id === propType)
    const profiles = watch('profiles') || []
    const showProfiles = watch('showProfiles')
 
@@ -107,14 +108,15 @@ const ProfileSection = () => {
    const handleReset = useCallback(() => {
       setValue('profiles', [], { shouldValidate: true })
       setValue('showProfiles', false, { shouldValidate: true })
-   }, [setValue])
+      onTypeChange('wedding')
+   }, [setValue, onTypeChange])
 
    const handleTypeSelect = useCallback(
       (type) => {
-         setSelectedType(type)
          setValue('profiles', [], { shouldValidate: true })
+         onTypeChange(type)
       },
-      [setValue]
+      [setValue, onTypeChange]
    )
 
    const handleImageUpload = useCallback(
@@ -171,11 +173,11 @@ const ProfileSection = () => {
                      label={type.label}
                      onClick={() => handleTypeSelect(type.id)}
                      sx={{
-                        backgroundColor: selectedType === type.id ? `${COLORS.accent.main}15` : 'rgba(255, 255, 255, 0.8)',
-                        color: selectedType === type.id ? COLORS.accent.main : COLORS.text.primary,
-                        border: `1px solid ${selectedType === type.id ? COLORS.accent.main : COLORS.accent.main}15`,
+                        backgroundColor: propType === type.id ? `${COLORS.accent.main}15` : 'rgba(255, 255, 255, 0.8)',
+                        color: propType === type.id ? COLORS.accent.main : COLORS.text.primary,
+                        border: `1px solid ${propType === type.id ? COLORS.accent.main : COLORS.accent.main}15`,
                         '&:hover': {
-                           backgroundColor: selectedType === type.id ? `${COLORS.accent.main}25` : 'white',
+                           backgroundColor: propType === type.id ? `${COLORS.accent.main}25` : 'white',
                            transform: 'translateY(-2px)',
                            boxShadow: `0 4px 12px ${COLORS.accent.main}15`,
                         },

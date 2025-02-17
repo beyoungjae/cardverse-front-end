@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { DateTimePicker } from '@mui/x-date-pickers'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ko'
+import weekOfYear from 'dayjs/plugin/weekOfYear'
+import isoWeek from 'dayjs/plugin/isoWeek'
 import EventIcon from '@mui/icons-material/Event'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
@@ -19,6 +21,10 @@ import { styled } from '@mui/material/styles'
 
 // dayjs 한글 설정
 dayjs.locale('ko')
+
+// dayjs 플러그인 추가
+dayjs.extend(weekOfYear)
+dayjs.extend(isoWeek)
 
 const invitationTypes = [
    { id: 'wedding', label: '청첩장', icon: <FavoriteIcon />, format: '(신랑), (신부)의 결혼식이 (D-Day)일 남았습니다.' },
@@ -61,6 +67,115 @@ const StyledDateTimePicker = styled(DateTimePicker)(({ theme }) => ({
    },
 }))
 
+const CalendarContainer = styled(Box)(({ theme }) => ({
+   backgroundColor: 'white',
+   borderRadius: '12px',
+   padding: '20px',
+   boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+   width: '100%',
+   maxWidth: '320px',
+   margin: '0 auto',
+}))
+
+const CalendarHeader = styled(Box)(({ theme }) => ({
+   textAlign: 'center',
+   marginBottom: '20px',
+   '& .year-month': {
+      fontSize: '1.5rem',
+      fontWeight: 500,
+      color: COLORS.text.primary,
+   },
+   '& .time': {
+      fontSize: '1.1rem',
+      color: COLORS.text.secondary,
+      marginTop: '8px',
+   },
+}))
+
+const CalendarGrid = styled(Box)(({ theme }) => ({
+   display: 'grid',
+   gridTemplateColumns: 'repeat(7, 1fr)',
+   gap: '8px',
+   textAlign: 'center',
+}))
+
+const WeekDay = styled(Typography)(({ theme }) => ({
+   fontSize: '0.9rem',
+   color: COLORS.text.secondary,
+   padding: '8px 0',
+}))
+
+const DateCell = styled(Box)(({ theme, isSelected, isToday, isCurrentMonth, isSunday, isSaturday }) => ({
+   padding: '8px',
+   borderRadius: '8px',
+   cursor: 'pointer',
+   position: 'relative',
+   color: isSunday ? '#FF6B6B' : isSaturday ? '#4169E1' : !isCurrentMonth ? COLORS.text.hint : COLORS.text.primary,
+   backgroundColor: isSelected ? `${COLORS.accent.main}15` : 'transparent',
+   fontWeight: isToday || isSelected ? 600 : 400,
+   border: isToday ? `2px solid ${COLORS.accent.main}40` : 'none',
+   '&:hover': {
+      backgroundColor: `${COLORS.accent.main}10`,
+   },
+   ...(isSelected && {
+      '&::after': {
+         content: '""',
+         position: 'absolute',
+         top: '50%',
+         left: '50%',
+         transform: 'translate(-50%, -50%)',
+         width: '32px',
+         height: '32px',
+         borderRadius: '50%',
+         backgroundColor: COLORS.accent.main,
+         opacity: 0.15,
+         zIndex: 0,
+      },
+   }),
+}))
+
+const PreviewDateCell = styled(Box)(({ theme, isSelected, isToday, isCurrentMonth, isSunday, isSaturday }) => ({
+   padding: '8px',
+   borderRadius: '8px',
+   cursor: 'pointer',
+   position: 'relative',
+   color: isSunday ? '#FF6B6B' : isSaturday ? '#4169E1' : !isCurrentMonth ? COLORS.text.hint : COLORS.text.primary,
+   backgroundColor: isSelected ? `${COLORS.accent.main}15` : 'transparent',
+   fontWeight: isToday || isSelected ? 600 : 400,
+   border: isToday ? `2px solid ${COLORS.accent.main}40` : 'none',
+   '&:hover': {
+      backgroundColor: `${COLORS.accent.main}10`,
+   },
+   ...(isSelected && {
+      '&::after': {
+         content: '""',
+         position: 'absolute',
+         top: '50%',
+         left: '50%',
+         transform: 'translate(-50%, -50%)',
+         width: '32px',
+         height: '32px',
+         borderRadius: '50%',
+         backgroundColor: COLORS.accent.main,
+         opacity: 0.15,
+         zIndex: 0,
+      },
+   }),
+}))
+
+const PreviewCalendarGrid = styled(Box)(({ theme }) => ({
+   display: 'grid',
+   gridTemplateColumns: 'repeat(7, 1fr)',
+   gap: '8px',
+   textAlign: 'center',
+}))
+
+const PreviewWeekDay = styled(Typography)(({ theme }) => ({
+   fontSize: '0.9rem',
+   color: COLORS.text.secondary,
+   padding: '8px 0',
+}))
+
 const DateTimeSection = () => {
    const [showHelp, setShowHelp] = useState(false)
    const [selectedType, setSelectedType] = useState('wedding')
@@ -95,6 +210,65 @@ const DateTimeSection = () => {
       if (!date) return ''
       return dayjs(date).format('YYYY년 MM월 DD일 dddd A hh:mm')
    }, [])
+
+   const renderCalendar = useCallback(
+      (selectedDate) => {
+         const date = dayjs(selectedDate || new Date())
+         const startOfMonth = date.startOf('month')
+         const endOfMonth = date.endOf('month')
+         const startDate = startOfMonth.startOf('week')
+         const endDate = endOfMonth.endOf('week')
+
+         const calendar = []
+         const weekDays = ['일', '월', '화', '수', '목', '금', '토']
+
+         let currentDate = startDate
+         const rows = []
+         let cells = []
+
+         while (currentDate.isBefore(endDate) || currentDate.isSame(endDate, 'day')) {
+            cells.push(
+               <PreviewDateCell
+                  key={currentDate.format('YYYY-MM-DD')}
+                  isSelected={currentDate.format('YYYY-MM-DD') === date.format('YYYY-MM-DD')}
+                  isToday={currentDate.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD')}
+                  isCurrentMonth={currentDate.month() === date.month()}
+                  isSunday={currentDate.day() === 0}
+                  isSaturday={currentDate.day() === 6}
+               >
+                  {currentDate.date()}
+               </PreviewDateCell>
+            )
+
+            if (cells.length === 7) {
+               rows.push(<PreviewCalendarGrid key={currentDate.format('YYYY-MM')}>{cells}</PreviewCalendarGrid>)
+               cells = []
+            }
+
+            currentDate = currentDate.add(1, 'day')
+         }
+
+         if (cells.length > 0) {
+            rows.push(<PreviewCalendarGrid key={currentDate.format('YYYY-MM')}>{cells}</PreviewCalendarGrid>)
+         }
+
+         return (
+            <CalendarContainer>
+               <CalendarHeader>
+                  <Typography className="year-month">{date.format('YYYY.MM')}</Typography>
+                  {dateTime && <Typography className="time">{dayjs(dateTime).format('dddd A hh:mm')}</Typography>}
+               </CalendarHeader>
+               <PreviewCalendarGrid>
+                  {weekDays.map((day) => (
+                     <PreviewWeekDay key={day}>{day}</PreviewWeekDay>
+                  ))}
+               </PreviewCalendarGrid>
+               {rows}
+            </CalendarContainer>
+         )
+      },
+      [dateTime]
+   )
 
    return (
       <SectionContainer component={motion.div} variants={fadeInUp} initial="initial" animate="animate" exit="exit" transition={easeTransition}>
@@ -199,6 +373,8 @@ const DateTimeSection = () => {
                />
             </Box>
          </Box>
+
+         <Box sx={{ mt: 3 }}>{renderCalendar(dateTime)}</Box>
 
          {dateTime && (
             <Box
