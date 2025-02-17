@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState, useCallback } from 'react'
-import { Box, Typography, ImageList, ImageListItem, Divider, Chip, Button, IconButton, Tooltip, Skeleton, Avatar } from '@mui/material'
+import { Box, Typography, ImageList, ImageListItem, Divider, Chip, Button, IconButton, Tooltip, Skeleton, Avatar, Dialog, DialogContent } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import dayjs from 'dayjs'
@@ -15,7 +15,16 @@ import CakeIcon from '@mui/icons-material/Cake'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
+import DirectionsIcon from '@mui/icons-material/Directions'
+import MapIcon from '@mui/icons-material/Map'
+import CloseIcon from '@mui/icons-material/Close'
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import { PreviewFrame, fadeInUp, COLORS } from '../styles/commonStyles'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Autoplay, EffectCards } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/effect-cards'
 
 // dayjs 한글 설정
 dayjs.locale('ko')
@@ -36,13 +45,21 @@ const PreviewContent = styled(motion.div)(({ theme, backgroundColor }) => ({
    WebkitOverflowScrolling: 'touch', // iOS에서 부드러운 스크롤 적용
    padding: '24px',
    backgroundColor: backgroundColor || '#FFFFFF',
+   position: 'relative',
    '&::-webkit-scrollbar': {
       display: 'none',
+   },
+   '& .MuiDialog-root': {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
    },
 }))
 
 const Section = styled(motion.div)(({ theme }) => ({
-   marginBottom: '24px',
+   marginBottom: '100px',
    textAlign: 'center',
 }))
 
@@ -394,6 +411,7 @@ const invitationTypes = [
 const PreviewPanel = React.memo(({ formData, theme }) => {
    const [loadedImages, setLoadedImages] = useState(new Set())
    const [selectedType, setSelectedType] = useState('wedding')
+   const [selectedImageIndex, setSelectedImageIndex] = useState(null)
 
    console.log('formData:', formData) // 디버깅을 위한 로그 추가
 
@@ -456,9 +474,40 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
       [formData]
    )
 
+   // 이미지 모달 열기
+   const handleImageClick = (index) => {
+      setSelectedImageIndex(index)
+   }
+
+   // 이미지 모달 닫기
+   const handleCloseModal = () => {
+      setSelectedImageIndex(null)
+   }
+
+   // 다음 이미지로 이동
+   const handleNextImage = (e) => {
+      e.stopPropagation()
+      if (selectedImageIndex < formData.images.length - 1) {
+         setSelectedImageIndex((prev) => prev + 1)
+      } else {
+         setSelectedImageIndex(0) // 마지막 이미지에서 처음으로 순환
+      }
+   }
+
+   // 이전 이미지로 이동
+   const handlePrevImage = (e) => {
+      e.stopPropagation()
+      if (selectedImageIndex > 0) {
+         setSelectedImageIndex((prev) => prev - 1)
+      } else {
+         setSelectedImageIndex(formData.images.length - 1) // 첫 이미지에서 마지막으로 순환
+      }
+   }
+
    return (
       <PreviewContainer style={containerStyle}>
          <PreviewContent
+            className="PreviewContent"
             style={{
                background: typeStyle.gradient,
                fontFamily: typeStyle.fontFamily,
@@ -561,29 +610,200 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
                            return days
                         })()}
                      </PreviewCalendarGrid>
-
-                     {formData.showCountdown && (
-                        <Box
-                           sx={{
-                              mt: 2,
-                              textAlign: 'center',
-                              color: typeStyle.color,
-                              fontWeight: 500,
-                              fontSize: '0.9rem',
-                           }}
-                        >
-                           {formatDDay(formData.dateTime, formData.type)}
-                        </Box>
-                     )}
                   </CalendarPreview>
+                  {formData.showCountdown && (
+                     <Box
+                        sx={{
+                           mt: 2,
+                           textAlign: 'center',
+                           color: typeStyle.color,
+                           fontWeight: 500,
+                           fontSize: '0.9rem',
+                        }}
+                     >
+                        {formatDDay(formData.dateTime, formData.type)}
+                     </Box>
+                  )}
                </Section>
             )}
 
-            {formData.location?.name && (
+            {formData.locationName && (
                <Section>
-                  <Typography sx={{ fontSize: '1.1rem', fontWeight: 500, mb: 1 }}>{formData.location.name}</Typography>
-                  <Typography sx={{ color: 'rgba(0,0,0,0.6)', mb: 1 }}>{formData.location.address}</Typography>
-                  {formData.location.detail && <Typography sx={{ fontSize: '0.9rem', color: 'rgba(0,0,0,0.6)' }}>{formData.location.detail}</Typography>}
+                  <Typography sx={{ color: typeStyle.color, fontWeight: 500, mb: 2 }}>오시는 길</Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                     <Box
+                        sx={{
+                           p: 3,
+                           borderRadius: '16px',
+                           background: 'rgba(255, 255, 255, 0.95)',
+                           boxShadow: `0 8px 32px ${COLORS.accent.main}15`,
+                           border: `1px solid ${COLORS.accent.main}15`,
+                        }}
+                     >
+                        <Box
+                           sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1.5,
+                              mb: 2,
+                           }}
+                        >
+                           <LocationOnIcon sx={{ color: typeStyle.color }} />
+                           <Typography
+                              sx={{
+                                 fontSize: '1.3rem',
+                                 fontWeight: 600,
+                                 color: typeStyle.color,
+                              }}
+                           >
+                              {formData.locationName}
+                           </Typography>
+                        </Box>
+
+                        <Box
+                           sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 2,
+                           }}
+                        >
+                           <Typography
+                              sx={{
+                                 color: COLORS.text.primary,
+                                 fontSize: '1rem',
+                                 display: 'flex',
+                                 alignItems: 'center',
+                                 gap: 1,
+                              }}
+                           >
+                              {formData.locationAddress}
+                           </Typography>
+
+                           {formData.locationDetail && (
+                              <Box
+                                 sx={{
+                                    p: 2,
+                                    borderRadius: '8px',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                                    border: `1px solid ${COLORS.accent.main}15`,
+                                 }}
+                              >
+                                 <Typography
+                                    sx={{
+                                       color: COLORS.text.secondary,
+                                       fontSize: '0.95rem',
+                                       whiteSpace: 'pre-line',
+                                    }}
+                                 >
+                                    {formData.locationDetail}
+                                 </Typography>
+                              </Box>
+                           )}
+
+                           {formData.locationGuide && (
+                              <Box
+                                 sx={{
+                                    p: 2,
+                                    borderRadius: '8px',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                                    border: `1px solid ${COLORS.accent.main}15`,
+                                 }}
+                              >
+                                 <Box
+                                    sx={{
+                                       display: 'flex',
+                                       alignItems: 'center',
+                                       gap: 1,
+                                       mb: 1,
+                                       color: typeStyle.color,
+                                    }}
+                                 >
+                                    <DirectionsIcon fontSize="small" />
+                                    <Typography
+                                       sx={{
+                                          fontWeight: 500,
+                                          fontSize: '0.9rem',
+                                       }}
+                                    >
+                                       교통편 안내
+                                    </Typography>
+                                 </Box>
+                                 <Typography
+                                    sx={{
+                                       color: COLORS.text.secondary,
+                                       fontSize: '0.95rem',
+                                       whiteSpace: 'pre-line',
+                                    }}
+                                 >
+                                    {formData.locationGuide}
+                                 </Typography>
+                              </Box>
+                           )}
+
+                           {formData.showMap && (
+                              <Box
+                                 sx={{
+                                    mt: 1,
+                                    p: 2,
+                                    borderRadius: '12px',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                                    border: `1px dashed ${typeStyle.color}50`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 1,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                       backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                       transform: 'translateY(-2px)',
+                                    },
+                                 }}
+                              >
+                                 <MapIcon sx={{ color: typeStyle.color }} />
+                                 <Typography
+                                    sx={{
+                                       color: typeStyle.color,
+                                       fontWeight: 500,
+                                       fontSize: '0.95rem',
+                                    }}
+                                 >
+                                    지도 보기
+                                 </Typography>
+                              </Box>
+                           )}
+
+                           {formData.showNavigation && (
+                              <Box
+                                 sx={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    gap: 1,
+                                    mt: 1,
+                                 }}
+                              >
+                                 {['카카오맵', '네이버맵', '티맵'].map((app) => (
+                                    <Chip
+                                       key={app}
+                                       icon={<DirectionsIcon />}
+                                       label={app}
+                                       sx={{
+                                          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                          border: `1px solid ${typeStyle.color}25`,
+                                          '&:hover': {
+                                             backgroundColor: 'white',
+                                             transform: 'translateY(-2px)',
+                                             boxShadow: `0 4px 12px ${typeStyle.color}15`,
+                                          },
+                                          transition: 'all 0.3s ease',
+                                       }}
+                                    />
+                                 ))}
+                              </Box>
+                           )}
+                        </Box>
+                     </Box>
+                  </Box>
                </Section>
             )}
 
@@ -604,26 +824,263 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
 
             {formData.images?.length > 0 && (
                <Section>
+                  <Typography sx={{ color: typeStyle.color, fontWeight: 500, mb: 2 }}>{formData.type === 'wedding' ? '웨딩 갤러리' : formData.type === 'newYear' ? '갤러리' : formData.type === 'birthday' ? '생일 축하 갤러리' : '갤러리'}</Typography>
                   <Box
                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-                        gap: 2,
+                        ...(formData.galleryLayout === 'grid' && {
+                           display: 'grid',
+                           gridTemplateColumns: 'repeat(3, 1fr)',
+                           gap: 2,
+                           p: 2,
+                        }),
+                        ...(formData.galleryLayout === 'masonry' && {
+                           columnCount: 2,
+                           columnGap: '16px',
+                           p: 2,
+                        }),
+                        ...(formData.galleryLayout === 'polaroid' && {
+                           height: '400px',
+                           width: '100%',
+                           p: 2,
+                           position: 'relative',
+                           overflow: 'hidden',
+                        }),
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        borderRadius: '16px',
+                        boxShadow: `0 8px 32px ${COLORS.accent.main}15`,
+                        border: `1px solid ${COLORS.accent.main}15`,
                      }}
                   >
-                     {formData.images.map((image, index) => (
-                        <img
-                           key={index}
-                           src={image.url}
-                           alt=""
+                     {formData.galleryLayout === 'polaroid' ? (
+                        <Swiper
+                           modules={[Autoplay, EffectCards]}
+                           effect="cards"
+                           grabCursor={true}
+                           autoplay={{
+                              delay: 2500,
+                              disableOnInteraction: false,
+                           }}
+                           loop={true}
                            style={{
                               width: '100%',
-                              height: '120px',
-                              objectFit: 'cover',
-                              borderRadius: '8px',
+                              height: '100%',
+                              padding: '30px',
                            }}
-                        />
-                     ))}
+                        >
+                           {formData.images.map((image, index) => (
+                              <SwiperSlide key={index}>
+                                 <Box
+                                    sx={{
+                                       width: '100%',
+                                       height: '100%',
+                                       backgroundColor: '#fff',
+                                       borderRadius: '4px',
+                                       padding: '12px',
+                                       boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                       display: 'flex',
+                                       flexDirection: 'column',
+                                       gap: 1,
+                                    }}
+                                 >
+                                    <Box
+                                       component="img"
+                                       src={image.url}
+                                       alt=""
+                                       sx={{
+                                          width: '100%',
+                                          height: '100%',
+                                          objectFit: 'contain',
+                                          borderRadius: '2px',
+                                       }}
+                                    />
+                                    <Typography
+                                       sx={{
+                                          fontSize: '0.8rem',
+                                          color: COLORS.text.secondary,
+                                          width: '100%',
+                                          textAlign: 'center',
+                                          fontFamily: 'Pretendard, sans-serif',
+                                       }}
+                                    ></Typography>
+                                 </Box>
+                              </SwiperSlide>
+                           ))}
+                        </Swiper>
+                     ) : (
+                        <>
+                           {formData.images.map((image, index) => (
+                              <Box
+                                 key={index}
+                                 component={motion.div}
+                                 initial={{ opacity: 0, scale: 0.8 }}
+                                 animate={{ opacity: 1, scale: 1 }}
+                                 transition={{ delay: index * 0.1 }}
+                                 onClick={() => handleImageClick(index)}
+                                 sx={{
+                                    ...(formData.galleryLayout === 'grid' && {
+                                       position: 'relative',
+                                       paddingTop: '100%',
+                                       borderRadius: '8px',
+                                       overflow: 'hidden',
+                                       cursor: 'pointer',
+                                    }),
+                                    ...(formData.galleryLayout === 'masonry' && {
+                                       breakInside: 'avoid',
+                                       marginBottom: 2,
+                                       borderRadius: '8px',
+                                       overflow: 'hidden',
+                                       cursor: 'pointer',
+                                    }),
+                                 }}
+                              >
+                                 <Box
+                                    component="img"
+                                    src={image.url}
+                                    alt=""
+                                    sx={{
+                                       ...(formData.galleryLayout === 'grid' && {
+                                          position: 'absolute',
+                                          top: 0,
+                                          left: 0,
+                                          width: '100%',
+                                          height: '100%',
+                                          objectFit: 'cover',
+                                       }),
+                                       ...(formData.galleryLayout === 'masonry' && {
+                                          width: '100%',
+                                          height: 'auto',
+                                          display: 'block',
+                                       }),
+                                    }}
+                                 />
+                              </Box>
+                           ))}
+
+                           {/* 이미지 모달 - 그리드와 매소니리 레이아웃에서만 표시 */}
+                           <Dialog
+                              open={selectedImageIndex !== null}
+                              onClose={handleCloseModal}
+                              sx={{
+                                 '& .MuiDialog-container': {
+                                    position: 'absolute',
+                                    inset: 0,
+                                    margin: 0,
+                                    height: '100%',
+                                 },
+                                 '& .MuiBackdrop-root': {
+                                    position: 'absolute',
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                 },
+                                 '& .MuiDialog-paper': {
+                                    position: 'absolute',
+                                    margin: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    maxWidth: '100%',
+                                    maxHeight: '100%',
+                                    backgroundColor: 'transparent',
+                                    boxShadow: 'none',
+                                 },
+                              }}
+                              PaperProps={{
+                                 style: {
+                                    background: 'transparent',
+                                 },
+                              }}
+                              BackdropProps={{
+                                 onClick: handleCloseModal,
+                              }}
+                              container={() => document.querySelector('.PreviewContent')}
+                           >
+                              <DialogContent
+                                 sx={{
+                                    position: 'relative',
+                                    padding: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: '100%',
+                                    overflow: 'hidden',
+                                 }}
+                              >
+                                 {selectedImageIndex !== null && (
+                                    <Box
+                                       sx={{
+                                          position: 'relative',
+                                          width: '100%',
+                                          height: '100%',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                       }}
+                                    >
+                                       <IconButton
+                                          onClick={handleCloseModal}
+                                          sx={{
+                                             position: 'absolute',
+                                             top: 8,
+                                             right: 8,
+                                             color: 'white',
+                                             backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                             '&:hover': {
+                                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                             },
+                                             zIndex: 2,
+                                          }}
+                                       >
+                                          <CloseIcon />
+                                       </IconButton>
+                                       <IconButton
+                                          onClick={handlePrevImage}
+                                          sx={{
+                                             position: 'absolute',
+                                             left: 8,
+                                             top: '50%',
+                                             transform: 'translateY(-50%)',
+                                             color: 'white',
+                                             backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                             '&:hover': {
+                                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                             },
+                                             zIndex: 2,
+                                          }}
+                                       >
+                                          <ArrowBackIosIcon />
+                                       </IconButton>
+                                       <Box
+                                          component="img"
+                                          src={formData.images[selectedImageIndex].url}
+                                          alt=""
+                                          sx={{
+                                             maxWidth: '90%',
+                                             maxHeight: '90%',
+                                             objectFit: 'contain',
+                                             borderRadius: '4px',
+                                          }}
+                                       />
+                                       <IconButton
+                                          onClick={handleNextImage}
+                                          sx={{
+                                             position: 'absolute',
+                                             right: 8,
+                                             top: '50%',
+                                             transform: 'translateY(-50%)',
+                                             color: 'white',
+                                             backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                             '&:hover': {
+                                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                             },
+                                             zIndex: 2,
+                                          }}
+                                       >
+                                          <ArrowForwardIosIcon />
+                                       </IconButton>
+                                    </Box>
+                                 )}
+                              </DialogContent>
+                           </Dialog>
+                        </>
+                     )}
                   </Box>
                </Section>
             )}

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { useWatch, Controller } from 'react-hook-form'
+import { useWatch, Controller, useFormContext } from 'react-hook-form'
 import { Box, Button, IconButton, Typography, ImageList, ImageListItem, Dialog, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel, CircularProgress, Tooltip, Slider, Paper, Chip, LinearProgress } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -27,6 +27,7 @@ import CelebrationIcon from '@mui/icons-material/Celebration'
 import CakeIcon from '@mui/icons-material/Cake'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel'
+import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
 import { SectionContainer, SectionTitle, TitleText, HelpText, IconButtonWrapper, fadeInUp, easeTransition, COLORS } from '../styles/commonStyles'
 
 const ImageUploadArea = styled(Box)(({ theme, isDragging }) => ({
@@ -163,11 +164,17 @@ const invitationTypes = [
 
 const layoutIcons = {
    grid: <ViewModuleIcon />,
-   masonry: <ViewComfyIcon />,
+   masonry: <ViewQuiltIcon />,
    polaroid: <ViewCarouselIcon />,
 }
 
-const GallerySection = ({ control }) => {
+const layoutDescriptions = {
+   grid: '균일한 정사각형 그리드',
+   masonry: '이미지 비율을 유지하는 벽돌형',
+   polaroid: '회전하는 슬라이드쇼',
+}
+
+const GallerySection = () => {
    const [previewUrls, setPreviewUrls] = useState([])
    const [selectedImage, setSelectedImage] = useState(null)
    const [layout, setLayout] = useState('grid')
@@ -190,27 +197,47 @@ const GallerySection = ({ control }) => {
    const [isDragging, setIsDragging] = useState(false)
    const [selectedType, setSelectedType] = useState('wedding')
 
-   // useWatch를 사용하여 gallery 값 관찰
-   const gallery = useWatch({
-      control,
-      name: 'gallery',
-      defaultValue: [],
-   })
+   const { control, watch, setValue } = useFormContext()
+   const images = watch('images') || []
 
    // 이미지 URL 생성 및 관리
    useEffect(() => {
-      const urls = gallery.map((image) => ({
-         url: URL.createObjectURL(image),
-         id: `${image.name}-${image.lastModified}`,
-      }))
+      const urls = images.map((image) => {
+         // 이미 URL이 있는 경우 그대로 사용
+         if (image.url) {
+            return {
+               url: image.url,
+               id: `${image.name || 'image'}-${Date.now()}`,
+            }
+         }
+
+         // File 객체인 경우 URL 생성
+         if (image instanceof File) {
+            return {
+               url: URL.createObjectURL(image),
+               id: `${image.name}-${image.lastModified}`,
+            }
+         }
+
+         // 둘 다 아닌 경우 기본 값 반환
+         return {
+            url: '',
+            id: `image-${Date.now()}`,
+         }
+      })
 
       setPreviewUrls(urls)
 
       // Cleanup
       return () => {
-         urls.forEach(({ url }) => URL.revokeObjectURL(url))
+         urls.forEach(({ url }) => {
+            // 직접 생성한 URL만 해제
+            if (url && !url.startsWith('data:') && !url.startsWith('http')) {
+               URL.revokeObjectURL(url)
+            }
+         })
       }
-   }, [gallery])
+   }, [images])
 
    const handleDragEnter = useCallback((e) => {
       e.preventDefault()
@@ -228,17 +255,25 @@ const GallerySection = ({ control }) => {
          setIsDragging(false)
          const files = Array.from(e.dataTransfer.files).filter((file) => file.type.startsWith('image/'))
          if (files.length > 0) {
-            control.setValue('gallery', files, { shouldValidate: true })
+            setValue('images', files, { shouldValidate: true })
          }
       },
-      [control]
+      [setValue]
    )
 
    const handleFileSelect = useCallback(
       (e) => {
-         const files = Array.from(e.target.files).filter((file) => file.type.startsWith('image/'))
+         const files = Array.from(e.target.files)
+            .filter((file) => file.type.startsWith('image/'))
+            .map((file) => ({
+               file,
+               url: URL.createObjectURL(file),
+               name: file.name,
+               lastModified: file.lastModified,
+               layout: layout,
+            }))
+
          if (files.length > 0) {
-            // 업로드 진행 상태 시뮬레이션
             setUploadProgress(0)
             const interval = setInterval(() => {
                setUploadProgress((prev) => {
@@ -251,32 +286,44 @@ const GallerySection = ({ control }) => {
                })
             }, 100)
 
-            control.setValue('gallery', files, { shouldValidate: true })
+            const updatedImages = [...images].map((img) => ({
+               ...img,
+               layout: layout,
+            }))
+
+            setValue('images', [...updatedImages, ...files], { shouldValidate: true })
          }
       },
-      [control]
+      [images, setValue, layout]
    )
 
    const handleImageDelete = useCallback(
       (index) => {
-         const newGallery = [...gallery]
-         newGallery.splice(index, 1)
-         control.setValue('gallery', newGallery)
+         const newImages = [...images]
+         const deletedImage = newImages[index]
+
+         // URL 해제
+         if (deletedImage?.url) {
+            URL.revokeObjectURL(deletedImage.url)
+         }
+
+         newImages.splice(index, 1)
+         setValue('images', newImages, { shouldValidate: true })
       },
-      [control, gallery]
+      [images, setValue]
    )
 
    const handleDragEnd = useCallback(
       (result) => {
          if (!result.destination) return
 
-         const items = Array.from(gallery)
+         const items = Array.from(images)
          const [reorderedItem] = items.splice(result.source.index, 1)
          items.splice(result.destination.index, 0, reorderedItem)
 
-         control.setValue('gallery', items)
+         setValue('images', items)
       },
-      [control, gallery]
+      [images, setValue]
    )
 
    const handleEditImage = useCallback(
@@ -284,10 +331,10 @@ const GallerySection = ({ control }) => {
          setEditingImage({
             index,
             url: previewUrls[index].url,
-            file: gallery[index],
+            file: images[index],
          })
       },
-      [previewUrls, gallery]
+      [previewUrls, images]
    )
 
    const getRandomRotation = useCallback(() => {
@@ -398,14 +445,14 @@ const GallerySection = ({ control }) => {
          })
 
          // 이미지 배열 업데이트
-         const newValue = [...gallery]
+         const newValue = [...images]
          newValue[editingImage.index] = newFile
          const newUrl = URL.createObjectURL(newFile)
          const newPreviewUrls = [...previewUrls]
          newPreviewUrls[editingImage.index] = { url: newUrl, id: `${newFile.name}-${newFile.lastModified}` }
 
          setPreviewUrls(newPreviewUrls)
-         control.setValue('gallery', newValue)
+         setValue('images', newValue)
          setEditingImage(null)
          setEditSettings({
             rotate: 0,
@@ -418,52 +465,92 @@ const GallerySection = ({ control }) => {
       } finally {
          setUploading(false)
       }
-   }, [editingImage, editSettings, previewUrls, control, gallery])
+   }, [editingImage, editSettings, previewUrls, images, setValue])
 
    const handleHelpToggle = useCallback(() => {
       setShowHelp((prev) => !prev)
    }, [])
 
    const handleReset = useCallback(() => {
-      control.setValue('gallery', [], { shouldValidate: true })
+      setValue('images', [], { shouldValidate: true })
       setUploadProgress(0)
-   }, [control])
+   }, [setValue])
 
    const handleTypeSelect = useCallback((type) => {
       setSelectedType(type)
       setLayout(invitationTypes.find((t) => t.id === type).layouts[0])
    }, [])
 
-   const handleLayoutSelect = useCallback((layout) => {
-      setLayout(layout)
-   }, [])
+   const handleLayoutSelect = useCallback(
+      (newLayout) => {
+         setLayout(newLayout)
+         setValue('galleryLayout', newLayout, { shouldValidate: true })
+      },
+      [setValue]
+   )
 
    const handleImageUpload = useCallback(
       (event) => {
-         const files = Array.from(event.target.files)
-         const currentImages = gallery || []
+         const files = Array.from(event.target.files).filter((file) => file.type.startsWith('image/'))
+         const currentImages = images || []
 
          if (currentImages.length + files.length > invitationTypes.find((t) => t.id === selectedType).maxImages) {
             alert(`최대 ${invitationTypes.find((t) => t.id === selectedType).maxImages}장까지 업로드 가능합니다.`)
             return
          }
 
-         // 업로드 진행 상태 시뮬레이션
-         let progress = 0
-         const interval = setInterval(() => {
-            progress += 10
-            setUploadProgress(progress)
-            if (progress >= 100) {
-               clearInterval(interval)
-               setUploadProgress(0)
-               control.setValue('gallery', [...currentImages, ...files], { shouldValidate: true })
+         // 새로운 이미지 객체 생성
+         const newImages = files.map((file) => {
+            const url = URL.createObjectURL(file)
+            return {
+               file,
+               url,
+               id: `${file.name}-${Date.now()}`,
             }
-         }, 100)
+         })
+
+         // 기존 이미지와 새 이미지 합치기
+         setValue('images', [...currentImages, ...newImages], { shouldValidate: true })
       },
-      [selectedType, gallery, control]
+      [selectedType, images, setValue]
    )
 
    const currentType = invitationTypes.find((type) => type.id === selectedType)
+
+   // 컴포넌트 마운트/언마운트 시 이미지 상태 복원
+   useEffect(() => {
+      const savedImages = watch('images') || []
+      const savedLayout = watch('galleryLayout') || 'grid'
+
+      if (savedImages.length > 0) {
+         setLayout(savedLayout)
+         const urls = savedImages.map((image) => ({
+            url: image.url || URL.createObjectURL(image.file),
+            id: `${image.name}-${image.lastModified || Date.now()}`,
+         }))
+         setPreviewUrls(urls)
+      }
+
+      return () => {
+         // cleanup URLs
+         previewUrls.forEach(({ url }) => {
+            if (url && !url.startsWith('data:') && !url.startsWith('http')) {
+               URL.revokeObjectURL(url)
+            }
+         })
+      }
+   }, [watch])
+
+   // 컴포넌트 언마운트 시 URL 정리
+   useEffect(() => {
+      return () => {
+         images.forEach((image) => {
+            if (image?.url) {
+               URL.revokeObjectURL(image.url)
+            }
+         })
+      }
+   }, [])
 
    return (
       <SectionContainer component={motion.div} variants={fadeInUp} initial="initial" animate="animate" exit="exit" transition={easeTransition}>
@@ -517,7 +604,7 @@ const GallerySection = ({ control }) => {
 
          <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
             {currentType.layouts.map((layout) => (
-               <Tooltip key={layout} title={`${layout} 레이아웃`}>
+               <Tooltip key={layout} title={layoutDescriptions[layout]}>
                   <Chip
                      icon={layoutIcons[layout]}
                      label={layout.charAt(0).toUpperCase() + layout.slice(1)}
@@ -569,7 +656,7 @@ const GallerySection = ({ control }) => {
                {currentType.placeholderText}
             </Typography>
             <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: COLORS.text.hint }}>
-               {gallery.length}/{currentType.maxImages}장 업로드됨
+               {images.length}/{currentType.maxImages}장 업로드됨
             </Typography>
             {uploadProgress > 0 && (
                <LinearProgress
@@ -589,7 +676,7 @@ const GallerySection = ({ control }) => {
          </Box>
 
          <Controller
-            name="gallery"
+            name="images"
             control={control}
             defaultValue={[]}
             render={({ field }) => (
@@ -641,7 +728,7 @@ const GallerySection = ({ control }) => {
                                  }}
                               >
                                  <img
-                                    src={URL.createObjectURL(image)}
+                                    src={image.url}
                                     alt={`Gallery ${index + 1}`}
                                     loading="lazy"
                                     style={{
@@ -651,6 +738,27 @@ const GallerySection = ({ control }) => {
                                        objectFit: 'cover',
                                     }}
                                  />
+                                 <Box
+                                    sx={{
+                                       position: 'absolute',
+                                       top: 0,
+                                       right: 0,
+                                       p: 1,
+                                    }}
+                                 >
+                                    <IconButton
+                                       onClick={() => handleImageDelete(index)}
+                                       sx={{
+                                          color: 'white',
+                                          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                          '&:hover': {
+                                             backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                          },
+                                       }}
+                                    >
+                                       <DeleteIcon />
+                                    </IconButton>
+                                 </Box>
                               </ImageListItem>
                            ))}
                         </ImageList>

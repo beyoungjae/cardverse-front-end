@@ -419,7 +419,7 @@ const TemplateEditor = () => {
    const [isPreviewOpen, setIsPreviewOpen] = useState(false)
    const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false)
    const [previewSize, setPreviewSize] = useState('mobile') // mobile, tablet, desktop
-   const [activeSection, setActiveSection] = useState('title')
+   const [activeSection, setActiveSection] = useState('profile')
 
    // type 관련 상태와 핸들러
    const currentType = watch('type') || 'wedding'

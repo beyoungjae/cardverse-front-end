@@ -483,48 +483,170 @@ const LocationSection = () => {
                sx={{
                   mt: 3,
                   p: 3,
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  borderRadius: '12px',
-                  border: `1px dashed ${COLORS.accent.main}`,
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  borderRadius: '16px',
+                  border: `1px solid ${COLORS.accent.main}25`,
+                  boxShadow: `0 8px 32px ${COLORS.accent.main}15`,
                   position: 'relative',
                   overflow: 'hidden',
-                  '&::before': {
-                     content: '""',
-                     position: 'absolute',
-                     top: 0,
-                     left: 0,
-                     right: 0,
-                     bottom: 0,
-                     background: `linear-gradient(45deg, ${COLORS.accent.main}15 25%, transparent 25%, transparent 50%, ${COLORS.accent.main}15 50%, ${COLORS.accent.main}15 75%, transparent 75%, transparent)`,
-                     backgroundSize: '20px 20px',
-                     opacity: 0.5,
-                  },
                }}
             >
                <Box sx={{ position: 'relative', zIndex: 1 }}>
-                  {currentType.icon}
-                  <Box sx={{ mt: 1, color: COLORS.accent.main, fontWeight: 500 }}>{currentType.label}</Box>
-                  {locationName && <Box sx={{ mt: 2, color: COLORS.text.primary, fontSize: '1.2rem', fontWeight: 500 }}>{locationName}</Box>}
-                  {locationAddress && <Box sx={{ mt: 1, color: COLORS.text.primary }}>{locationAddress}</Box>}
-                  {locationDetail && <Box sx={{ mt: 1, color: COLORS.text.secondary }}>{locationDetail}</Box>}
-                  {locationGuide && (
-                     <Box sx={{ mt: 2, color: COLORS.text.secondary, whiteSpace: 'pre-line' }}>
-                        <Box sx={{ mb: 1, display: 'flex', gap: 1, alignItems: 'center' }}>
-                           <SubwayIcon fontSize="small" />
-                           <DirectionsBusIcon fontSize="small" />
-                           <DirectionsCarIcon fontSize="small" />
+                  <Box
+                     sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        mb: 2,
+                     }}
+                  >
+                     {currentType.icon}
+                     <Typography
+                        sx={{
+                           color: COLORS.accent.main,
+                           fontWeight: 600,
+                           fontSize: '1.1rem',
+                        }}
+                     >
+                        {currentType.label}
+                     </Typography>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                     {locationName && (
+                        <Typography
+                           sx={{
+                              color: COLORS.text.primary,
+                              fontSize: '1.2rem',
+                              fontWeight: 500,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                           }}
+                        >
+                           <LocationOnIcon fontSize="small" sx={{ color: COLORS.accent.main }} />
+                           {locationName}
+                        </Typography>
+                     )}
+
+                     {locationAddress && (
+                        <Typography
+                           sx={{
+                              color: COLORS.text.secondary,
+                              fontSize: '1rem',
+                              pl: 3.5,
+                           }}
+                        >
+                           {locationAddress}
+                        </Typography>
+                     )}
+
+                     {locationDetail && (
+                        <Box
+                           sx={{
+                              p: 2,
+                              borderRadius: '8px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                              border: `1px solid ${COLORS.accent.main}15`,
+                           }}
+                        >
+                           <Typography
+                              sx={{
+                                 color: COLORS.text.secondary,
+                                 fontSize: '0.95rem',
+                                 whiteSpace: 'pre-line',
+                              }}
+                           >
+                              {locationDetail}
+                           </Typography>
                         </Box>
-                        {locationGuide}
-                     </Box>
-                  )}
-                  {showMap && <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(255, 255, 255, 0.5)', borderRadius: '8px', textAlign: 'center' }}>지도가 표시됩니다</Box>}
-                  {showNavigation && (
-                     <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 1 }}>
-                        <Chip icon={<DirectionsIcon />} label="카카오맵" />
-                        <Chip icon={<DirectionsIcon />} label="네이버맵" />
-                        <Chip icon={<DirectionsIcon />} label="티맵" />
-                     </Box>
-                  )}
+                     )}
+
+                     {locationGuide && (
+                        <Box
+                           sx={{
+                              p: 2,
+                              borderRadius: '8px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                              border: `1px solid ${COLORS.accent.main}15`,
+                           }}
+                        >
+                           <Box
+                              sx={{
+                                 display: 'flex',
+                                 alignItems: 'center',
+                                 gap: 1,
+                                 mb: 1,
+                                 color: COLORS.accent.main,
+                              }}
+                           >
+                              <DirectionsIcon fontSize="small" />
+                              <Typography
+                                 sx={{
+                                    fontWeight: 500,
+                                    fontSize: '0.9rem',
+                                 }}
+                              >
+                                 교통편 안내
+                              </Typography>
+                           </Box>
+                           <Typography
+                              sx={{
+                                 color: COLORS.text.secondary,
+                                 fontSize: '0.95rem',
+                                 whiteSpace: 'pre-line',
+                              }}
+                           >
+                              {locationGuide}
+                           </Typography>
+                        </Box>
+                     )}
+                  </Box>
+
+                  <Box
+                     sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: 2,
+                        mt: 3,
+                     }}
+                  >
+                     {showMap && (
+                        <Box
+                           sx={{
+                              p: 2,
+                              borderRadius: '8px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                              border: `1px solid ${COLORS.accent.main}15`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                              color: COLORS.accent.main,
+                           }}
+                        >
+                           <MapIcon fontSize="small" />
+                           <Typography sx={{ fontSize: '0.9rem', fontWeight: 500 }}>지도 표시</Typography>
+                        </Box>
+                     )}
+
+                     {showNavigation && (
+                        <Box
+                           sx={{
+                              p: 2,
+                              borderRadius: '8px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                              border: `1px solid ${COLORS.accent.main}15`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                              color: COLORS.accent.main,
+                           }}
+                        >
+                           <DirectionsIcon fontSize="small" />
+                           <Typography sx={{ fontSize: '0.9rem', fontWeight: 500 }}>내비게이션 표시</Typography>
+                        </Box>
+                     )}
+                  </Box>
                </Box>
             </Box>
          )}
