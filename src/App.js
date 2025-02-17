@@ -1,25 +1,30 @@
 import React from 'react'
+
+// style 세팅
 import CssBaseline from '@mui/material/CssBaseline'
 import { styled as muiStyled } from '@mui/material/styles'
 import { Box } from '@mui/material'
 import { createGlobalStyle } from 'styled-components'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+
+// 컴포넌트 import
 import Navbar from './components/shared/Navbar'
 import { Home, MyPage, TemplatePage, AdminPage, LoginPage, SignupPage } from './pages'
 import Footer from './components/shared/Footer'
-import { Route, Routes, Navigate } from 'react-router-dom'
-
 import { Login } from './components/auth'
 
+// 라우트 세팅
+import { Route, Routes, Navigate, useLocation} from 'react-router-dom'
+
 // 네비바 아래 컨텐츠를 위한 컨테이너
-const MainContent = muiStyled(Box)(({ theme }) => ({
-    paddingTop: '126px',
+const MainContent = muiStyled('div')(({ theme, $hideLayout }) => ({
+    paddingTop: $hideLayout ? 0 : '126px',
     [theme.breakpoints.down('lg')]: {
-        paddingTop: '125px',
+        paddingTop: $hideLayout ? 0 : '125px',
     },
     [theme.breakpoints.down('sm')]: {
-        paddingTop: '55px',
+        paddingTop: $hideLayout ? 0 : '55px',
     },
 }))
 
@@ -65,12 +70,17 @@ const GlobalStyle = createGlobalStyle`
 `
 
 function App() {
+    const location = useLocation()
+    const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup')
+
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
             <GlobalStyle />
             <CssBaseline />
-            <Navbar />
-            <MainContent>
+
+            {!hideLayout && <Navbar />}
+
+            <MainContent $hideLayout={hideLayout}>
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/my/*" element={<MyPage />} />
@@ -88,7 +98,8 @@ function App() {
                     </Route>
                 </Routes>
             </MainContent>
-            <Footer />
+
+            {!hideLayout && <Footer />}
         </LocalizationProvider>
     )
 }

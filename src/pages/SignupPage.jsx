@@ -1,12 +1,17 @@
 import React from 'react'
 import Signup from '../components/auth/Signup'
-import { Container } from '@mui/material'
+import { Box } from '@mui/material'
+import { styled } from '@mui/system'
+
+const Container = styled(Box)(({ theme }) => ({
+    minWidth: '375px',
+}))
 
 const SignupPage = () => {
-   return (
-      <Container maxWidth="md">
-         <Signup />
-      </Container>
-   )
+    return (
+        <Container>
+            <Signup />
+        </Container>
+    )
 }
 export default SignupPage
