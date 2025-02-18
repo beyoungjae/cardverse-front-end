@@ -7,7 +7,7 @@ const NoticePage = () => {
    const { notices = [] } = useNotice() || {}
    const location = useLocation()
 
-   const isNoticePage = location.pathname === '/notice'
+   const isNoticePage = location.pathname === '/support'
    const isQAPage = location.pathname === '/'
    const isFAQPage = location.pathname === '/faq'
 
