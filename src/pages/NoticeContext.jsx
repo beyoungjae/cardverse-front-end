@@ -15,7 +15,6 @@ export const NoticeProvider = ({ children }) => {
    return <NoticeContext.Provider value={{ notices, addNotice }}>{children}</NoticeContext.Provider>
 }
 
-// useNotice 훅 - context 값 사용
 export const useNotice = () => {
    return useContext(NoticeContext)
 }
