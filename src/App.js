@@ -85,7 +85,7 @@ function App() {
                <Route path="/" element={<Home />} />
                <Route path="/my/*" element={<MyPage />} />
                <Route path="/signup" element={<SignupPage />} />
-               <Route path="/notice" element={<Noticepage />} />
+               <Route path="/support" element={<Noticepage />} />
                <Route path="/context" element={<NoticeContext />} />
 
                <Route path="/template">

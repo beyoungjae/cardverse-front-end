@@ -24,7 +24,7 @@ const NoticePage = () => {
          <div className="header" style={{ textAlign: 'right', marginBottom: '20px', paddingTop: '100px', paddingRight: '50px' }}>
             <Button
                component={Link}
-               to="/notice"
+               to="/support"
                variant="contained"
                color="primary"
                sx={{
