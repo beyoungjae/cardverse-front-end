@@ -1,3 +1,5 @@
+//공지내용 일단 구현해놓음
+
 import React, { useState, useCallback } from 'react'
 import { Button, Typography, Box } from '@mui/material'
 import { Link, useLocation } from 'react-router-dom'

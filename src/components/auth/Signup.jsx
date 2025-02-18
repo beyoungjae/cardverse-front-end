@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react'
-import { TextField, Button, Container, CircularProgress, InputAdornment, IconButton, MenuItem, Typography, Box, FormControlLabel, Checkbox, Grid, Card, CardContent } from '@mui/material'
+import React, { useState, useCallback } from 'react'
+import { TextField, Button, Container, CircularProgress, InputAdornment, IconButton, MenuItem, Typography, Box, FormControlLabel, Checkbox, Grid } from '@mui/material'
 import { useForm, Controller } from 'react-hook-form'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
@@ -7,6 +7,7 @@ import { useTheme } from '@mui/material/styles'
 import { styled } from '@mui/system'
 import * as Yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { useNavigate } from 'react-router-dom'
 
 const FormControlText = styled(Typography)(({ theme }) => ({
    fontSize: '16px',
@@ -33,6 +34,19 @@ const StyledButton = styled(Button)(({ theme }) => ({
    width: '100%',
 }))
 
+const LogoButton = styled('img')(({ theme }) => ({
+   cursor: 'pointer',
+   width: '150px',
+   height: 'auto',
+   marginBottom: theme.spacing(4),
+   [theme.breakpoints.down('sm')]: {
+      width: '120px',
+   },
+   [theme.breakpoints.down('xs')]: {
+      width: '100px',
+   },
+}))
+
 // 유효성 검사 스키마 (Yup 사용)
 const schema = Yup.object({
    email: Yup.string().email('올바른 이메일을 입력해주세요.').required('이메일을 입력해주세요.'),
@@ -45,16 +59,21 @@ const schema = Yup.object({
       .required('비밀번호 확인을 입력해주세요.'),
    nickname: Yup.string().required('닉네임을 입력해주세요.'),
    membershipType: Yup.string().required('가입 유형을 선택해주세요.'),
+   referralEmail: Yup.string().when('membershipType', {
+      is: '추천인',
+      then: Yup.string().email('올바른 이메일을 입력해주세요.').required('추천인 이메일을 입력해주세요.'),
+   }),
 }).required()
 
 const Signup = () => {
    const theme = useTheme()
+   const navigate = useNavigate()
 
    const {
       control,
       handleSubmit,
       formState: { errors },
-      setValue,
+      watch,
    } = useForm({
       resolver: yupResolver(schema),
    })
@@ -66,6 +85,8 @@ const Signup = () => {
       agreeTerms: false,
       errorMessage: '',
    })
+
+   const membershipType = watch('membershipType')
 
    const handleSignup = useCallback(
       async (data) => {
@@ -83,6 +104,7 @@ const Signup = () => {
             })
 
             alert('회원가입이 완료되었습니다!')
+            navigate('/')
          } catch (error) {
             setFormStatus((prevState) => ({
                ...prevState,
@@ -92,7 +114,7 @@ const Signup = () => {
             setFormStatus((prevState) => ({ ...prevState, loading: false }))
          }
       },
-      [formStatus.agreeTerms]
+      [formStatus.agreeTerms, navigate]
    )
 
    const renderTextField = useCallback(
@@ -155,30 +177,9 @@ const Signup = () => {
                border: `1px solid ${theme.palette.divider}`,
             }}
          >
-            <Typography
-               variant="h4"
-               align="center"
-               gutterBottom
-               sx={{
-                  fontWeight: 'bold',
-                  fontSize: { xs: '30px', sm: '35px', md: '40px' },
-                  marginBottom: theme.spacing(2),
-               }}
-            >
-               회원가입
-            </Typography>
-            <Typography
-               variant="body1"
-               align="center"
-               gutterBottom
-               sx={{
-                  color: theme.palette.text.secondary,
-                  fontSize: { xs: '12px', sm: '14px', md: '16px' },
-                  marginBottom: theme.spacing(5),
-               }}
-            >
-               회원이 되어 다양한 혜택을 경험해보세요!
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: theme.spacing(4) }}>
+               <LogoButton src="/images/logo.png" alt="Logo" onClick={() => navigate('/')} />
+            </Box>
 
             {formStatus.errorMessage && (
                <Box
@@ -231,23 +232,20 @@ const Signup = () => {
                   />
                </Grid>
 
+               {membershipType === '추천인' && (
+                  <Grid item xs={12}>
+                     <FormControlText>추천인 이메일</FormControlText>
+                     {renderTextField('referralEmail', '추천인 이메일을 입력해주세요.')}
+                  </Grid>
+               )}
+
                <Grid item xs={12}>
-                  <FormControlLabel
-                     control={<Checkbox checked={formStatus.agreeTerms} onChange={(e) => setFormStatus((prevState) => ({ ...prevState, agreeTerms: e.target.checked }))} />}
-                     label={
-                        <Typography variant="body2" color="textSecondary">
-                           약관에 동의합니다.
-                           <a href="/terms" target="_blank" style={{ textDecoration: 'none', color: '#1976d2' }}>
-                              약관 보기
-                           </a>
-                        </Typography>
-                     }
-                  />
+                  <FormControlLabel control={<Checkbox checked={formStatus.agreeTerms} onChange={() => setFormStatus((prevState) => ({ ...prevState, agreeTerms: !prevState.agreeTerms }))} />} label="약관에 동의합니다." />
                </Grid>
 
                <Grid item xs={12}>
                   <StyledButton onClick={handleSubmit(handleSignup)} disabled={formStatus.loading}>
-                     {formStatus.loading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : '회원가입'}
+                     {formStatus.loading ? <CircularProgress size={24} color="inherit" /> : '회원가입'}
                   </StyledButton>
                </Grid>
             </Grid>

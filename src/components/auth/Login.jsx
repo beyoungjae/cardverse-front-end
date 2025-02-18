@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { TextField, Box, IconButton, InputAdornment, Typography } from '@mui/material'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
@@ -16,7 +16,7 @@ const Container = styled(Box)(({ theme }) => ({
    display: 'flex',
    flexDirection: 'column',
    alignItems: 'center',
-   gap: theme.spacing(7),
+   gap: theme.spacing(4),
    backgroundColor: '#fcfcfc',
 
    [theme.breakpoints.down('sm')]: {
@@ -74,6 +74,7 @@ const Button = styled('button')(({ theme }) => ({
    justifyContent: 'center',
    gap: theme.spacing(1),
    width: '100%',
+   transition: 'background-color 0.3s ease',
 
    '&:hover': {
       backgroundColor: '#a98bae',
@@ -126,6 +127,7 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
    fontSize: '0.85rem',
    textAlign: 'end',
    padding: theme.spacing(1),
+   color: '#666666',
 
    [theme.breakpoints.down('md')]: {
       fontSize: '0.8rem',
@@ -156,6 +158,12 @@ const StyledLink = styled(Link)(({ theme }) => ({
    display: 'inline',
    textDecoration: 'none',
    fontSize: '0.84rem',
+   fontWeight: 'bold',
+   color: theme.palette.primary.main,
+
+   '&:hover': {
+      textDecoration: 'underline',
+   },
 
    [theme.breakpoints.down('md')]: {
       fontSize: '0.8rem',
@@ -177,8 +185,23 @@ const Login = React.memo(() => {
 
    const navigate = useNavigate()
 
+   useEffect(() => {
+      if (window.Kakao) {
+         window.Kakao.init('YOUR_KAKAO_JAVASCRIPT_KEY')
+         console.log('✅ Kakao SDK initialized')
+      } else {
+         console.error('❌ Kakao SDK is not loaded')
+      }
+   }, [])
+
    const handleKakaoLogin = useCallback(() => {
       const Kakao = window.Kakao
+
+      if (!Kakao) {
+         console.error('❌ Kakao is not loaded')
+         return
+      }
+
       Kakao.Auth.login({
          success: (response) => {
             console.log('✅ 카카오 로그인 성공!')
@@ -236,7 +259,7 @@ const Login = React.memo(() => {
                   }}
                />
                <StyledTypography>
-                  비밀번호가 기억나지 않으세요? <StyledLink>비밀번호</StyledLink> 찾으러 가기
+                  비밀번호가 기억나지 않으세요? <StyledLink to="#">비밀번호</StyledLink> 찾으러 가기
                </StyledTypography>
             </Form>
 
