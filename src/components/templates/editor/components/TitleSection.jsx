@@ -72,7 +72,7 @@ const TitleSection = () => {
                   <strong>제목 작성 도움말</strong>
                   <ul>
                      <li>초대장 유형을 선택하여 맞춤형 제목을 작성해보세요.</li>
-                     <li>특수문자는 사용할 수 없으며, 2-50자 사이로 입력해주세요.</li>
+                     <li>특수문자는 사용할 수 없으며, 2-20자 사이로 입력해주세요.</li>
                      <li>자동완성 버튼을 눌러 예시 제목을 사용할 수 있습니다.</li>
                      <li>선택한 유형에 맞는 감성적인 제목을 추천드립니다.</li>
                   </ul>
@@ -115,8 +115,8 @@ const TitleSection = () => {
                      message: '최소 2자 이상 입력해주세요',
                   },
                   maxLength: {
-                     value: 50,
-                     message: '최대 50자까지 입력 가능합니다',
+                     value: 20,
+                     message: '최대 20자까지 입력 가능합니다',
                   },
                }}
                render={({ field, fieldState: { error } }) => (
@@ -131,7 +131,7 @@ const TitleSection = () => {
                            borderColor: error ? COLORS.error : COLORS.border,
                         }}
                      />
-                     <CharacterCount isNearLimit={field.value?.length >= 40}>{field.value?.length || 0}/50</CharacterCount>
+                     <CharacterCount isNearLimit={field.value?.length >= 20}>{field.value?.length || 0}/20</CharacterCount>
                   </Box>
                )}
             />

@@ -1,30 +1,26 @@
 import React, { useMemo, useEffect, useState, useCallback } from 'react'
-import { Box, Typography, ImageList, ImageListItem, Divider, Chip, Button, IconButton, Tooltip, Skeleton, Avatar, Dialog, DialogContent } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
+import { motion } from 'framer-motion'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ko'
-import EventIcon from '@mui/icons-material/Event'
-import LocationOnIcon from '@mui/icons-material/LocationOn'
-import MessageIcon from '@mui/icons-material/Message'
-import GroupIcon from '@mui/icons-material/Group'
-import ShareIcon from '@mui/icons-material/Share'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import CelebrationIcon from '@mui/icons-material/Celebration'
 import CakeIcon from '@mui/icons-material/Cake'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
-import DirectionsIcon from '@mui/icons-material/Directions'
-import MapIcon from '@mui/icons-material/Map'
-import CloseIcon from '@mui/icons-material/Close'
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
-import { PreviewFrame, fadeInUp, COLORS } from '../styles/commonStyles'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Autoplay, EffectCards } from 'swiper/modules'
-import 'swiper/css'
-import 'swiper/css/effect-cards'
+import { COLORS } from '../styles/commonStyles'
+
+import AnimatedSection from './sections/AnimatedSection'
+
+// 분리된 섹션 컴포넌트들 import
+import ProfileSection from './sections/ProfileSection'
+import TitleSection from './sections/TitleSection'
+import GreetingSection from './sections/GreetingSection'
+import DateTimeSection from './sections/DateTimeSection'
+import LocationSection from './sections/LocationSection'
+import AccountSection from './sections/AccountSection'
+import RSVPSection from './sections/RSVPSection'
+import GallerySection from './sections/GallerySection'
 
 // dayjs 한글 설정
 dayjs.locale('ko')
@@ -55,173 +51,6 @@ const PreviewContent = styled(motion.div)(({ theme, backgroundColor }) => ({
       left: 0,
       right: 0,
       bottom: 0,
-   },
-}))
-
-const Section = styled(motion.div)(({ theme }) => ({
-   marginBottom: '100px',
-   textAlign: 'center',
-}))
-
-const ProfileSection = styled(Section)(({ theme }) => ({
-   display: 'flex',
-   justifyContent: 'center',
-   gap: '32px',
-   marginBottom: '32px',
-   '& .profile-item': {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '8px',
-   },
-   '& .profile-avatar': {
-      width: '80px',
-      height: '80px',
-      marginBottom: '8px',
-   },
-   '& .profile-name': {
-      fontSize: '1.1rem',
-      fontWeight: 500,
-   },
-   '& .profile-info': {
-      fontSize: '0.9rem',
-      color: 'rgba(0,0,0,0.6)',
-   },
-}))
-
-const TitleSection = styled(Section)(({ theme }) => ({
-   '& .title-text': {
-      fontSize: '2rem',
-      fontWeight: 600,
-      background: 'linear-gradient(45deg, #333, #666)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      marginBottom: theme.spacing(2),
-   },
-}))
-
-const GreetingSection = styled(Section)(({ theme }) => ({
-   '& .greeting-text': {
-      fontSize: '1.1rem',
-      lineHeight: 2,
-      whiteSpace: 'pre-line',
-      color: COLORS.text.primary,
-      fontFamily: 'Noto Serif KR, serif',
-   },
-}))
-
-const DateTimeSection = styled(Section)(({ theme }) => ({
-   '& .date': {
-      fontSize: '1.3rem',
-      fontWeight: 500,
-      marginBottom: theme.spacing(1),
-   },
-   '& .countdown': {
-      fontSize: '1.1rem',
-      color: COLORS.accent.main,
-   },
-}))
-
-const LocationSection = styled(Section)(({ theme }) => ({
-   '& .location-name': {
-      fontSize: '1.2rem',
-      fontWeight: 500,
-      marginBottom: theme.spacing(1),
-   },
-   '& .location-address': {
-      color: COLORS.text.secondary,
-      marginBottom: theme.spacing(1),
-   },
-   '& .location-detail': {
-      whiteSpace: 'pre-line',
-      color: COLORS.text.secondary,
-      fontSize: '0.9rem',
-   },
-}))
-
-const GallerySection = styled(Section)(({ theme }) => ({
-   '& .gallery-grid': {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: theme.spacing(2),
-      marginTop: theme.spacing(2),
-   },
-   '& .gallery-image': {
-      width: '100%',
-      aspectRatio: '1',
-      objectFit: 'cover',
-      borderRadius: '8px',
-      transition: 'all 0.3s ease',
-      '&:hover': {
-         transform: 'scale(1.05) rotate(2deg)',
-      },
-   },
-}))
-
-const AccountSection = styled(Section)(({ theme }) => ({
-   '& .account-item': {
-      backgroundColor: 'rgba(255,255,255,0.8)',
-      padding: '16px',
-      borderRadius: '8px',
-      marginBottom: '12px',
-   },
-   '& .account-label': {
-      fontSize: '0.9rem',
-      color: 'rgba(0,0,0,0.6)',
-      marginBottom: '4px',
-   },
-   '& .account-number': {
-      fontSize: '1rem',
-      fontWeight: 500,
-   },
-   '& .account-holder': {
-      fontSize: '0.9rem',
-      color: 'rgba(0,0,0,0.6)',
-      marginTop: '4px',
-   },
-}))
-
-const RSVPSection = styled(Section)(({ theme }) => ({
-   textAlign: 'center',
-   '& .rsvp-title': {
-      fontSize: '1.2rem',
-      color: COLORS.text.primary,
-      marginBottom: theme.spacing(1),
-   },
-   '& .rsvp-description': {
-      color: COLORS.text.secondary,
-      marginBottom: theme.spacing(2),
-   },
-   '& .rsvp-options': {
-      display: 'flex',
-      flexWrap: 'wrap',
-      gap: theme.spacing(1),
-      justifyContent: 'center',
-      marginBottom: theme.spacing(2),
-   },
-}))
-
-const CalendarPreview = styled(Box)(({ theme }) => ({
-   backgroundColor: 'rgba(255, 255, 255, 0.9)',
-   borderRadius: '12px',
-   padding: '20px',
-   width: '100%',
-   maxWidth: '280px',
-   margin: '0 auto',
-   boxShadow: `0 4px 12px ${COLORS.accent.main}15`,
-   border: `1px solid ${COLORS.accent.main}15`,
-   position: 'relative',
-   overflow: 'hidden',
-   '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: `linear-gradient(45deg, ${COLORS.accent.main}08 25%, transparent 25%, transparent 50%, ${COLORS.accent.main}08 50%, ${COLORS.accent.main}08 75%, transparent 75%, transparent)`,
-      backgroundSize: '20px 20px',
-      opacity: 0.5,
    },
 }))
 
@@ -428,13 +257,89 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
    const type = formData.type || selectedType
    const typeStyle = InvitationType[type]
 
+   // typeStyle과 theme를 결합하되, theme가 우선순위를 가지도록 설정
+   const combinedStyle = useMemo(
+      () => ({
+         gradient: theme?.backgroundColor ? `linear-gradient(135deg, ${theme.backgroundColor}, ${theme.backgroundColor}dd)` : typeStyle.gradient,
+         color: theme?.primaryColor || typeStyle.color,
+         fontFamily: theme?.fontFamily || typeStyle.fontFamily,
+      }),
+      [theme?.backgroundColor, theme?.primaryColor, theme?.fontFamily, typeStyle]
+   )
+
+   // 컨테이너 스타일 메모이제이션
    const containerStyle = useMemo(
       () => ({
-         background: typeStyle.gradient,
-         color: theme.primaryColor || '#000000',
-         fontFamily: typeStyle.fontFamily,
+         background: combinedStyle.gradient,
+         color: combinedStyle.color,
+         fontFamily: combinedStyle.fontFamily,
       }),
-      [typeStyle, theme.primaryColor]
+      [combinedStyle]
+   )
+
+   // 텍스트 스타일 메모이제이션
+   const textStyle = useMemo(
+      () => ({
+         color: theme?.secondaryColor || typeStyle.color,
+         fontFamily: combinedStyle.fontFamily,
+      }),
+      [theme?.secondaryColor, combinedStyle.fontFamily, typeStyle.color]
+   )
+
+   // 섹션 스타일 메모이제이션
+   const sectionStyle = useMemo(
+      () => ({
+         backgroundColor: `${theme?.backgroundColor || '#ffffff'}dd`,
+         borderColor: `${theme?.primaryColor || typeStyle.color}15`,
+      }),
+      [theme?.backgroundColor, theme?.primaryColor, typeStyle.color]
+   )
+
+   // 프로필 섹션 스타일 메모이제이션
+   const profileStyle = useMemo(
+      () => ({
+         backgroundColor: `${theme?.backgroundColor}dd` || '#ffffffdd',
+         color: theme?.primaryColor || '#000000',
+         '& .profile-avatar': {
+            bgcolor: `${theme?.primaryColor}15` || '#00000015',
+         },
+         '& .profile-name': {
+            color: theme?.primaryColor || '#000000',
+         },
+         '& .profile-info': {
+            color: theme?.secondaryColor || '#666666',
+         },
+      }),
+      [theme?.backgroundColor, theme?.primaryColor, theme?.secondaryColor]
+   )
+
+   // 계좌 섹션 스타일 메모이제이션
+   const accountStyle = useMemo(
+      () => ({
+         backgroundColor: `${theme?.backgroundColor}dd` || '#ffffffdd',
+         '& .account-label': {
+            color: theme?.secondaryColor || '#666666',
+         },
+         '& .account-number': {
+            color: theme?.primaryColor || '#000000',
+         },
+         '& .account-holder': {
+            color: theme?.secondaryColor || '#666666',
+         },
+      }),
+      [theme?.backgroundColor, theme?.primaryColor, theme?.secondaryColor]
+   )
+
+   // 갤러리 섹션 스타일 메모이제이션
+   const galleryStyle = useMemo(
+      () => ({
+         backgroundColor: `${theme?.backgroundColor}dd` || '#ffffffdd',
+         borderColor: `${theme?.primaryColor}15` || '#00000015',
+         '& .gallery-title': {
+            color: theme?.primaryColor || '#000000',
+         },
+      }),
+      [theme?.backgroundColor, theme?.primaryColor]
    )
 
    const getAccountLabel = (index) => {
@@ -504,593 +409,93 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
       }
    }
 
+   // 애니메이션 variants 정의
+   const animationVariants = useMemo(
+      () => ({
+         fade: {
+            initial: { opacity: 0 },
+            animate: { opacity: 1 },
+            exit: { opacity: 0 },
+         },
+         slide: {
+            initial: { x: -20, opacity: 0 },
+            animate: { x: 0, opacity: 1 },
+            exit: { x: 20, opacity: 0 },
+         },
+         zoom: {
+            initial: { scale: 0.8, opacity: 0 },
+            animate: { scale: 1, opacity: 1 },
+            exit: { scale: 1.2, opacity: 0 },
+         },
+         bounce: {
+            initial: { y: -20, opacity: 0 },
+            animate: {
+               y: 0,
+               opacity: 1,
+               transition: { type: 'spring', stiffness: 300, damping: 15 },
+            },
+            exit: { y: 20, opacity: 0 },
+         },
+      }),
+      []
+   )
+
+   // 애니메이션이 적용될 요소인지 확인하는 함수
+   const shouldAnimate = useCallback((elementId) => theme?.animationTargets?.includes(elementId), [theme?.animationTargets])
+
+   // 현재 선택된 애니메이션 variant
+   const currentAnimation = useMemo(() => animationVariants[theme?.animation || 'fade'], [animationVariants, theme?.animation])
+
    return (
       <PreviewContainer style={containerStyle}>
          <PreviewContent
             className="PreviewContent"
             style={{
-               background: typeStyle.gradient,
-               fontFamily: typeStyle.fontFamily,
-            }}
-            initial="initial"
-            animate="animate"
-            variants={{
-               initial: { opacity: 0 },
-               animate: { opacity: 1 },
+               background: combinedStyle.gradient,
+               fontFamily: combinedStyle.fontFamily,
             }}
          >
-            {formData.showProfiles && formData.profiles?.length > 0 && (
-               <ProfileSection>
-                  {formData.profiles.map((profile, index) => (
-                     <Box key={index} className="profile-item">
-                        <Avatar
-                           src={profile.image}
-                           className="profile-avatar"
-                           sx={{
-                              bgcolor: `${typeStyle.color}15`,
-                           }}
-                        />
-                        <Typography className="profile-name" style={{ color: typeStyle.color }}>
-                           {profile.name}
-                        </Typography>
-                        {profile.phone && <Typography className="profile-info">{profile.phone}</Typography>}
-                        {profile.parents_father && <Typography className="profile-info">부</Typography>}
-                        {profile.parents_father && <Typography className="profile-info">{profile.parents_father}</Typography>}
-                        {profile.parents_mother && <Typography className="profile-info">모</Typography>}
-                        {profile.parents_mother && <Typography className="profile-info">{profile.parents_mother}</Typography>}
-                     </Box>
-                  ))}
-               </ProfileSection>
-            )}
+            {/* 프로필 섹션 */}
+            <AnimatedSection shouldAnimate={shouldAnimate('profile')} animation={currentAnimation}>
+               {formData.showProfiles && formData.profiles?.length > 0 && <ProfileSection profiles={formData.profiles} style={profileStyle} combinedStyle={combinedStyle} textStyle={textStyle} />}
+            </AnimatedSection>
 
-            {formData.title && (
-               <Section>
-                  <Typography variant="h5" sx={{ color: typeStyle.color, mb: 2 }}>
-                     {formData.title}
-                  </Typography>
-               </Section>
-            )}
+            {/* 제목 섹션 */}
+            <AnimatedSection shouldAnimate={shouldAnimate('title')} animation={currentAnimation}>
+               {formData.title && <TitleSection title={formData.title} style={sectionStyle} combinedStyle={combinedStyle} />}
+            </AnimatedSection>
 
-            {formData.greeting && (
-               <Section>
-                  <Typography sx={{ whiteSpace: 'pre-line', lineHeight: 1.8 }}>{formData.greeting}</Typography>
-               </Section>
-            )}
+            {/* 인사말 섹션 */}
+            <AnimatedSection shouldAnimate={shouldAnimate('greeting')} animation={currentAnimation}>
+               {formData.greeting && <GreetingSection greeting={formData.greeting} style={sectionStyle} combinedStyle={combinedStyle} textStyle={textStyle} />}
+            </AnimatedSection>
 
-            {formData.dateTime && (
-               <Section>
-                  <CalendarPreview>
-                     <PreviewCalendarHeader>
-                        <Typography
-                           sx={{
-                              fontSize: '1.2rem',
-                              fontWeight: 500,
-                              color: typeStyle.color,
-                              mb: 0.5,
-                           }}
-                        >
-                           {dayjs(formData.dateTime).format('YYYY.MM')}
-                        </Typography>
-                        <Typography
-                           sx={{
-                              fontSize: '0.9rem',
-                              color: COLORS.text.secondary,
-                           }}
-                        >
-                           {dayjs(formData.dateTime).format('dddd A hh:mm')}
-                        </Typography>
-                     </PreviewCalendarHeader>
+            {/* 날짜/시간 섹션 */}
+            <AnimatedSection shouldAnimate={shouldAnimate('datetime')} animation={currentAnimation}>
+               {formData.dateTime && <DateTimeSection dateTime={formData.dateTime} showCountdown={formData.showCountdown} style={sectionStyle} typeStyle={typeStyle} formatDDay={formatDDay} type={formData.type} textStyle={textStyle} />}
+            </AnimatedSection>
 
-                     <PreviewCalendarGrid>
-                        {['일', '월', '화', '수', '목', '금', '토'].map((day) => (
-                           <PreviewWeekDay key={day}>{day}</PreviewWeekDay>
-                        ))}
-                     </PreviewCalendarGrid>
+            {/* 위치 섹션 */}
+            <AnimatedSection shouldAnimate={shouldAnimate('location')} animation={currentAnimation}>
+               {formData.locationName && <LocationSection locationData={formData} style={sectionStyle} typeStyle={typeStyle} textStyle={textStyle} />}
+            </AnimatedSection>
 
-                     <PreviewCalendarGrid>
-                        {(() => {
-                           const date = dayjs(formData.dateTime)
-                           const startOfMonth = date.startOf('month')
-                           const endOfMonth = date.endOf('month')
-                           const startDate = startOfMonth.startOf('week')
-                           const endDate = endOfMonth.endOf('week')
+            {/* 계좌 섹션 */}
+            <AnimatedSection shouldAnimate={shouldAnimate('account')} animation={currentAnimation}>
+               {formData.showAccounts && formData.accounts?.length > 0 && <AccountSection accounts={formData.accounts} style={accountStyle} typeStyle={typeStyle} type={formData.type} getAccountLabel={getAccountLabel} textStyle={textStyle} />}
+            </AnimatedSection>
 
-                           const days = []
-                           let currentDate = startDate
+            {/* 갤러리 섹션 */}
+            <AnimatedSection shouldAnimate={shouldAnimate('gallery')} animation={currentAnimation}>
+               {formData.images?.length > 0 && (
+                  <GallerySection images={formData.images} layout={formData.galleryLayout} style={galleryStyle} typeStyle={typeStyle} selectedImageIndex={selectedImageIndex} onImageClick={handleImageClick} onCloseModal={handleCloseModal} onPrevImage={handlePrevImage} onNextImage={handleNextImage} />
+               )}
+            </AnimatedSection>
 
-                           while (currentDate.isBefore(endDate) || currentDate.isSame(endDate, 'day')) {
-                              days.push(
-                                 <PreviewDateCell key={currentDate.format('YYYY-MM-DD')} isSelected={currentDate.format('YYYY-MM-DD') === date.format('YYYY-MM-DD')} isCurrentMonth={currentDate.month() === date.month()} isSunday={currentDate.day() === 0} isSaturday={currentDate.day() === 6}>
-                                    {currentDate.date()}
-                                 </PreviewDateCell>
-                              )
-                              currentDate = currentDate.add(1, 'day')
-                           }
-
-                           return days
-                        })()}
-                     </PreviewCalendarGrid>
-                  </CalendarPreview>
-                  {formData.showCountdown && (
-                     <Box
-                        sx={{
-                           mt: 2,
-                           textAlign: 'center',
-                           color: typeStyle.color,
-                           fontWeight: 500,
-                           fontSize: '0.9rem',
-                        }}
-                     >
-                        {formatDDay(formData.dateTime, formData.type)}
-                     </Box>
-                  )}
-               </Section>
-            )}
-
-            {formData.locationName && (
-               <Section>
-                  <Typography sx={{ color: typeStyle.color, fontWeight: 500, mb: 2 }}>오시는 길</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                     <Box
-                        sx={{
-                           p: 3,
-                           borderRadius: '16px',
-                           background: 'rgba(255, 255, 255, 0.95)',
-                           boxShadow: `0 8px 32px ${COLORS.accent.main}15`,
-                           border: `1px solid ${COLORS.accent.main}15`,
-                        }}
-                     >
-                        <Box
-                           sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1.5,
-                              mb: 2,
-                           }}
-                        >
-                           <LocationOnIcon sx={{ color: typeStyle.color }} />
-                           <Typography
-                              sx={{
-                                 fontSize: '1.3rem',
-                                 fontWeight: 600,
-                                 color: typeStyle.color,
-                              }}
-                           >
-                              {formData.locationName}
-                           </Typography>
-                        </Box>
-
-                        <Box
-                           sx={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: 2,
-                           }}
-                        >
-                           <Typography
-                              sx={{
-                                 color: COLORS.text.primary,
-                                 fontSize: '1rem',
-                                 display: 'flex',
-                                 alignItems: 'center',
-                                 gap: 1,
-                              }}
-                           >
-                              {formData.locationAddress}
-                           </Typography>
-
-                           {formData.locationDetail && (
-                              <Box
-                                 sx={{
-                                    p: 2,
-                                    borderRadius: '8px',
-                                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                                    border: `1px solid ${COLORS.accent.main}15`,
-                                 }}
-                              >
-                                 <Typography
-                                    sx={{
-                                       color: COLORS.text.secondary,
-                                       fontSize: '0.95rem',
-                                       whiteSpace: 'pre-line',
-                                    }}
-                                 >
-                                    {formData.locationDetail}
-                                 </Typography>
-                              </Box>
-                           )}
-
-                           {formData.locationGuide && (
-                              <Box
-                                 sx={{
-                                    p: 2,
-                                    borderRadius: '8px',
-                                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                                    border: `1px solid ${COLORS.accent.main}15`,
-                                 }}
-                              >
-                                 <Box
-                                    sx={{
-                                       display: 'flex',
-                                       alignItems: 'center',
-                                       gap: 1,
-                                       mb: 1,
-                                       color: typeStyle.color,
-                                    }}
-                                 >
-                                    <DirectionsIcon fontSize="small" />
-                                    <Typography
-                                       sx={{
-                                          fontWeight: 500,
-                                          fontSize: '0.9rem',
-                                       }}
-                                    >
-                                       교통편 안내
-                                    </Typography>
-                                 </Box>
-                                 <Typography
-                                    sx={{
-                                       color: COLORS.text.secondary,
-                                       fontSize: '0.95rem',
-                                       whiteSpace: 'pre-line',
-                                    }}
-                                 >
-                                    {formData.locationGuide}
-                                 </Typography>
-                              </Box>
-                           )}
-
-                           {formData.showMap && (
-                              <Box
-                                 sx={{
-                                    mt: 1,
-                                    p: 2,
-                                    borderRadius: '12px',
-                                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                                    border: `1px dashed ${typeStyle.color}50`,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: 1,
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    '&:hover': {
-                                       backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                                       transform: 'translateY(-2px)',
-                                    },
-                                 }}
-                              >
-                                 <MapIcon sx={{ color: typeStyle.color }} />
-                                 <Typography
-                                    sx={{
-                                       color: typeStyle.color,
-                                       fontWeight: 500,
-                                       fontSize: '0.95rem',
-                                    }}
-                                 >
-                                    지도 보기
-                                 </Typography>
-                              </Box>
-                           )}
-
-                           {formData.showNavigation && (
-                              <Box
-                                 sx={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    gap: 1,
-                                    mt: 1,
-                                 }}
-                              >
-                                 {['카카오맵', '네이버맵', '티맵'].map((app) => (
-                                    <Chip
-                                       key={app}
-                                       icon={<DirectionsIcon />}
-                                       label={app}
-                                       sx={{
-                                          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                                          border: `1px solid ${typeStyle.color}25`,
-                                          '&:hover': {
-                                             backgroundColor: 'white',
-                                             transform: 'translateY(-2px)',
-                                             boxShadow: `0 4px 12px ${typeStyle.color}15`,
-                                          },
-                                          transition: 'all 0.3s ease',
-                                       }}
-                                    />
-                                 ))}
-                              </Box>
-                           )}
-                        </Box>
-                     </Box>
-                  </Box>
-               </Section>
-            )}
-
-            {formData.showAccounts && formData.accounts?.length > 0 && (
-               <AccountSection>
-                  <Typography sx={{ color: typeStyle.color, fontWeight: 500, mb: 2 }}>{formData.type === 'wedding' ? '마음 전하실 곳' : formData.type === 'newYear' ? '새해 선물 전하실 곳' : formData.type === 'birthday' ? '축하의 마음 전하실 곳' : '감사의 마음 전하실 곳'}</Typography>
-                  {formData.accounts.map((account, index) => (
-                     <Box key={index} className="account-item">
-                        <Typography className="account-label">{getAccountLabel(index)}</Typography>
-                        <Typography className="account-number">
-                           {account.bank} {account.number}
-                        </Typography>
-                        <Typography className="account-holder">{account.holder}</Typography>
-                     </Box>
-                  ))}
-               </AccountSection>
-            )}
-
-            {formData.images?.length > 0 && (
-               <Section>
-                  <Typography sx={{ color: typeStyle.color, fontWeight: 500, mb: 2 }}>{formData.type === 'wedding' ? '웨딩 갤러리' : formData.type === 'newYear' ? '갤러리' : formData.type === 'birthday' ? '생일 축하 갤러리' : '갤러리'}</Typography>
-                  <Box
-                     sx={{
-                        ...(formData.galleryLayout === 'grid' && {
-                           display: 'grid',
-                           gridTemplateColumns: 'repeat(3, 1fr)',
-                           gap: 2,
-                           p: 2,
-                        }),
-                        ...(formData.galleryLayout === 'masonry' && {
-                           columnCount: 2,
-                           columnGap: '16px',
-                           p: 2,
-                        }),
-                        ...(formData.galleryLayout === 'polaroid' && {
-                           height: '400px',
-                           width: '100%',
-                           p: 2,
-                           position: 'relative',
-                           overflow: 'hidden',
-                        }),
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        borderRadius: '16px',
-                        boxShadow: `0 8px 32px ${COLORS.accent.main}15`,
-                        border: `1px solid ${COLORS.accent.main}15`,
-                     }}
-                  >
-                     {formData.galleryLayout === 'polaroid' ? (
-                        <Swiper
-                           modules={[Autoplay, EffectCards]}
-                           effect="cards"
-                           grabCursor={true}
-                           autoplay={{
-                              delay: 2500,
-                              disableOnInteraction: false,
-                           }}
-                           loop={true}
-                           style={{
-                              width: '100%',
-                              height: '100%',
-                              padding: '30px',
-                           }}
-                        >
-                           {formData.images.map((image, index) => (
-                              <SwiperSlide key={index}>
-                                 <Box
-                                    sx={{
-                                       width: '100%',
-                                       height: '100%',
-                                       backgroundColor: '#fff',
-                                       borderRadius: '4px',
-                                       padding: '12px',
-                                       boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                       display: 'flex',
-                                       flexDirection: 'column',
-                                       gap: 1,
-                                    }}
-                                 >
-                                    <Box
-                                       component="img"
-                                       src={image.url}
-                                       alt=""
-                                       sx={{
-                                          width: '100%',
-                                          height: '100%',
-                                          objectFit: 'contain',
-                                          borderRadius: '2px',
-                                       }}
-                                    />
-                                    <Typography
-                                       sx={{
-                                          fontSize: '0.8rem',
-                                          color: COLORS.text.secondary,
-                                          width: '100%',
-                                          textAlign: 'center',
-                                          fontFamily: 'Pretendard, sans-serif',
-                                       }}
-                                    ></Typography>
-                                 </Box>
-                              </SwiperSlide>
-                           ))}
-                        </Swiper>
-                     ) : (
-                        <>
-                           {formData.images.map((image, index) => (
-                              <Box
-                                 key={index}
-                                 component={motion.div}
-                                 initial={{ opacity: 0, scale: 0.8 }}
-                                 animate={{ opacity: 1, scale: 1 }}
-                                 transition={{ delay: index * 0.1 }}
-                                 onClick={() => handleImageClick(index)}
-                                 sx={{
-                                    ...(formData.galleryLayout === 'grid' && {
-                                       position: 'relative',
-                                       paddingTop: '100%',
-                                       borderRadius: '8px',
-                                       overflow: 'hidden',
-                                       cursor: 'pointer',
-                                    }),
-                                    ...(formData.galleryLayout === 'masonry' && {
-                                       breakInside: 'avoid',
-                                       marginBottom: 2,
-                                       borderRadius: '8px',
-                                       overflow: 'hidden',
-                                       cursor: 'pointer',
-                                    }),
-                                 }}
-                              >
-                                 <Box
-                                    component="img"
-                                    src={image.url}
-                                    alt=""
-                                    sx={{
-                                       ...(formData.galleryLayout === 'grid' && {
-                                          position: 'absolute',
-                                          top: 0,
-                                          left: 0,
-                                          width: '100%',
-                                          height: '100%',
-                                          objectFit: 'cover',
-                                       }),
-                                       ...(formData.galleryLayout === 'masonry' && {
-                                          width: '100%',
-                                          height: 'auto',
-                                          display: 'block',
-                                       }),
-                                    }}
-                                 />
-                              </Box>
-                           ))}
-
-                           {/* 이미지 모달 - 그리드와 매소니리 레이아웃에서만 표시 */}
-                           <Dialog
-                              open={selectedImageIndex !== null}
-                              onClose={handleCloseModal}
-                              sx={{
-                                 '& .MuiDialog-container': {
-                                    position: 'absolute',
-                                    inset: 0,
-                                    margin: 0,
-                                    height: '100%',
-                                 },
-                                 '& .MuiBackdrop-root': {
-                                    position: 'absolute',
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                 },
-                                 '& .MuiDialog-paper': {
-                                    position: 'absolute',
-                                    margin: 0,
-                                    width: '100%',
-                                    height: '100%',
-                                    maxWidth: '100%',
-                                    maxHeight: '100%',
-                                    backgroundColor: 'transparent',
-                                    boxShadow: 'none',
-                                 },
-                              }}
-                              PaperProps={{
-                                 style: {
-                                    background: 'transparent',
-                                 },
-                              }}
-                              BackdropProps={{
-                                 onClick: handleCloseModal,
-                              }}
-                              container={() => document.querySelector('.PreviewContent')}
-                           >
-                              <DialogContent
-                                 sx={{
-                                    position: 'relative',
-                                    padding: 0,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    height: '100%',
-                                    overflow: 'hidden',
-                                 }}
-                              >
-                                 {selectedImageIndex !== null && (
-                                    <Box
-                                       sx={{
-                                          position: 'relative',
-                                          width: '100%',
-                                          height: '100%',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'center',
-                                       }}
-                                    >
-                                       <IconButton
-                                          onClick={handleCloseModal}
-                                          sx={{
-                                             position: 'absolute',
-                                             top: 8,
-                                             right: 8,
-                                             color: 'white',
-                                             backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                                             '&:hover': {
-                                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                                             },
-                                             zIndex: 2,
-                                          }}
-                                       >
-                                          <CloseIcon />
-                                       </IconButton>
-                                       <IconButton
-                                          onClick={handlePrevImage}
-                                          sx={{
-                                             position: 'absolute',
-                                             left: 8,
-                                             top: '50%',
-                                             transform: 'translateY(-50%)',
-                                             color: 'white',
-                                             backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                                             '&:hover': {
-                                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                                             },
-                                             zIndex: 2,
-                                          }}
-                                       >
-                                          <ArrowBackIosIcon />
-                                       </IconButton>
-                                       <Box
-                                          component="img"
-                                          src={formData.images[selectedImageIndex].url}
-                                          alt=""
-                                          sx={{
-                                             maxWidth: '90%',
-                                             maxHeight: '90%',
-                                             objectFit: 'contain',
-                                             borderRadius: '4px',
-                                          }}
-                                       />
-                                       <IconButton
-                                          onClick={handleNextImage}
-                                          sx={{
-                                             position: 'absolute',
-                                             right: 8,
-                                             top: '50%',
-                                             transform: 'translateY(-50%)',
-                                             color: 'white',
-                                             backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                                             '&:hover': {
-                                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                                             },
-                                             zIndex: 2,
-                                          }}
-                                       >
-                                          <ArrowForwardIosIcon />
-                                       </IconButton>
-                                    </Box>
-                                 )}
-                              </DialogContent>
-                           </Dialog>
-                        </>
-                     )}
-                  </Box>
-               </Section>
-            )}
-
-            {formData.rsvpTitle && (
-               <Section>
-                  <Typography sx={{ color: typeStyle.color, fontWeight: 500, mb: 1 }}>{formData.rsvpTitle}</Typography>
-                  <Typography sx={{ color: 'rgba(0,0,0,0.6)', fontSize: '0.9rem' }}>{formData.rsvpDescription}</Typography>
-               </Section>
-            )}
+            {/* RSVP 섹션 */}
+            <AnimatedSection shouldAnimate={shouldAnimate('rsvp')} animation={currentAnimation}>
+               {formData.rsvpTitle && <RSVPSection rsvpData={formData} style={sectionStyle} typeStyle={typeStyle} textStyle={textStyle} />}
+            </AnimatedSection>
          </PreviewContent>
       </PreviewContainer>
    )

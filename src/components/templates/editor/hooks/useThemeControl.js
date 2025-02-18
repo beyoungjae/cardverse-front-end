@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { debounce } from 'lodash'
 import useTemplateStore from '../../../../store/templateStore'
 
@@ -43,29 +43,26 @@ const useThemeControl = () => {
    const [history, setHistory] = useState([template.style || defaultTheme])
    const [historyIndex, setHistoryIndex] = useState(0)
 
-   // 테마 변경 처리 (디바운스 적용)
+   // 테마 변경 핸들러 최적화
    const handleThemeChange = useCallback(
-      debounce((type, value) => {
+      (type, value) => {
          setTheme((prev) => {
             const newTheme = { ...prev, [type]: value }
-            // 히스토리에 새로운 상태 추가
-            setHistory((prevHistory) => {
-               const newHistory = prevHistory.slice(0, historyIndex + 1)
-               return [...newHistory, newTheme]
-            })
-            setHistoryIndex((prev) => prev + 1)
+
             // 스토어 업데이트
             updateStyle(newTheme)
-            // 로컬 스토리지에 저장
+
+            // 로컬 스토리지 저장
             try {
                localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(newTheme))
             } catch (error) {
                console.error('Failed to save theme:', error)
             }
+
             return newTheme
          })
-      }, 300),
-      [historyIndex, updateStyle]
+      },
+      [updateStyle]
    )
 
    // 실행 취소
@@ -154,8 +151,11 @@ const useThemeControl = () => {
       }
    }, [theme.fontFamily, loadFont])
 
+   // 메모이제이션된 테마 값 반환
+   const memoizedTheme = useMemo(() => theme, [theme])
+
    return {
-      theme,
+      theme: memoizedTheme,
       handleThemeChange,
       resetTheme,
       undo,

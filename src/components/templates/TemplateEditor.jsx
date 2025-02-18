@@ -510,6 +510,18 @@ const TemplateEditor = () => {
       { icon: <PreviewIcon />, name: '미리보기', action: () => setIsPreviewOpen(true) },
    ]
 
+   // ThemeSection에 전달할 props
+   const themeSectionProps = {
+      theme: themeSettings,
+      onThemeChange: handleThemeChange,
+   }
+
+   // PreviewPanel에 전달할 props
+   const previewProps = {
+      formData: methods.watch(),
+      theme: themeSettings,
+   }
+
    return (
       <FormProvider {...methods}>
          <EditorContainer variants={containerVariants} initial="initial" animate="animate">
@@ -544,7 +556,7 @@ const TemplateEditor = () => {
                      {activeSection === 'gallery' && <GallerySection key="gallery" {...sectionProps} />}
                      {activeSection === 'account' && <AccountSection key="account" {...sectionProps} />}
                      {activeSection === 'rsvp' && <RSVPSection key="rsvp" {...sectionProps} />}
-                     {activeSection === 'theme' && <ThemeSection key="theme" {...sectionProps} />}
+                     {activeSection === 'theme' && <ThemeSection key="theme" {...themeSectionProps} />}
                   </AnimatePresence>
                </Box>
             </EditorPanel>
