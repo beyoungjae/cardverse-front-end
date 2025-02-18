@@ -1,334 +1,257 @@
-import React, { useState, useEffect } from 'react'
-import { TextField, Typography, Box } from '@mui/material'
+import React, { useState, useCallback, useMemo } from 'react'
+import { TextField, Box, IconButton, InputAdornment, Typography } from '@mui/material'
+import Visibility from '@mui/icons-material/Visibility'
+import VisibilityOff from '@mui/icons-material/VisibilityOff'
+import { styled } from '@mui/system'
 import { Link, useNavigate } from 'react-router-dom'
-import { fontWeight, maxHeight, styled, textAlign } from '@mui/system'
 
 const Container = styled(Box)(({ theme }) => ({
-    padding: '32px',
-    width: '100%',
-    maxWidth: '500px',
-    margin: '0 auto',
-    border: '1px solid #bbbbbb',
-    borderRadius: '8px',
-    minWidth: '300px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '60px',
-    backgroundColor: '#fcfcfc',
+   padding: theme.spacing(4),
+   width: '100%',
+   maxWidth: '500px',
+   margin: '0 auto',
+   border: '1px solid #bbbbbb',
+   borderRadius: theme.shape.borderRadius,
+   minWidth: '300px',
+   display: 'flex',
+   flexDirection: 'column',
+   alignItems: 'center',
+   gap: theme.spacing(7),
+   backgroundColor: '#fcfcfc',
 
-    '& > *': {
-        width: '100%',
-        textAlign: 'center',
-    },
+   [theme.breakpoints.down('sm')]: {
+      gap: theme.spacing(2),
+      padding: theme.spacing(3),
+      margin: '0 auto',
+      border: 'none',
+      borderRadius: 0,
+      backgroundColor: 'transparent',
+   },
 
-    [theme.breakpoints.down('md')]: {},
-    [theme.breakpoints.down('sm')]: {
-        gap: '60px',
-        padding: '24px',
-        margin: '0 auto',
-        border: 'none',
-        borderRadius: 0,
-        backgroundColor: 'transparent',
-        height: '100%',
-        // border: '1px solid green',
-    },
-}))
-
-const Title = styled(Typography)(({ theme }) => ({
-    // position: 'relative',
-
-    // '&::after': {
-    //     content: '"CARDVERSE에 오신 것을 환영합니다."',
-    //     position: 'absolute',
-    //     left: '50%',
-    //     width: '100%',
-    //     bottom: '-80%',
-    //     fontSize: '1.0rem',
-    //     fontWeight: 'normal',
-    //     color: '#c0c0c0',
-    //     transform: 'translateX(-50%)',
-    //     [theme.breakpoints.down('md')]: { bottom: '-110%', fontSize: '0.9rem' },
-    //     [theme.breakpoints.down('sm')]: { bottom: '-70%', fontSize: '0.7rem' },
-    // },
-    [theme.breakpoints.down('md')]: { fontSize: '1.5rem' },
-    [theme.breakpoints.down('sm')]: { fontSize: '1.3rem' },
+   [theme.breakpoints.down('xs')]: {
+      gap: theme.spacing(1),
+      padding: theme.spacing(2),
+      width: '90%',
+   },
 }))
 
 const InputField = styled(TextField)(({ theme }) => ({
-    '& .MuiInputBase-input': {
-        fontSize: '1rem', // 기본 폰트 크기
-        padding: '12px',
+   '& .MuiInputBase-input': {
+      fontSize: '1rem',
+      padding: theme.spacing(1.5),
 
-        [theme.breakpoints.down('md')]: {
-            fontSize: '0.9rem', // md 이하에서는 작게
-        },
-        [theme.breakpoints.down('sm')]: {
-            fontSize: '0.8rem', // sm 이하에서는 더 작게
-            padding: '13px',
-        },
-        [theme.breakpoints.down(480)]: {
-            fontSize: '0.7rem', // 480px 이하에서는 12px
-            padding: '12px',
-        },
-    },
-    '&:first-of-type': {
-        paddingBottom: '16px',
-        [theme.breakpoints.down('sm')]: {
-            paddingBottom: '6px',
-        },
-    },
-
-    [theme.breakpoints.down('md')]: {},
-    [theme.breakpoints.down('sm')]: {},
+      [theme.breakpoints.down('md')]: {
+         fontSize: '0.9rem',
+      },
+      [theme.breakpoints.down('sm')]: {
+         fontSize: '0.8rem',
+         padding: theme.spacing(1.5),
+      },
+      [theme.breakpoints.down('xs')]: {
+         fontSize: '0.75rem',
+         padding: theme.spacing(1),
+      },
+   },
+   '&:first-of-type': {
+      paddingBottom: theme.spacing(2),
+      [theme.breakpoints.down('sm')]: {
+         paddingBottom: theme.spacing(1),
+      },
+   },
 }))
 
 const Button = styled('button')(({ theme }) => ({
-    backgroundColor: '#B699BB',
-    color: '#000',
-    border: 'none',
-    borderRadius: '4px',
-    padding: '15px 15px',
-    fontSize: '1rem',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    width: '100%',
+   backgroundColor: '#B699BB',
+   color: '#000',
+   border: 'none',
+   borderRadius: theme.shape.borderRadius,
+   padding: theme.spacing(2, 4),
+   fontSize: '1rem',
+   fontWeight: 'bold',
+   cursor: 'pointer',
+   display: 'flex',
+   alignItems: 'center',
+   justifyContent: 'center',
+   gap: theme.spacing(1),
+   width: '100%',
 
-    '&:hover': {
-        backgroundColor: '#a98bae',
-    },
-    '&.kakao-login-btn': {
-        backgroundColor: '#ffe812',
-    },
+   '&:hover': {
+      backgroundColor: '#a98bae',
+   },
 
-    '&.signup-btn': {
-        backgroundColor: '#ffffff',
-        border: '1px solid #cccccc',
-    },
-    '&.signup-btn:hover': {
-        backgroundColor: '#f5f5f5',
-    },
+   '&.kakao-login-btn': {
+      backgroundColor: '#ffe812',
+   },
 
-    [theme.breakpoints.down('md')]: {
-        padding: '8px 12px',
+   '&.signup-btn': {
+      backgroundColor: '#ffffff',
+      border: `1px solid #cccccc`,
+   },
 
-        fontSize: '0.85rem',
-    },
-    [theme.breakpoints.down('sm')]: {
-        padding: '8px 10px',
-        fontSize: '0.7rem',
-    },
+   [theme.breakpoints.down('md')]: {
+      padding: theme.spacing(1, 2),
+      fontSize: '0.85rem',
+   },
+
+   [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing(1, 2),
+      fontSize: '0.75rem',
+   },
+
+   [theme.breakpoints.down('xs')]: {
+      padding: theme.spacing(0.5, 1),
+      fontSize: '0.7rem',
+   },
 }))
 
 const Form = styled('form')(({ theme }) => ({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-    [theme.breakpoints.down('md')]: {
-        gap: '12px',
-    },
-    [theme.breakpoints.down('sm')]: {
-        // border: '1px solid pink',
-        justifyContent: 'space-between',
-    },
-}))
+   display: 'flex',
+   flexDirection: 'column',
+   gap: theme.spacing(2),
 
-const FormContainer = styled(Box)(({ theme }) => ({
-    display: 'flex',
-    flexDirection: 'column',
+   [theme.breakpoints.down('md')]: {
+      gap: theme.spacing(1.5),
+   },
 
-    '&.Form-btn': {
-        gap: '12px',
-        [theme.breakpoints.down('md')]: { gap: '10px' },
-        [theme.breakpoints.down('sm')]: { gap: '8px' },
-    },
-    [theme.breakpoints.down('md')]: { gap: '12px' },
-    [theme.breakpoints.down('sm')]: { gap: '8px' },
-}))
+   [theme.breakpoints.down('sm')]: {
+      gap: theme.spacing(1),
+   },
 
-const LoginWrapper = styled(Box)(({ theme }) => ({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-
-    [theme.breakpoints.down('sm')]: {
-        gap: 'initial',
-        justifyContent: 'space-between',
-        height: '100%',
-        // border: '1px solid red',
-    },
-}))
-
-// ━━━━━━ TEXT
-const StyledLink = styled(Link)(({ theme }) => ({
-    display: 'inline',
-    textDecoration: 'none',
-    fontSize: '0.84rem',
-
-    [theme.breakpoints.down('md')]: {
-        fontSize: '0.79rem',
-    },
-    [theme.breakpoints.down('sm')]: {
-        fontSize: '0.69rem',
-    },
+   [theme.breakpoints.down('xs')]: {
+      gap: theme.spacing(0.5),
+   },
 }))
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
-    fontSize: '0.85rem',
-    textAlign: 'end',
-    padding: '4px 5px',
+   fontSize: '0.85rem',
+   textAlign: 'end',
+   padding: theme.spacing(1),
 
-    '&.kakao-comment': {
-        textAlign: 'center',
-        [theme.breakpoints.down('sm')]: {
-            display: 'none',
-        },
-    },
+   [theme.breakpoints.down('md')]: {
+      fontSize: '0.8rem',
+   },
 
-    [theme.breakpoints.down('md')]: {
-        padding: '3px 5px',
-        fontSize: '0.8rem',
-    },
-    [theme.breakpoints.down('sm')]: {
-        padding: '1px 5px',
-        fontSize: '0.7rem',
-    },
+   [theme.breakpoints.down('sm')]: {
+      fontSize: '0.75rem',
+   },
+
+   [theme.breakpoints.down('xs')]: {
+      fontSize: '0.7rem',
+   },
 }))
 
-const Login = () => {
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const navigate = useNavigate()
+const LoginWrapper = styled(Box)(({ theme }) => ({
+   display: 'flex',
+   flexDirection: 'column',
+   gap: theme.spacing(3),
 
-    useEffect(() => {
-        if (window.Kakao) {
-            const Kakao = window.Kakao
-            if (!Kakao.isInitialized()) {
-                Kakao.init('YOUR_KAKAO_APP_KEY') // 🔹 카카오 JavaScript SDK 초기화
-            }
-        }
-    }, [])
+   [theme.breakpoints.down('sm')]: {
+      gap: theme.spacing(1.5),
+      justifyContent: 'space-between',
+      height: '100%',
+   },
+}))
 
-    const handleKakaoLogin = () => {
-        const Kakao = window.Kakao
-        Kakao.Auth.login({
-            success: (response) => {
-                console.log('✅ 카카오 로그인 성공!')
-                console.log('🔹 access_token:', response.access_token)
+const StyledLink = styled(Link)(({ theme }) => ({
+   display: 'inline',
+   textDecoration: 'none',
+   fontSize: '0.84rem',
 
-                // 🔹 카카오 API를 사용하여 사용자 정보 가져오기 (백엔드 없이 테스트 가능)
-                Kakao.API.request({
-                    url: '/v2/user/me',
-                    success: (userResponse) => {
-                        console.log('🔹 카카오 사용자 정보:', userResponse)
-                        alert(`카카오 로그인 성공!\n닉네임: ${userResponse.kakao_account.profile.nickname}`)
-                    },
-                    fail: (error) => {
-                        console.error('❌ 사용자 정보 요청 실패:', error)
-                    },
-                })
-            },
-            fail: (error) => {
-                console.error('❌ 카카오 로그인 실패:', error)
-            },
-        })
-    }
-    const handleLogin = (e) => {
-        e.preventDefault()
-        alert('로그인 성공!')
-    }
+   [theme.breakpoints.down('md')]: {
+      fontSize: '0.8rem',
+   },
 
-    //  const handleKakaoLogin = () => {
-    //      const Kakao = window.Kakao
-    //      Kakao.Auth.login({
-    //          success: async (response) => {
-    //              console.log('카카오 로그인 성공:', response)
-    //              const { access_token } = response // 토큰 받아오기
+   [theme.breakpoints.down('sm')]: {
+      fontSize: '0.75rem',
+   },
 
-    //              // ✅ 백엔드로 access_token 전송하여 회원 여부 확인
-    //              const res = await fetch('https://your-api.com/auth/kakao', {
-    //                  method: 'POST',
-    //                  headers: { 'Content-Type': 'application/json' },
-    //                  body: JSON.stringify({ access_token }),
-    //              })
+   [theme.breakpoints.down('xs')]: {
+      fontSize: '0.7rem',
+   },
+}))
 
-    //              const data = await res.json()
+const Login = React.memo(() => {
+   const [email, setEmail] = useState('')
+   const [password, setPassword] = useState('')
+   const [showPassword, setShowPassword] = useState(false)
 
-    //              if (data.isNewUser) {
-    //                  navigate('/signup/kakao', { state: { access_token } }) // 신규 회원 → 회원가입 페이지로 이동
-    //              } else {
-    //                  console.log('기존 회원 로그인 성공:', data)
-    //                  navigate('/dashboard') // 기존 회원이면 로그인 후 대시보드 이동
-    //              }
-    //          },
-    //          fail: (error) => {
-    //              console.error('카카오 로그인 실패:', error)
-    //          },
-    //      })
-    //  }
+   const navigate = useNavigate()
 
-    return (
-        <Container>
-            {/* <Title variant="h2"></Title> */}
+   const handleKakaoLogin = useCallback(() => {
+      const Kakao = window.Kakao
+      Kakao.Auth.login({
+         success: (response) => {
+            console.log('✅ 카카오 로그인 성공!')
+            console.log('🔹 access_token:', response.access_token)
 
-            {/* <Title className="title-comment" variant="body1" align="center" gutterBottom>
-                CARDVERSE에 오신 것을 환영합니다.
-            </Title> */}
-            <LoginWrapper>
-                <Form onSubmit={handleLogin}>
-                    <FormContainer>
-                        <InputField
-                            // 인풋 필드
-                            placeholder="이메일을 입력해 주세요."
-                            name="email"
-                            fullWidth
-                            autoComplete="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                        <InputField
-                            // 인풋 필드
-                            placeholder="비밀번호를 입력해 주세요."
-                            type="password"
-                            name="password"
-                            fullWidth
-                            autoComplete="none"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <StyledTypography>
-                            비밀번호가 기억나지 않으세요? <StyledLink>비밀번호</StyledLink> 찾으러 가기
-                        </StyledTypography>
-                    </FormContainer>
+            Kakao.API.request({
+               url: '/v2/user/me',
+               success: (userResponse) => {
+                  console.log('🔹 카카오 사용자 정보:', userResponse)
+                  alert(`카카오 로그인 성공!\n닉네임: ${userResponse.kakao_account.profile.nickname}`)
+                  navigate('/home')
+               },
+               fail: (error) => {
+                  console.error('❌ 사용자 정보 요청 실패:', error)
+               },
+            })
+         },
+         fail: (error) => {
+            console.error('❌ 카카오 로그인 실패:', error)
+         },
+      })
+   }, [navigate])
 
-                    <FormContainer className="Form-btn">
-                        <Button fullWidth type="submit">
-                            로그인
-                        </Button>
-                        {/* 
-                        <Button className="signup-btn" component={Link} fullWidth to="/signup">
-                            회원가입
-                        </Button> */}
-                    </FormContainer>
-                </Form>
-                {/* <div> */}
-                <StyledTypography className="kakao-comment">────────────── or ──────────────</StyledTypography>
-                <Button
-                    // 브레이크 포인트
+   const handleLogin = (e) => {
+      e.preventDefault()
+      alert('로그인 성공!')
+      navigate('/home')
+   }
 
-                    className="kakao-login-btn"
-                    onClick={handleKakaoLogin}>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="kakao" style={{ width: '20px', height: '20px' }} />
-                    카카오로 간편 로그인
-                </Button>
-                {/* </div> */}
-            </LoginWrapper>
-        </Container>
-    )
-}
+   const memoizedButtonText = useMemo(() => {
+      return '로그인'
+   }, [])
+
+   return (
+      <Container>
+         <LoginWrapper>
+            <Form onSubmit={handleLogin}>
+               <InputField placeholder="이메일을 입력해 주세요." name="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+
+               <InputField
+                  placeholder="비밀번호를 입력해 주세요."
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  autoComplete="none"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  InputProps={{
+                     endAdornment: (
+                        <InputAdornment position="end">
+                           <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                           </IconButton>
+                        </InputAdornment>
+                     ),
+                  }}
+               />
+               <StyledTypography>
+                  비밀번호가 기억나지 않으세요? <StyledLink>비밀번호</StyledLink> 찾으러 가기
+               </StyledTypography>
+            </Form>
+
+            <Button fullWidth type="submit">
+               {memoizedButtonText}
+            </Button>
+
+            <StyledTypography>────────────── or ──────────────</StyledTypography>
+            <Button className="kakao-login-btn" onClick={handleKakaoLogin}>
+               <img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="kakao" style={{ width: '20px', height: '20px' }} />
+               카카오로 간편 로그인
+            </Button>
+         </LoginWrapper>
+      </Container>
+   )
+})
 
 export default Login

@@ -1,20 +1,23 @@
-import React, { createContext, useState, useContext } from 'react'
+import React, { createContext, useState, useContext, useMemo } from 'react'
 
-// Context 생성
 const NoticeContext = createContext()
 
-// NoticeProvider 컴포넌트 - 상태 관리
 export const NoticeProvider = ({ children }) => {
    const [notices, setNotices] = useState([])
 
-   // 공지사항 추가 함수
    const addNotice = (newNotice) => {
       setNotices((prevNotices) => [...prevNotices, newNotice])
    }
 
-   return <NoticeContext.Provider value={{ notices, addNotice }}>{children}</NoticeContext.Provider>
+   const value = useMemo(() => ({ notices, addNotice }), [notices])
+
+   return <NoticeContext.Provider value={value}>{children}</NoticeContext.Provider>
 }
 
 export const useNotice = () => {
-   return useContext(NoticeContext)
+   const context = useContext(NoticeContext)
+   if (!context) {
+      throw new Error('useNotice must be used within NoticeProvider')
+   }
+   return context
 }

@@ -1,40 +1,136 @@
+import React, { useState, useCallback, useMemo } from 'react'
 import { TextField, Button, Container, CircularProgress, InputAdornment, IconButton, MenuItem, Typography, Box, FormControlLabel, Checkbox, Grid, Card, CardContent } from '@mui/material'
-import { useState } from 'react'
+import { useForm, Controller } from 'react-hook-form'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import { useTheme } from '@mui/material/styles'
+import { styled } from '@mui/system'
+import * as Yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
+
+const FormControlText = styled(Typography)(({ theme }) => ({
+   fontSize: '16px',
+   marginBottom: theme.spacing(2),
+}))
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+   marginBottom: theme.spacing(2),
+   fontSize: '14px',
+   '& .MuiInputBase-root': {
+      fontSize: '16px',
+   },
+   width: '100%',
+}))
+
+const StyledButton = styled(Button)(({ theme }) => ({
+   marginTop: theme.spacing(2),
+   backgroundColor: '#B699BB',
+   color: '#fff',
+   fontSize: '16px',
+   '&:hover': {
+      backgroundColor: '#B699BB',
+   },
+   width: '100%',
+}))
+
+// 유효성 검사 스키마 (Yup 사용)
+const schema = Yup.object({
+   email: Yup.string().email('올바른 이메일을 입력해주세요.').required('이메일을 입력해주세요.'),
+   password: Yup.string()
+      .min(8, '비밀번호는 최소 8자 이상이어야 합니다.')
+      .matches(/[a-zA-Z]/, '비밀번호는 문자와 숫자를 포함해야 합니다.')
+      .required('비밀번호를 입력해주세요.'),
+   confirmPassword: Yup.string()
+      .oneOf([Yup.ref('password'), null], '비밀번호가 일치하지 않습니다.')
+      .required('비밀번호 확인을 입력해주세요.'),
+   nickname: Yup.string().required('닉네임을 입력해주세요.'),
+   membershipType: Yup.string().required('가입 유형을 선택해주세요.'),
+}).required()
 
 const Signup = () => {
-   const [email, setEmail] = useState('')
-   const [password, setPassword] = useState('')
-   const [confirmPassword, setConfirmPassword] = useState('')
-   const [nickname, setNickname] = useState('')
-   const [membershipType, setMembershipType] = useState('')
-   const [showPassword, setShowPassword] = useState(false)
-   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-   const [loading, setLoading] = useState(false)
-   const [agreeTerms, setAgreeTerms] = useState(false)
    const theme = useTheme()
 
-   const handleChange = (e) => {
-      setMembershipType(e.target.value)
-   }
+   const {
+      control,
+      handleSubmit,
+      formState: { errors },
+      setValue,
+   } = useForm({
+      resolver: yupResolver(schema),
+   })
 
-   const handleSignup = () => {
-      if (password !== confirmPassword) {
-         alert('비밀번호와 비밀번호 확인이 일치하지 않습니다.')
-         return
-      }
-      if (!agreeTerms) {
-         alert('체크박스를 체크하세요')
-         return
-      }
-      setLoading(true)
-      setTimeout(() => {
-         setLoading(false)
-         alert('회원가입이 완료되었습니다!')
-      }, 1000)
-   }
+   const [formStatus, setFormStatus] = useState({
+      loading: false,
+      showPassword: false,
+      showConfirmPassword: false,
+      agreeTerms: false,
+      errorMessage: '',
+   })
+
+   const handleSignup = useCallback(
+      async (data) => {
+         try {
+            if (!formStatus.agreeTerms) {
+               throw new Error('약관에 동의해주세요.')
+            }
+
+            setFormStatus((prevState) => ({ ...prevState, loading: true }))
+
+            await new Promise((resolve, reject) => {
+               setTimeout(() => {
+                  resolve('회원가입 성공')
+               }, 1000)
+            })
+
+            alert('회원가입이 완료되었습니다!')
+         } catch (error) {
+            setFormStatus((prevState) => ({
+               ...prevState,
+               errorMessage: error.message === '약관에 동의해주세요.' ? '약관에 동의하지 않으셨습니다. 체크박스를 선택해주세요.' : '회원가입에 실패했습니다. 다시 시도해주세요.',
+            }))
+         } finally {
+            setFormStatus((prevState) => ({ ...prevState, loading: false }))
+         }
+      },
+      [formStatus.agreeTerms]
+   )
+
+   const renderTextField = useCallback(
+      (name, placeholder, type = 'text') => {
+         return (
+            <Controller
+               name={name}
+               control={control}
+               defaultValue=""
+               render={({ field }) => (
+                  <StyledTextField
+                     {...field}
+                     placeholder={placeholder}
+                     type={type}
+                     error={!!errors[name]}
+                     helperText={errors[name] ? errors[name].message : ''}
+                     InputProps={{
+                        endAdornment:
+                           name === 'password' || name === 'confirmPassword' ? (
+                              <InputAdornment position="end">
+                                 <IconButton
+                                    onClick={() => {
+                                       name === 'password' ? setFormStatus((prev) => ({ ...prev, showPassword: !prev.showPassword })) : setFormStatus((prev) => ({ ...prev, showConfirmPassword: !prev.showConfirmPassword }))
+                                    }}
+                                    edge="end"
+                                 >
+                                    {name === 'password' ? formStatus.showPassword ? <VisibilityOff /> : <Visibility /> : formStatus.showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                 </IconButton>
+                              </InputAdornment>
+                           ) : null,
+                     }}
+                  />
+               )}
+            />
+         )
+      },
+      [control, errors, formStatus.showPassword, formStatus.showConfirmPassword]
+   )
 
    return (
       <Container
@@ -42,7 +138,7 @@ const Signup = () => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            minHeight: '100vh',
+            minHeight: '50vh',
             paddingTop: { xs: theme.spacing(2), sm: theme.spacing(3), md: theme.spacing(5) },
             paddingBottom: theme.spacing(5),
             maxWidth: '100%',
@@ -84,98 +180,77 @@ const Signup = () => {
                회원이 되어 다양한 혜택을 경험해보세요!
             </Typography>
 
+            {formStatus.errorMessage && (
+               <Box
+                  sx={{
+                     backgroundColor: theme.palette.error.light,
+                     color: theme.palette.error.contrastText,
+                     padding: theme.spacing(1),
+                     marginBottom: theme.spacing(2),
+                     borderRadius: '4px',
+                     textAlign: 'center',
+                  }}
+               >
+                  {formStatus.errorMessage}
+               </Box>
+            )}
+
             <Grid container spacing={2}>
                <Grid item xs={12}>
-                  <Typography variant="body1">이메일</Typography>
-                  <TextField placeholder="이메일 (입력하신 이메일 주소로 인증번호가 발송됩니다)" variant="outlined" fullWidth margin="normal" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <FormControlText>이메일</FormControlText>
+                  {renderTextField('email', '이메일을 입력해주세요.')}
                </Grid>
 
                <Grid item xs={12}>
-                  <Typography variant="body1">비밀번호</Typography>
-                  <TextField
-                     placeholder="비밀번호를 입력해주세요."
-                     variant="outlined"
-                     fullWidth
-                     margin="normal"
-                     type={showPassword ? 'text' : 'password'}
-                     value={password}
-                     onChange={(e) => setPassword(e.target.value)}
-                     InputProps={{
-                        endAdornment: (
-                           <InputAdornment position="end">
-                              <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                                 {showPassword ? <VisibilityOff /> : <Visibility />}
-                              </IconButton>
-                           </InputAdornment>
-                        ),
-                     }}
+                  <FormControlText>비밀번호</FormControlText>
+                  {renderTextField('password', '비밀번호를 입력해주세요.', 'password')}
+               </Grid>
+
+               <Grid item xs={12}>
+                  <FormControlText>비밀번호 확인</FormControlText>
+                  {renderTextField('confirmPassword', '비밀번호를 한번 더 입력해주세요.', 'password')}
+               </Grid>
+
+               <Grid item xs={12}>
+                  <FormControlText>닉네임</FormControlText>
+                  {renderTextField('nickname', '닉네임을 입력해주세요.')}
+               </Grid>
+
+               <Grid item xs={12}>
+                  <FormControlText>가입유형</FormControlText>
+                  <Controller
+                     name="membershipType"
+                     control={control}
+                     defaultValue=""
+                     render={({ field }) => (
+                        <StyledTextField select label="가입유형 (추천인 / 일반사용자)" {...field} error={!!errors.membershipType} helperText={errors.membershipType ? errors.membershipType.message : ''}>
+                           <MenuItem value="추천인">추천인</MenuItem>
+                           <MenuItem value="일반사용자">일반사용자</MenuItem>
+                        </StyledTextField>
+                     )}
                   />
                </Grid>
 
                <Grid item xs={12}>
-                  <Typography variant="body1">비밀번호 확인</Typography>
-                  <TextField
-                     placeholder="비밀번호를 한번 더 입력해주세요."
-                     variant="outlined"
-                     fullWidth
-                     margin="normal"
-                     type={showConfirmPassword ? 'text' : 'password'}
-                     value={confirmPassword}
-                     onChange={(e) => setConfirmPassword(e.target.value)}
-                     InputProps={{
-                        endAdornment: (
-                           <InputAdornment position="end">
-                              <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
-                                 {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                              </IconButton>
-                           </InputAdornment>
-                        ),
-                     }}
+                  <FormControlLabel
+                     control={<Checkbox checked={formStatus.agreeTerms} onChange={(e) => setFormStatus((prevState) => ({ ...prevState, agreeTerms: e.target.checked }))} />}
+                     label={
+                        <Typography variant="body2" color="textSecondary">
+                           약관에 동의합니다.
+                           <a href="/terms" target="_blank" style={{ textDecoration: 'none', color: '#1976d2' }}>
+                              약관 보기
+                           </a>
+                        </Typography>
+                     }
                   />
                </Grid>
 
                <Grid item xs={12}>
-                  <Typography variant="body1">닉네임</Typography>
-                  <TextField placeholder="닉네임을 입력해주세요" variant="outlined" fullWidth margin="normal" value={nickname} onChange={(e) => setNickname(e.target.value)} />
-               </Grid>
-
-               <Grid item xs={12}>
-                  <Typography variant="body1">가입유형</Typography>
-                  <TextField select label="가입유형 (추천인 / 일반사용자 선택 가능)" value={membershipType} onChange={handleChange} fullWidth margin="normal" variant="outlined">
-                     <MenuItem value="reference">추천인</MenuItem>
-                     <MenuItem value="normal">일반사용자</MenuItem>
-                  </TextField>
-               </Grid>
-
-               <Grid item xs={12}>
-                  <Button
-                     variant="contained"
-                     color="primary"
-                     onClick={handleSignup}
-                     fullWidth
-                     disabled={loading}
-                     sx={{
-                        mt: theme.spacing(2),
-                        border: `1px solid ${theme.palette.divider}`,
-                        backgroundColor: '#B699BB',
-                        color: '#fff',
-                        fontSize: { xs: '14px', sm: '16px' },
-                        '&:hover': {
-                           backgroundColor: '#B699BB',
-                           borderColor: theme.palette.divider,
-                        },
-                     }}
-                  >
-                     {loading ? <CircularProgress size={25} sx={{ color: '#fff' }} /> : '회원가입'}
-                  </Button>
+                  <StyledButton onClick={handleSubmit(handleSignup)} disabled={formStatus.loading}>
+                     {formStatus.loading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : '회원가입'}
+                  </StyledButton>
                </Grid>
             </Grid>
-
-            <Card sx={{ marginTop: theme.spacing(2), border: `1px solid ${theme.palette.divider}` }}>
-               <CardContent sx={{ display: 'flex', textAlign: 'center' }}>
-                  <FormControlLabel control={<Checkbox checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} />} label="로봇이 아닙니다." />
-               </CardContent>
-            </Card>
          </Box>
       </Container>
    )
