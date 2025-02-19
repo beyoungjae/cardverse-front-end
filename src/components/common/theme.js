@@ -351,11 +351,11 @@ const theme = createTheme({
 })
 
 theme.bps = {
-   lg: theme.breakpoints.down(1280), // 1280px ()
-   md: theme.breakpoints.down(1024), // 1024px (-256px)
-   sm: theme.breakpoints.down(768), // 768px (-256px)
-   xs: theme.breakpoints.down(576), // 576px (-192px)
-   xxs: theme.breakpoints.down(448), // 480px (-128px)
+   lg: theme.breakpoints.down('lg'), // 1280px ()
+   md: theme.breakpoints.down('md'), // 1024px (-256px)
+   sm: theme.breakpoints.down('sm'), // 768px (-256px)
+   // xs: theme.breakpoints.down(576), // 576px (-192px)
+   // xxs: theme.breakpoints.down(448), // 480px (-128px)
 }
 
 export default theme

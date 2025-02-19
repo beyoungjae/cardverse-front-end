@@ -67,7 +67,7 @@ const ModalWrap = styled('div')(({ theme, $modalType, $isClosing }) => ({
    [theme.breakpoints.down('sm')]: {
       gap: '30px',
       padding: '48px 30px',
-      margin: '0px 20px',
+      margin: '0px 10px',
       width: '320px',
    },
 }))

@@ -14,6 +14,19 @@ const StyledText = styled(Typography)(({ theme }) => ({
    },
 }))
 
+const StyledForm = styled('form')(({ theme }) => ({
+   background: 'white',
+   padding: '40px 0px',
+   borderRadius: '10px',
+   textAlign: 'center',
+   display: 'flex',
+   flexDirection: 'column',
+   gap: '40px',
+   [theme.breakpoints.down('sm')]: {
+      fontSize: '0.9rem',
+   },
+}))
+
 const NewPasswordModal = ({ onClose }) => {
    const [currentPassword, setCurrentPassword] = useState('')
    const [newPassword, setNewPassword] = useState('')
@@ -50,21 +63,25 @@ const NewPasswordModal = ({ onClose }) => {
       }
    }
 
+   const handleSubmit = styled(Box)(({ theme }) => ({}))
+
    return (
-      <Box
-         sx={{
-            background: 'white',
-            padding: '40px 0px',
-            borderRadius: '10px',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '40px',
-         }}
-      >
+      <StyledForm>
          <Typography variant="h3" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Lock /> 비밀번호 변경
          </Typography>
+
+         <TextField
+            label="아이디 (숨김)"
+            type="text"
+            value=""
+            autoComplete="username"
+            style={{ display: 'none' }} // 시각적으로 숨김
+            inputProps={{
+               'aria-hidden': true,
+               tabIndex: -1, // 포커스되지 않도록
+            }}
+         />
 
          <TextField
             label="새 비밀번호"
@@ -76,6 +93,7 @@ const NewPasswordModal = ({ onClose }) => {
             required
             error={!!errorMessage}
             variant="standard" // 아래쪽 라인만 생김
+            autoComplete="none"
             InputProps={{
                endAdornment: (
                   <InputAdornment position="end">
@@ -96,6 +114,7 @@ const NewPasswordModal = ({ onClose }) => {
             required
             error={!!errorMessage}
             variant="standard" // 아래쪽 라인만 생김
+            autoComplete="new-password"
             InputProps={{
                endAdornment: (
                   <InputAdornment position="end">
@@ -104,6 +123,9 @@ const NewPasswordModal = ({ onClose }) => {
                      </IconButton>
                   </InputAdornment>
                ),
+               form: {
+                  name: '', // HTML 유효성 검사 비활성화
+               },
             }}
          />
 
@@ -128,7 +150,7 @@ const NewPasswordModal = ({ onClose }) => {
                변경하기
             </Button>
          </Box>
-      </Box>
+      </StyledForm>
    )
 }
 

@@ -1,73 +1,12 @@
 import { styled, shouldForwardProp } from '@mui/system'
-import { Box, IconButton, TextField, Typography } from '@mui/material'
+import { Box, IconButton, TextField, Typography, Alert } from '@mui/material'
+
+import { Visibility, VisibilityOff, Lock, Error } from '@mui/icons-material'
+
 import CloseIcon from '@mui/icons-material/Close'
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { isEmailValid } from '../../utils/validation'
-
-const GlobalStyle = styled('style')`
-   @keyframes fadeIn {
-      from {
-         opacity: 0;
-         transform: translateY(-20px);
-      }
-      to {
-         opacity: 1;
-         transform: translateY(0);
-      }
-   }
-
-   @keyframes fadeOut {
-      from {
-         opacity: 1;
-         transform: translateY(0px);
-      }
-      to {
-         opacity: 0;
-         transform: translateY(-20px);
-      }
-   }
-`
-
-const Overlay = styled(Box)(({ theme }) => ({
-   position: 'fixed',
-   top: 0,
-   left: 0,
-   width: '100%',
-   height: '100%',
-   background: 'rgba(0, 0, 0, 0.5)' /* 반투명 검은색 */,
-   backdropFilter: 'blur(5px)' /* 배경 흐림 처리 */,
-   display: 'flex',
-   justifyContent: 'center',
-   alignItems: 'center',
-   zIndex: '999',
-}))
-
-const Modal = styled('div')(({ theme, $isClosing }) => ({
-   background: 'white',
-   padding: '40px 64px',
-   width: '500px',
-   borderRadius: '10px',
-   textAlign: 'center',
-   boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
-   // animation: ' fadeIn 0.3s ease-in-out',
-   animation: `${$isClosing ? 'fadeOut' : 'fadeIn'} 0.3s ease-in-out`,
-   position: 'relative',
-   display: 'flex',
-   flexDirection: 'column',
-   gap: '80px',
-   // height: '80vh',
-   //    aspectRatio: '1 / 1.5',
-
-   [theme.breakpoints.down('md')]: {
-      gap: '60px',
-   },
-   [theme.breakpoints.down('sm')]: {
-      gap: '30px',
-      padding: '30px 40px',
-      margin: '0px 20px',
-   },
-}))
 
 // 🔹 닫기 버튼 스타일
 const CloseButton = styled(IconButton)(({ theme }) => ({
@@ -183,6 +122,8 @@ const TimerBox = styled(Box)({
 
 const ForgotPasswordModal = ({ onVerifySuccess }) => {
    const [isClosing, setIsClosing] = useState(false)
+   const [errorMessage, setErrorMessage] = useState('')
+   const [successMessage, setSuccessMessage] = useState('')
 
    const [email, setEmail] = useState('')
    const [emailStatus, setEmailStatus] = useState('메일을 인증해주세요') // 이메일 인증 상태
@@ -227,21 +168,23 @@ const ForgotPasswordModal = ({ onVerifySuccess }) => {
       const isRegistered = email === 'test@example.com' // 예제
 
       if (isEmailValid(email)) {
-         //   console.log('유효한 이메일입니다.')
          setEmailStatus('메일이 인증에 성공했습니다!')
          setEmailConfirmed(true)
       } else {
-         setEmailStatus('메일이 존재하지 않습니다!')
+         //  setEmailStatus('메일이 존재하지 않습니다!')
          setEmailConfirmed(false)
-         //   console.log('유효하지 않은 이메일입니다.')
+         setSuccessMessage('')
       }
 
       if (isRegistered) {
          setEmailStatus('메일이 인증에 성공했습니다!')
          setEmailConfirmed(true)
+         setSuccessMessage('메일 인증에 성공했습니다!')
       } else {
          setEmailStatus('메일이 존재하지 않습니다!')
          setEmailConfirmed(false)
+         //  setErrorMessage('메일이 존재하지 않습니다!')
+         setSuccessMessage('')
       }
    }
 
@@ -287,19 +230,46 @@ const ForgotPasswordModal = ({ onVerifySuccess }) => {
             </Wrapper>
          </Section>
 
+         {errorMessage && (
+            <Alert severity="error" icon={<Error />} sx={{ textAlign: 'left' }}>
+               <StyledText>{emailStatus}</StyledText>
+            </Alert>
+         )}
+
+         {successMessage && (
+            <Alert severity="success" sx={{ textAlign: 'left' }}>
+               {emailStatus}
+            </Alert>
+         )}
+
          <Section>
             <SubTitle>2. 인증번호 발급받기</SubTitle>
-            <Wrapper className="verify-wrap">
-               <Box sx={{ flex: '4' }}>
-                  <StyledText className="valid" color={emailStatus.includes('존재') ? 'red' : emailStatus.includes('성공') ? 'green' : 'black'}>
-                     {emailStatus}
-                  </StyledText>
-               </Box>
+            <Wrapper className="verify-code-wrap">
+               <InputField className="verify-code-input" />
+               <TimerBox>
+                  {Math.floor(timer / 60)}:{('0' + (timer % 60)).slice(-2)}
+               </TimerBox>
                <StyledButton disabled={!emailConfirmed} onClick={handleSendCode}>
                   번호 발급
                </StyledButton>
             </Wrapper>
          </Section>
+
+         <Section>
+            <SubTitle>3. 인증 확인하기</SubTitle>
+            <Wrapper>
+               <StyledButton>인증 확인</StyledButton>
+
+               <StyledButton onClick={handleCheckVerify}>번호 재발급</StyledButton>
+            </Wrapper>
+         </Section>
+      </>
+   )
+}
+
+export default ForgotPasswordModal
+
+/* 
 
          <Section>
             <SubTitle>3. 인증 확인하기</SubTitle>
@@ -311,8 +281,4 @@ const ForgotPasswordModal = ({ onVerifySuccess }) => {
                <StyledButton onClick={handleCheckVerify}>인증확인</StyledButton>
             </Wrapper>
          </Section>
-      </>
-   )
-}
-
-export default ForgotPasswordModal
+*/
