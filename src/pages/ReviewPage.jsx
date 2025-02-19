@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { styled } from '@mui/material/styles'
 import { Box, Typography, Rating, Avatar, Pagination } from '@mui/material'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 
 // 리뷰 페이지 컨테이너
 const ReviewContainer = styled(Box)(({ theme }) => ({
@@ -195,6 +196,7 @@ const dummyReviews = [
 ]
 
 const ReviewPage = () => {
+   const navigate = useNavigate()
    const [page, setPage] = useState(1)
    const reviewsPerPage = 9
 
@@ -225,7 +227,7 @@ const ReviewPage = () => {
             >
                Cardverse를 이용해주신 고객님들의 소중한 후기입니다
             </Typography>
-            <WriteReviewButton>리뷰 작성하기</WriteReviewButton>
+            <WriteReviewButton onClick={() => navigate('/review/write')}>리뷰 작성하기</WriteReviewButton>
          </HeaderSection>
 
          <ReviewGrid>

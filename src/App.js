@@ -3,7 +3,6 @@ import React from 'react'
 // style 세팅
 import CssBaseline from '@mui/material/CssBaseline'
 import { styled as muiStyled } from '@mui/material/styles'
-import { Box } from '@mui/material'
 import { createGlobalStyle } from 'styled-components'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
@@ -72,7 +71,7 @@ const GlobalStyle = createGlobalStyle`
 
 function App() {
    const location = useLocation()
-   const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname.startsWith('/forgot-password')
+   const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup')
 
    return (
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
