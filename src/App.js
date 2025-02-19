@@ -10,7 +10,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 // 컴포넌트 import
 import Navbar from './components/shared/Navbar'
-import { Home, MyPage, TemplatePage, AdminPage, LoginPage, SignupPage, NoticePage, ForgotPasswordPage } from './pages'
+import { Home, MyPage, TemplatePage, AdminPage, LoginPage, SignupPage, NoticePage, ForgotPasswordPage, ReviewPage } from './pages'
 import Footer from './components/shared/Footer'
 import { Login } from './components/auth'
 import { NoticeProvider } from './pages'
@@ -20,13 +20,13 @@ import { Route, Routes, Navigate, useLocation } from 'react-router-dom'
 
 // 네비바 아래 컨텐츠를 위한 컨테이너
 const MainContent = muiStyled('div')(({ theme, $hideLayout }) => ({
-    paddingTop: $hideLayout ? 0 : '126px',
-    [theme.breakpoints.down('lg')]: {
-        paddingTop: $hideLayout ? 0 : '125px',
-    },
-    [theme.breakpoints.down('sm')]: {
-        paddingTop: $hideLayout ? 0 : '55px',
-    },
+   paddingTop: $hideLayout ? 0 : '126px',
+   [theme.breakpoints.down('lg')]: {
+      paddingTop: $hideLayout ? 0 : '125px',
+   },
+   [theme.breakpoints.down('sm')]: {
+      paddingTop: $hideLayout ? 0 : '55px',
+   },
 }))
 
 // 전역 스타일
@@ -71,46 +71,47 @@ const GlobalStyle = createGlobalStyle`
 `
 
 function App() {
-    const location = useLocation()
-    const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname.startsWith('/forgot-password')
+   const location = useLocation()
+   const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname.startsWith('/forgot-password')
 
-    return (
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
-            <GlobalStyle />
-            <CssBaseline />
+   return (
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
+         <GlobalStyle />
+         <CssBaseline />
 
-            {!hideLayout && <Navbar />}
+         {!hideLayout && <Navbar />}
 
-            <MainContent $hideLayout={hideLayout}>
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/my/*" element={<MyPage />} />
-                    <Route path="/signup" element={<SignupPage />} />
-                    <Route path="/notice" element={<NoticePage />} />
-                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                    <Route
-                        path="/context"
-                        element={
-                            <NoticeProvider>
-                                <NoticePage />
-                            </NoticeProvider>
-                        }
-                    />
-                    <Route path="/template">
-                        {/* /template 접근 시 기본 탭으로 리다이렉트 */}
-                        <Route index element={<Navigate to="/template/wedding" replace />} />
-                        <Route path=":tab/*" element={<TemplatePage key={window.location.pathname} />} />
-                    </Route>
-                    <Route path="/login" element={<LoginPage />}>
-                        <Route index element={<Login />} />
-                        <Route path="*" element={<Navigate to="/login" replace />} />
-                    </Route>
-                </Routes>
-            </MainContent>
+         <MainContent $hideLayout={hideLayout}>
+            <Routes>
+               <Route path="/" element={<Home />} />
+               <Route path="/my/*" element={<MyPage />} />
+               <Route path="/signup" element={<SignupPage />} />
+               <Route path="/notice" element={<NoticePage />} />
+               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+               <Route
+                  path="/context"
+                  element={
+                     <NoticeProvider>
+                        <NoticePage />
+                     </NoticeProvider>
+                  }
+               />
+               <Route path="/template">
+                  {/* /template 접근 시 기본 탭으로 리다이렉트 */}
+                  <Route index element={<Navigate to="/template/wedding" replace />} />
+                  <Route path=":tab/*" element={<TemplatePage key={window.location.pathname} />} />
+               </Route>
+               <Route path="/login" element={<LoginPage />}>
+                  <Route index element={<Login />} />
+                  <Route path="*" element={<Navigate to="/login" replace />} />
+               </Route>
+               <Route path="/review" element={<ReviewPage />} />
+            </Routes>
+         </MainContent>
 
-            {!hideLayout && <Footer />}
-        </LocalizationProvider>
-    )
+         {!hideLayout && <Footer />}
+      </LocalizationProvider>
+   )
 }
 
 export default App
