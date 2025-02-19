@@ -19,7 +19,6 @@ import GreetingSection from './sections/GreetingSection'
 import DateTimeSection from './sections/DateTimeSection'
 import LocationSection from './sections/LocationSection'
 import AccountSection from './sections/AccountSection'
-import RSVPSection from './sections/RSVPSection'
 import GallerySection from './sections/GallerySection'
 
 // dayjs 한글 설정
@@ -475,9 +474,9 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
                {formData.dateTime && <DateTimeSection dateTime={formData.dateTime} showCountdown={formData.showCountdown} style={sectionStyle} typeStyle={typeStyle} formatDDay={formatDDay} type={formData.type} textStyle={textStyle} />}
             </AnimatedSection>
 
-            {/* 위치 섹션 */}
+            {/* 장소 섹션 */}
             <AnimatedSection shouldAnimate={shouldAnimate('location')} animation={currentAnimation}>
-               {formData.locationName && <LocationSection locationData={formData} style={sectionStyle} typeStyle={typeStyle} textStyle={textStyle} />}
+               {formData.location && Object.values(formData.location).some((value) => value) && <LocationSection formData={formData} style={sectionStyle} textStyle={typeStyle} />}
             </AnimatedSection>
 
             {/* 계좌 섹션 */}
@@ -490,11 +489,6 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
                {formData.images?.length > 0 && (
                   <GallerySection images={formData.images} layout={formData.galleryLayout} style={galleryStyle} typeStyle={typeStyle} selectedImageIndex={selectedImageIndex} onImageClick={handleImageClick} onCloseModal={handleCloseModal} onPrevImage={handlePrevImage} onNextImage={handleNextImage} />
                )}
-            </AnimatedSection>
-
-            {/* RSVP 섹션 */}
-            <AnimatedSection shouldAnimate={shouldAnimate('rsvp')} animation={currentAnimation}>
-               {formData.rsvpTitle && <RSVPSection rsvpData={formData} style={sectionStyle} typeStyle={typeStyle} textStyle={textStyle} />}
             </AnimatedSection>
          </PreviewContent>
       </PreviewContainer>

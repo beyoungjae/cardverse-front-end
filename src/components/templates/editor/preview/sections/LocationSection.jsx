@@ -6,8 +6,10 @@ import MapIcon from '@mui/icons-material/Map'
 import { Section } from '../styles/PreviewStyles'
 import { COLORS } from '../../styles/commonStyles'
 
-const LocationSection = ({ locationData, style, textStyle }) => {
-   const { locationName, locationAddress, locationDetail, locationGuide, showMap, showNavigation, locationUrl } = locationData
+const LocationSection = ({ formData, style, textStyle }) => {
+   const { name, address, detail, guide, showMap, url } = formData.location || {}
+
+   if (!name && !address) return null
 
    return (
       <Section style={style}>
@@ -24,30 +26,30 @@ const LocationSection = ({ locationData, style, textStyle }) => {
             >
                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
                   <LocationOnIcon sx={{ color: style.color }} />
-                  <Typography sx={{ fontSize: '1.3rem', fontWeight: 600, color: style.color }}>{locationName}</Typography>
+                  <Typography sx={{ fontSize: '1.3rem', fontWeight: 600, color: style.color }}>{name}</Typography>
                </Box>
 
                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Typography sx={{ color: textStyle.color, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>{locationAddress}</Typography>
+                  <Typography sx={{ color: textStyle.color, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>{address}</Typography>
 
-                  {locationDetail && (
+                  {detail && (
                      <Box sx={{ p: 2, borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.7)', border: `1px solid ${COLORS.accent.main}15` }}>
-                        <Typography sx={{ color: textStyle.color, fontSize: '0.95rem', whiteSpace: 'pre-line' }}>{locationDetail}</Typography>
+                        <Typography sx={{ color: textStyle.color, fontSize: '0.95rem', whiteSpace: 'pre-line' }}>{detail}</Typography>
                      </Box>
                   )}
 
-                  {locationGuide && (
+                  {guide && (
                      <Box sx={{ p: 2, borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.7)', border: `1px solid ${COLORS.accent.main}15` }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, color: style.color }}>
                            <DirectionsIcon fontSize="small" />
                            <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>교통편 안내</Typography>
                         </Box>
-                        <Typography sx={{ color: textStyle.color, fontSize: '0.95rem', whiteSpace: 'pre-line' }}>{locationGuide}</Typography>
+                        <Typography sx={{ color: textStyle.color, fontSize: '0.95rem', whiteSpace: 'pre-line' }}>{guide}</Typography>
                      </Box>
                   )}
 
                   {showMap && (
-                     <Button onClick={() => window.open(locationUrl, '_blank')} sx={{ color: style.color, borderRadius: '12px' }}>
+                     <Button onClick={() => window.open(url, '_blank')} sx={{ color: style.color, borderRadius: '12px' }}>
                         <Box
                            sx={{
                               mt: 1,

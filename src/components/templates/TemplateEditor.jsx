@@ -8,7 +8,6 @@ import SaveIcon from '@mui/icons-material/Save'
 import PreviewIcon from '@mui/icons-material/Preview'
 import ShareIcon from '@mui/icons-material/Share'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import { HowToReg as HowToRegIcon } from '@mui/icons-material'
 import { Person as PersonIcon } from '@mui/icons-material'
 import { AccountBalance as AccountBalanceIcon } from '@mui/icons-material'
 
@@ -23,7 +22,6 @@ import {
    Event as EventIcon,
    LocationOn as LocationOnIcon,
    PhotoLibrary as PhotoLibraryIcon,
-   Group as GroupIcon,
    Palette as PaletteIcon,
 } from '@mui/icons-material'
 
@@ -33,7 +31,6 @@ import GreetingSection from './editor/components/GreetingSection'
 import DateTimeSection from './editor/components/DateTimeSection'
 import LocationSection from './editor/components/LocationSection'
 import GallerySection from './editor/components/GallerySection'
-import RSVPSection from './editor/components/RSVPSection'
 import ThemeSection from './editor/components/ThemeSection'
 import AccountSection from './editor/components/AccountSection'
 import ProfileSection from './editor/components/ProfileSection'
@@ -268,7 +265,6 @@ function createSections(control, watch, themeProps) {
       { id: 'location', label: '장소', icon: <LocationOnIcon /> },
       { id: 'gallery', label: '갤러리', icon: <PhotoLibraryIcon /> },
       { id: 'account', label: '계좌번호', icon: <AccountBalanceIcon /> },
-      { id: 'rsvp', label: 'RSVP', icon: <HowToRegIcon /> },
       { id: 'theme', label: '테마', icon: <PaletteIcon /> },
    ]
 }
@@ -332,8 +328,8 @@ const editorVariants = {
       x: 0, // 애니메이션 종료 위치
       transition: {
          type: 'spring', // 스프링 애니메이션 타입
-         stiffness: 300, // 스프링 애니메이션 강도
-         damping: 30, // 스프링 애니메이션 감쇠 비율
+         stiffness: 100, // 스프링 애니메이션 강도
+         damping: 15, // 스프링 애니메이션 감쇠 비율
       },
    },
 }
@@ -359,22 +355,22 @@ const TemplateEditor = () => {
          greeting: '',
          // 날짜/시간
          dateTime: null,
+         // 날짜 카운트다운 표시
          showCountdown: false,
-         // 장소
+         // 장소 정보
          location: {
             name: '',
             address: '',
             detail: '',
+            guide: '',
+            showMap: false,
+            url: '',
          },
-         showMap: true,
          // 갤러리
          images: [],
          // 계좌번호
          accounts: [],
          showAccounts: false,
-         // RSVP
-         rsvpTitle: '',
-         rsvpDescription: '',
          // 테마
          backgroundColor: '#ffffff',
          primaryColor: '#000000',
@@ -555,7 +551,6 @@ const TemplateEditor = () => {
                      {activeSection === 'location' && <LocationSection key="location" {...sectionProps} />}
                      {activeSection === 'gallery' && <GallerySection key="gallery" {...sectionProps} />}
                      {activeSection === 'account' && <AccountSection key="account" {...sectionProps} />}
-                     {activeSection === 'rsvp' && <RSVPSection key="rsvp" {...sectionProps} />}
                      {activeSection === 'theme' && <ThemeSection key="theme" {...themeSectionProps} />}
                   </AnimatePresence>
                </Box>

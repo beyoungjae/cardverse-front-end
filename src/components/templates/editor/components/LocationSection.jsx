@@ -137,15 +137,13 @@ const LocationSection = () => {
       error: null,
    })
    const { getCachedResult, setCachedResult } = useLocationCache()
-   const { control, setValue, watch } = useFormContext()
+   const { control, watch } = useFormContext()
    const [selectedType, setSelectedType] = useState('wedding')
 
    const currentType = invitationTypes.find((type) => type.id === selectedType)
-   const locationName = watch('locationName')
-   const locationAddress = watch('locationAddress')
-   const locationDetail = watch('locationDetail')
-   const locationGuide = watch('locationGuide')
-   const showMap = watch('showMap')
+
+   // location 객체를 통째로 watch
+   const location = watch('location')
 
    const handleSearch = useMemo(
       () =>
@@ -207,23 +205,34 @@ const LocationSection = () => {
    }, [])
 
    const handleReset = useCallback(() => {
-      setValue('locationName', '', { shouldValidate: true })
-      setValue('locationAddress', '', { shouldValidate: true })
-      setValue('locationDetail', '', { shouldValidate: true })
-      setValue('locationGuide', '', { shouldValidate: true })
-      setValue('showMap', true)
-   }, [setValue])
+      control._reset({
+         location: {
+            name: '',
+            address: '',
+            detail: '',
+            guide: '',
+            showMap: true,
+            coordinates: null,
+         },
+      })
+   }, [control])
 
    const handleTypeSelect = useCallback(
       (type) => {
          setSelectedType(type)
          const placeholders = invitationTypes.find((t) => t.id === type).placeholders
-         setValue('locationName', '', { shouldValidate: true })
-         setValue('locationAddress', '', { shouldValidate: true })
-         setValue('locationDetail', '', { shouldValidate: true })
-         setValue('locationGuide', '', { shouldValidate: true })
+         control._reset({
+            location: {
+               name: '',
+               address: '',
+               detail: '',
+               guide: '',
+               showMap: true,
+               coordinates: null,
+            },
+         })
       },
-      [setValue]
+      [control]
    )
 
    return (
@@ -301,53 +310,39 @@ const LocationSection = () => {
          </Box>
 
          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Controller
-               name="locationName"
-               control={control}
-               defaultValue=""
-               rules={{ required: '장소명을 입력해주세요' }}
-               render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="장소명" placeholder={currentType.placeholders.name} error={!!error} helperText={error?.message} />}
-            />
+            <Controller name="location.name" control={control} rules={{ required: '장소명을 입력해주세요' }} render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="장소명" placeholder={currentType.placeholders.name} error={!!error} helperText={error?.message} />} />
+
+            <Controller name="location.address" control={control} rules={{ required: '주소를 입력해주세요' }} render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="주소" placeholder={currentType.placeholders.address} error={!!error} helperText={error?.message} />} />
+
+            <Controller name="location.detail" control={control} render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="상세 위치" placeholder={currentType.placeholders.detail} error={!!error} helperText={error?.message} />} />
+
+            <Controller name="location.guide" control={control} render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="교통편 안내" placeholder={currentType.placeholders.guide} multiline rows={3} error={!!error} helperText={error?.message} />} />
 
             <Controller
-               name="locationAddress"
+               name="location.showMap"
                control={control}
-               defaultValue=""
-               rules={{ required: '주소를 입력해주세요' }}
-               render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="주소" placeholder={currentType.placeholders.address} error={!!error} helperText={error?.message} />}
-            />
-
-            <Controller name="locationDetail" control={control} defaultValue="" render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="상세 위치" placeholder={currentType.placeholders.detail} error={!!error} helperText={error?.message} />} />
-
-            <Controller name="locationGuide" control={control} defaultValue="" render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="교통편 안내" placeholder={currentType.placeholders.guide} multiline rows={3} error={!!error} helperText={error?.message} />} />
-
-            <Box sx={{ display: 'flex', gap: 2 }}>
-               <Controller
-                  name="showMap"
-                  control={control}
-                  defaultValue={true}
-                  render={({ field: { value, onChange } }) => (
-                     <FormControlLabel
-                        control={
-                           <Checkbox
-                              checked={value}
-                              onChange={onChange}
-                              sx={{
+               defaultValue={true}
+               render={({ field: { value, onChange } }) => (
+                  <FormControlLabel
+                     control={
+                        <Checkbox
+                           checked={value ?? true}
+                           onChange={(e) => onChange(e.target.checked)}
+                           sx={{
+                              color: COLORS.accent.main,
+                              '&.Mui-checked': {
                                  color: COLORS.accent.main,
-                                 '&.Mui-checked': {
-                                    color: COLORS.accent.main,
-                                 },
-                              }}
-                           />
-                        }
-                        label="지도 표시"
-                     />
-                  )}
-               />
-            </Box>
+                              },
+                           }}
+                        />
+                     }
+                     label="지도 표시"
+                  />
+               )}
+            />
          </Box>
 
-         {(locationName || locationAddress || locationDetail || locationGuide) && (
+         {(location.name || location.address || location.detail || location.guide) && (
             <Box
                component={motion.div}
                initial={{ opacity: 0, y: 20 }}
@@ -385,7 +380,7 @@ const LocationSection = () => {
                   </Box>
 
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                     {locationName && (
+                     {location.name && (
                         <Typography
                            sx={{
                               color: COLORS.text.primary,
@@ -397,11 +392,11 @@ const LocationSection = () => {
                            }}
                         >
                            <LocationOnIcon fontSize="small" sx={{ color: COLORS.accent.main }} />
-                           {locationName}
+                           {location.name}
                         </Typography>
                      )}
 
-                     {locationAddress && (
+                     {location.address && (
                         <Typography
                            sx={{
                               color: COLORS.text.secondary,
@@ -409,11 +404,11 @@ const LocationSection = () => {
                               pl: 3.5,
                            }}
                         >
-                           {locationAddress}
+                           {location.address}
                         </Typography>
                      )}
 
-                     {locationDetail && (
+                     {location.detail && (
                         <Box
                            sx={{
                               p: 2,
@@ -429,12 +424,12 @@ const LocationSection = () => {
                                  whiteSpace: 'pre-line',
                               }}
                            >
-                              {locationDetail}
+                              {location.detail}
                            </Typography>
                         </Box>
                      )}
 
-                     {locationGuide && (
+                     {location.guide && (
                         <Box
                            sx={{
                               p: 2,
@@ -469,7 +464,7 @@ const LocationSection = () => {
                                  whiteSpace: 'pre-line',
                               }}
                            >
-                              {locationGuide}
+                              {location.guide}
                            </Typography>
                         </Box>
                      )}
@@ -483,7 +478,7 @@ const LocationSection = () => {
                         mt: 3,
                      }}
                   >
-                     {showMap && (
+                     {location.showMap && (
                         <Box
                            sx={{
                               p: 2,
