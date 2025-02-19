@@ -20,6 +20,7 @@ import DateTimeSection from './sections/DateTimeSection'
 import LocationSection from './sections/LocationSection'
 import AccountSection from './sections/AccountSection'
 import GallerySection from './sections/GallerySection'
+import SettingSection from './sections/SettingSection'
 
 // dayjs 한글 설정
 dayjs.locale('ko')
@@ -454,6 +455,11 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
                fontFamily: combinedStyle.fontFamily,
             }}
          >
+            {/* 설정 섹션 */}
+            <AnimatedSection shouldAnimate={shouldAnimate('setting')} animation={currentAnimation}>
+               {formData.setting && <SettingSection setting={formData.setting} style={sectionStyle} textStyle={textStyle} />}
+            </AnimatedSection>
+
             {/* 제목 섹션 */}
             <AnimatedSection shouldAnimate={shouldAnimate('title')} animation={currentAnimation}>
                {formData.title && <TitleSection title={formData.title} style={sectionStyle} combinedStyle={combinedStyle} />}

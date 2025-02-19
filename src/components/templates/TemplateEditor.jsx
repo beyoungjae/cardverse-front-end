@@ -23,6 +23,7 @@ import {
    LocationOn as LocationOnIcon,
    PhotoLibrary as PhotoLibraryIcon,
    Palette as PaletteIcon,
+   Settings as SettingsIcon,
 } from '@mui/icons-material'
 
 // 에디터용 컴포넌트
@@ -34,6 +35,7 @@ import GallerySection from './editor/components/GallerySection'
 import ThemeSection from './editor/components/ThemeSection'
 import AccountSection from './editor/components/AccountSection'
 import ProfileSection from './editor/components/ProfileSection'
+import SettingSection from './editor/components/SettingSection'
 import PreviewPanel from './editor/preview/PreviewPanel'
 import PreviewLoading from './editor/preview/PreviewLoading'
 
@@ -256,8 +258,9 @@ const TabButton = styled(Button)(({ theme, selected }) => ({
 }))
 
 // ===================== sections / 탭 구성 =====================
-function createSections(control, watch, themeProps) {
+function createSections() {
    return [
+      { id: 'setting', label: '설정', icon: <SettingsIcon /> },
       { id: 'profile', label: '기본 정보', icon: <PersonIcon /> },
       { id: 'title', label: '제목', icon: <TitleIcon /> },
       { id: 'greeting', label: '인사말', icon: <MessageIcon /> },
@@ -344,6 +347,11 @@ const TemplateEditor = () => {
    // react-hook-form
    const methods = useForm({
       defaultValues: {
+         // 설정
+         setting: {
+            animation: null,
+            imgs: [],
+         },
          // 기본 정보
          profiles: [],
          showProfiles: false,
@@ -544,6 +552,7 @@ const TemplateEditor = () => {
                </TabsContainer>
                <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
                   <AnimatePresence mode="wait">
+                     {activeSection === 'setting' && <SettingSection key="setting" {...sectionProps} />}
                      {activeSection === 'profile' && <ProfileSection key="profile" {...sectionProps} />}
                      {activeSection === 'title' && <TitleSection key="title" {...sectionProps} />}
                      {activeSection === 'greeting' && <GreetingSection key="greeting" {...sectionProps} />}
