@@ -454,14 +454,14 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
                fontFamily: combinedStyle.fontFamily,
             }}
          >
-            {/* 프로필 섹션 */}
-            <AnimatedSection shouldAnimate={shouldAnimate('profile')} animation={currentAnimation}>
-               {formData.showProfiles && formData.profiles?.length > 0 && <ProfileSection profiles={formData.profiles} style={profileStyle} combinedStyle={combinedStyle} textStyle={textStyle} />}
-            </AnimatedSection>
-
             {/* 제목 섹션 */}
             <AnimatedSection shouldAnimate={shouldAnimate('title')} animation={currentAnimation}>
                {formData.title && <TitleSection title={formData.title} style={sectionStyle} combinedStyle={combinedStyle} />}
+            </AnimatedSection>
+
+            {/* 프로필 섹션 */}
+            <AnimatedSection shouldAnimate={shouldAnimate('profile')} animation={currentAnimation}>
+               {formData.showProfiles && formData.profiles?.length > 0 && <ProfileSection profiles={formData.profiles} style={profileStyle} combinedStyle={combinedStyle} textStyle={textStyle} />}
             </AnimatedSection>
 
             {/* 인사말 섹션 */}
