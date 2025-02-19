@@ -1,7 +1,8 @@
 import React from 'react'
-import { Box, Typography } from '@mui/material'
+import { Box, Typography, IconButton } from '@mui/material'
 import { Section } from '../styles/PreviewStyles'
 import styled from '@emotion/styled'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 
 const AccountStyle = styled(Section)(({ theme }) => ({
    '& .account-item': {
@@ -40,6 +41,11 @@ const AccountSection = ({ accounts, style, type, getAccountLabel, textStyle }) =
       }
    }
 
+   const handleCopyAccount = (account) => {
+      navigator.clipboard.writeText(account.number)
+      alert('계좌번호가 복사되었습니다.')
+   }
+
    return (
       <AccountStyle style={style}>
          <Typography sx={{ textAlign: 'center', color: style.color, fontWeight: 'bold', mb: 2 }}>{getTitle()}</Typography>
@@ -48,8 +54,22 @@ const AccountSection = ({ accounts, style, type, getAccountLabel, textStyle }) =
                <Typography className="account-label" style={{ color: style.color }}>
                   {getAccountLabel(index)}
                </Typography>
+
                <Typography className="account-number" style={{ color: textStyle.color }}>
                   {account.bank} {account.number}
+                  <IconButton
+                     onClick={() => handleCopyAccount(account)}
+                     sx={{
+                        color: style.color,
+                        '&:hover': {
+                           backgroundColor: `${style.color}15`,
+                        },
+                        display: 'inline-block',
+                        marginLeft: '50px',
+                     }}
+                  >
+                     <ContentCopyIcon />
+                  </IconButton>
                </Typography>
                <Typography className="account-holder">{account.holder}</Typography>
             </Box>

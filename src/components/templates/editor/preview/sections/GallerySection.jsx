@@ -92,7 +92,7 @@ const GallerySection = ({ images, layout, style, typeStyle }) => {
                         alt={`Gallery ${index + 1}`}
                         style={{
                            width: '100%',
-                           height: layout === 'grid' ? '240px' : 'auto', // 높이 조정
+                           height: layout === 'grid' ? '100px' : 'auto', // 높이 조정
                            objectFit: 'cover',
                            display: 'block',
                         }}
@@ -113,7 +113,7 @@ const GallerySection = ({ images, layout, style, typeStyle }) => {
                   <Box
                      sx={{
                         position: 'relative',
-                        height: '100%',
+                        height: '300px',
                         width: '100%',
                         backgroundColor: 'white',
                         padding: '12px',
@@ -141,7 +141,7 @@ const GallerySection = ({ images, layout, style, typeStyle }) => {
                            style={{
                               width: '100%',
                               height: '100%',
-                              objectFit: 'cover',
+                              objectFit: 'contain',
                            }}
                         />
                      </Box>

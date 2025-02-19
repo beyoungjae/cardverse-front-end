@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react'
-import { Box, Chip, InputAdornment, CircularProgress, Typography, IconButton, Tooltip, FormControlLabel, Checkbox } from '@mui/material'
+import { Box, Chip, Typography, Tooltip, FormControlLabel, Checkbox } from '@mui/material'
 import { Controller, useFormContext } from 'react-hook-form'
 import { motion, AnimatePresence } from 'framer-motion'
 import { styled } from '@mui/material/styles'
@@ -14,75 +14,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite'
 import CelebrationIcon from '@mui/icons-material/Celebration'
 import CakeIcon from '@mui/icons-material/Cake'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
-import SubwayIcon from '@mui/icons-material/DirectionsSubway'
-import DirectionsBusIcon from '@mui/icons-material/DirectionsBus'
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
 import { debounce } from 'lodash'
-
-const SearchResults = styled(motion.div)(({ theme }) => ({
-   position: 'absolute',
-   top: '100%',
-   left: 0,
-   right: 0,
-   backgroundColor: 'rgba(255, 255, 255, 0.95)',
-   backdropFilter: 'blur(10px)',
-   borderRadius: '12px',
-   boxShadow: `0 8px 32px ${COLORS.accent.main}15`,
-   zIndex: 1000,
-   marginTop: theme.spacing(1),
-   maxHeight: '300px',
-   overflowY: 'auto',
-   border: `1px solid ${COLORS.accent.main}15`,
-   '&::-webkit-scrollbar': {
-      width: '8px',
-   },
-   '&::-webkit-scrollbar-track': {
-      background: 'transparent',
-   },
-   '&::-webkit-scrollbar-thumb': {
-      background: COLORS.accent.main,
-      borderRadius: '4px',
-      '&:hover': {
-         background: COLORS.accent.dark,
-      },
-   },
-}))
-
-const SearchResultItem = styled(motion.div)(({ theme }) => ({
-   padding: theme.spacing(2),
-   cursor: 'pointer',
-   transition: 'all 0.3s ease',
-   borderBottom: `1px solid ${COLORS.accent.main}15`,
-   backgroundColor: 'rgba(255, 255, 255, 0.8)',
-   '&:last-child': {
-      borderBottom: 'none',
-   },
-   '&:hover': {
-      backgroundColor: 'white',
-      transform: 'translateX(8px)',
-      boxShadow: `0 4px 12px ${COLORS.accent.main}15`,
-   },
-}))
-
-const MapPreview = styled(motion.div)(({ theme }) => ({
-   marginTop: theme.spacing(3),
-   padding: theme.spacing(3),
-   backgroundColor: 'rgba(255, 255, 255, 0.9)',
-   backdropFilter: 'blur(10px)',
-   borderRadius: '12px',
-   cursor: 'pointer',
-   border: `1px dashed ${COLORS.accent.main}`,
-   display: 'flex',
-   flexDirection: 'column',
-   alignItems: 'center',
-   gap: theme.spacing(2),
-   transition: 'all 0.3s ease',
-   '&:hover': {
-      backgroundColor: '#FFFFFF',
-      transform: 'translateY(-4px)',
-      boxShadow: `0 12px 48px ${COLORS.accent.main}15`,
-   },
-}))
 
 const QuickLocationChips = styled(Box)(({ theme }) => ({
    display: 'flex',
@@ -148,13 +80,6 @@ const searchLocations = async (query) => {
    })
 }
 
-const quickLocations = [
-   { label: '호텔', icon: '🏨' },
-   { label: '웨딩홀', icon: '💒' },
-   { label: '연회장', icon: '🎪' },
-   { label: '레스토랑', icon: '🍽️' },
-]
-
 const invitationTypes = [
    {
       id: 'wedding',
@@ -211,7 +136,6 @@ const LocationSection = () => {
       isLoading: false,
       error: null,
    })
-   const [selectedLocation, setSelectedLocation] = useState(null)
    const { getCachedResult, setCachedResult } = useLocationCache()
    const { control, setValue, watch } = useFormContext()
    const [selectedType, setSelectedType] = useState('wedding')
@@ -222,16 +146,6 @@ const LocationSection = () => {
    const locationDetail = watch('locationDetail')
    const locationGuide = watch('locationGuide')
    const showMap = watch('showMap')
-   const showNavigation = watch('showNavigation')
-
-   const field = {
-      name: 'location',
-      control: control,
-      defaultValue: '',
-      rules: {
-         required: '장소를 입력해주세요',
-      },
-   }
 
    const handleSearch = useMemo(
       () =>
@@ -273,16 +187,6 @@ const LocationSection = () => {
       [getCachedResult, setCachedResult]
    )
 
-   const handleLocationSelect = useCallback(
-      (location) => {
-         setSelectedLocation(location)
-         control.setValue('location', location.name, { shouldValidate: true })
-         control.setValue('address', location.address, { shouldValidate: true })
-         setSearchState((prev) => ({ ...prev, results: [] }))
-      },
-      [control]
-   )
-
    const handleQuickLocationSelect = useCallback(
       (type) => {
          handleSearch(type)
@@ -308,7 +212,6 @@ const LocationSection = () => {
       setValue('locationDetail', '', { shouldValidate: true })
       setValue('locationGuide', '', { shouldValidate: true })
       setValue('showMap', true)
-      setValue('showNavigation', true)
    }, [setValue])
 
    const handleTypeSelect = useCallback(
@@ -322,14 +225,6 @@ const LocationSection = () => {
       },
       [setValue]
    )
-
-   const handleUsePlaceholder = useCallback(() => {
-      const placeholders = currentType.placeholders
-      setValue('locationName', placeholders.name, { shouldValidate: true })
-      setValue('locationAddress', placeholders.address, { shouldValidate: true })
-      setValue('locationDetail', placeholders.detail, { shouldValidate: true })
-      setValue('locationGuide', placeholders.guide, { shouldValidate: true })
-   }, [currentType, setValue])
 
    return (
       <SectionContainer component={motion.div} variants={fadeInUp} initial="initial" animate="animate" exit="exit" transition={easeTransition}>
@@ -352,7 +247,7 @@ const LocationSection = () => {
                   <ul>
                      <li>초대장 유형에 맞는 장소 정보를 입력해주세요.</li>
                      <li>예시 버튼을 클릭하여 샘플 정보를 사용할 수 있습니다.</li>
-                     <li>지도와 내비게이션 버튼을 선택적으로 표시할 수 있습니다.</li>
+                     <li>지도 버튼을 선택적으로 표시할 수 있습니다.</li>
                      <li>교통편 안내는 상세하게 작성해주시면 좋습니다.</li>
                   </ul>
                </HelpText>
@@ -446,29 +341,6 @@ const LocationSection = () => {
                            />
                         }
                         label="지도 표시"
-                     />
-                  )}
-               />
-
-               <Controller
-                  name="showNavigation"
-                  control={control}
-                  defaultValue={true}
-                  render={({ field: { value, onChange } }) => (
-                     <FormControlLabel
-                        control={
-                           <Checkbox
-                              checked={value}
-                              onChange={onChange}
-                              sx={{
-                                 color: COLORS.accent.main,
-                                 '&.Mui-checked': {
-                                    color: COLORS.accent.main,
-                                 },
-                              }}
-                           />
-                        }
-                        label="내비게이션 버튼 표시"
                      />
                   )}
                />
@@ -626,24 +498,6 @@ const LocationSection = () => {
                         >
                            <MapIcon fontSize="small" />
                            <Typography sx={{ fontSize: '0.9rem', fontWeight: 500 }}>지도 표시</Typography>
-                        </Box>
-                     )}
-
-                     {showNavigation && (
-                        <Box
-                           sx={{
-                              p: 2,
-                              borderRadius: '8px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                              border: `1px solid ${COLORS.accent.main}15`,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                              color: COLORS.accent.main,
-                           }}
-                        >
-                           <DirectionsIcon fontSize="small" />
-                           <Typography sx={{ fontSize: '0.9rem', fontWeight: 500 }}>내비게이션 표시</Typography>
                         </Box>
                      )}
                   </Box>

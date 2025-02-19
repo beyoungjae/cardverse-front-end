@@ -44,7 +44,16 @@ const ProfileSection = ({ profiles, style, combinedStyle, textStyle }) => {
                <Typography className="profile-name" style={{ color: combinedStyle.color }}>
                   {profile.name}
                </Typography>
-               {profile.phone && <Typography className="profile-info">{profile.phone}</Typography>}
+               {(profile.phone || profile.contact) && (
+                  <>
+                     <Typography className="profile-info" style={{ color: textStyle.color }}>
+                        연락처
+                     </Typography>
+                     <Typography className="profile-info">{profile.phone}</Typography>
+                     <Typography className="profile-info">{profile.contact}</Typography>
+                  </>
+               )}
+               {profile.age && <Typography className="profile-info">{profile.age}세</Typography>}
                {profile.parents_father && (
                   <>
                      <Typography className="profile-info" style={{ color: textStyle.color }}>
@@ -59,6 +68,30 @@ const ProfileSection = ({ profiles, style, combinedStyle, textStyle }) => {
                         모(母)
                      </Typography>
                      <Typography className="profile-info">{profile.parents_mother}</Typography>
+                  </>
+               )}
+               {profile.message && (
+                  <>
+                     <Typography className="profile-info" style={{ color: textStyle.color }}>
+                        메시지
+                     </Typography>
+                     <Typography className="profile-info">{profile.message}</Typography>
+                  </>
+               )}
+               {profile.children && (
+                  <>
+                     <Typography className="profile-info" style={{ color: textStyle.color }}>
+                        자녀
+                     </Typography>
+                     <Typography className="profile-info">{profile.children}</Typography>
+                  </>
+               )}
+               {profile.title && (
+                  <>
+                     <Typography className="profile-info" style={{ color: textStyle.color }}>
+                        직함
+                     </Typography>
+                     <Typography className="profile-info">{profile.title}</Typography>
                   </>
                )}
             </Box>

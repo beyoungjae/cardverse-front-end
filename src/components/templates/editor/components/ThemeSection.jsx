@@ -1,13 +1,11 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react'
-import { Box, Typography, Slider, IconButton, Grid, Chip, Tooltip, Collapse, Button } from '@mui/material'
+import React, { useState, useCallback, useEffect } from 'react'
+import { Box, Typography, Grid, Chip } from '@mui/material'
 import { motion, AnimatePresence } from 'framer-motion'
 import { styled } from '@mui/material/styles'
 import { useFormContext } from 'react-hook-form'
 import PaletteIcon from '@mui/icons-material/Palette'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
-import UndoIcon from '@mui/icons-material/Undo'
-import RedoIcon from '@mui/icons-material/Redo'
 import FormatColorFillIcon from '@mui/icons-material/FormatColorFill'
 import TextFormatIcon from '@mui/icons-material/TextFormat'
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
@@ -174,10 +172,7 @@ const ThemeSection = ({ theme, onThemeChange }) => {
    const [showHelp, setShowHelp] = useState(false)
    const [selectedPreset, setSelectedPreset] = useState(null)
    const [selectedType, setSelectedType] = useState('wedding')
-   const { setValue, watch } = useFormContext()
-
-   // 애니메이션 테스트를 위한 상태
-   const [showTest, setShowTest] = useState(false)
+   const { setValue } = useFormContext()
 
    // 선택된 애니메이션 타겟들을 관리하는 상태
    const [selectedTargets, setSelectedTargets] = useState(new Set())
@@ -271,14 +266,6 @@ const ThemeSection = ({ theme, onThemeChange }) => {
       setValue('animation', 'fade', { shouldValidate: true })
       setSelectedPreset(null)
    }, [setValue])
-
-   // 애니메이션 적용 대상 정의
-   const animationTargets = {
-      fade: ['제목', '인사말', '프로필', '갤러리'],
-      slide: ['날짜/시간', '오시는 길', '계좌번호'],
-      zoom: ['갤러리 이미지', '프로필 이미지'],
-      bounce: ['버튼', '아이콘'],
-   }
 
    // 애니메이션 타겟 토글 핸들러
    const handleTargetToggle = useCallback(
@@ -461,50 +448,6 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                         />
                      ))}
                   </Box>
-               </Box>
-            )}
-
-            {/* 애니메이션 테스트 섹션 */}
-            {theme.animation && selectedTargets.size > 0 && (
-               <Box sx={{ mt: 3 }}>
-                  <Button variant="outlined" onClick={() => setShowTest(!showTest)} sx={{ mb: 2 }}>
-                     애니메이션 테스트
-                  </Button>
-                  <AnimatePresence mode="wait">
-                     {showTest && (
-                        <motion.div variants={animationVariants[theme.animation]} initial="initial" animate="animate" exit="exit">
-                           <Box
-                              sx={{
-                                 p: 3,
-                                 backgroundColor: 'white',
-                                 borderRadius: 2,
-                                 boxShadow: 1,
-                              }}
-                           >
-                              <Typography variant="h6" sx={{ color: theme.primaryColor }}>
-                                 선택된 요소 ({selectedTargets.size}개)
-                              </Typography>
-                              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
-                                 {Array.from(selectedTargets).map((targetId) => {
-                                    const target = animationTargetOptions.find((t) => t.id === targetId)
-                                    return (
-                                       <Chip
-                                          key={targetId}
-                                          icon={<span>{target.icon}</span>}
-                                          label={target.label}
-                                          size="small"
-                                          sx={{
-                                             backgroundColor: `${COLORS.accent.main}15`,
-                                             color: COLORS.accent.main,
-                                          }}
-                                       />
-                                    )
-                                 })}
-                              </Box>
-                           </Box>
-                        </motion.div>
-                     )}
-                  </AnimatePresence>
                </Box>
             )}
 
