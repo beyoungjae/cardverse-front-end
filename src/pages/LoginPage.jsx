@@ -6,8 +6,6 @@ import { Link } from 'react-router-dom'
 
 const LogoContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
-    // justifyContent: 'center',
-    // alignItems: 'center',
     [theme.breakpoints.down('md')]: {},
 
     position: 'relative',

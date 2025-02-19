@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
+import ForgotPasswordModal from '../modals/ForgotPasswordModal'
+
 // mui
 import { TextField, Box, IconButton, InputAdornment, Typography } from '@mui/material'
 import { styled } from '@mui/system'
@@ -177,6 +179,11 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
             display: 'none',
         },
     },
+    '&.modal': {
+        display: 'inline',
+        textDecoration: 'none',
+        cursor: 'pointer',
+    },
 
     [theme.breakpoints.down('md')]: {
         padding: '3px 5px',
@@ -192,6 +199,7 @@ const Login = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
+    const [showModal, setShowModal] = useState(false)
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -272,7 +280,11 @@ const Login = () => {
                             }}
                         />
                         <StyledTypography>
-                            비밀번호가 기억나지 않으세요? <StyledLink to="/forgot-password">비밀번호</StyledLink> 찾기
+                            비밀번호가 기억나지 않으세요?{' '}
+                            <StyledTypography className="modal" onClick={() => setShowModal(true)}>
+                                비밀번호
+                            </StyledTypography>{' '}
+                            찾기
                         </StyledTypography>
                     </FormContainer>
 
@@ -297,6 +309,7 @@ const Login = () => {
                     <img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="kakao" style={{ width: '20px', height: '20px' }} />
                     카카오로 간편 로그인
                 </Button>
+                {showModal && <ForgotPasswordModal onClose={() => setShowModal(false)} />}
             </LoginWrapper>
         </Container>
     )

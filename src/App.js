@@ -10,7 +10,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 // 컴포넌트 import
 import Navbar from './components/shared/Navbar'
-import { Home, MyPage, TemplatePage, AdminPage, LoginPage, SignupPage, NoticePage, ForgotPasswordPage } from './pages'
+import { Home, MyPage, TemplatePage, AdminPage, LoginPage, SignupPage, NoticePage } from './pages'
 import Footer from './components/shared/Footer'
 import { Login } from './components/auth'
 import { NoticeProvider } from './pages'
@@ -87,7 +87,6 @@ function App() {
                     <Route path="/my/*" element={<MyPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/notice" element={<NoticePage />} />
-                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                     <Route
                         path="/context"
                         element={
