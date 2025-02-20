@@ -5,6 +5,7 @@ import { Box, Button, Typography, Select, MenuItem, IconButton, LinearProgress }
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { COLORS, SectionContainer } from '../styles/commonStyles'
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
 
 // 사용할 애니메이션 타입들 예시
 const animationOptions = [
@@ -59,7 +60,6 @@ const SettingSection = () => {
    const { control, watch, setValue } = useFormContext()
    const [uploadProgress, setUploadProgress] = useState(0)
    const images = watch('introImages') || []
-   const animationType = watch('introAnimation') || 'fade'
 
    // 컴포넌트 마운트시 샘플 이미지 설정
    useEffect(() => {
@@ -119,7 +119,10 @@ const SettingSection = () => {
    return (
       <SectionContainer component={motion.div} variants={fadeInVariants} initial="initial" animate="animate" exit="exit" sx={{ p: 2, border: `1px solid ${COLORS.accent.main}30`, borderRadius: 2 }}>
          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6">초기 이미지 & 애니메이션 설정</Typography>
+            <Typography variant="h6">
+               <AutoFixHighIcon sx={{ mr: 1, verticalAlign: 'middle', color: COLORS.accent.main }} />
+               초기 이미지 & 애니메이션 설정
+            </Typography>
             <Button
                onClick={handleReset}
                size="small"
@@ -160,6 +163,10 @@ const SettingSection = () => {
             <Typography variant="body1" sx={{ mb: 1 }}>
                최대 3장 이미지 업로드
             </Typography>
+            <Typography variant="caption" sx={{ mb: 1 }}>
+               업로드 후 오른쪽 하단에 + 버튼 누르고 미리보기 화면 확인 가능!
+            </Typography>
+            <br />
             <label htmlFor="intro-image-upload">
                <input id="intro-image-upload" type="file" accept="image/*" multiple onChange={handleFileChange} style={{ display: 'none' }} />
                <Button

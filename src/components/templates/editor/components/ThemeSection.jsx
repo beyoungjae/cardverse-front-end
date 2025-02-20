@@ -165,7 +165,6 @@ const animationTargetOptions = [
    { id: 'location', label: '오시는 길', icon: '🗺' },
    { id: 'gallery', label: '갤러리', icon: '🖼' },
    { id: 'account', label: '계좌번호', icon: '💰' },
-   { id: 'rsvp', label: 'RSVP', icon: '✉️' },
 ]
 
 const ThemeSection = ({ theme, onThemeChange }) => {

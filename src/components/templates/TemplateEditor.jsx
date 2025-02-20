@@ -1,18 +1,16 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react'
-import { Box, Paper, Tabs, Tab, Button, IconButton, Typography, Drawer, Snackbar, Alert, useMediaQuery, SpeedDial, SpeedDialIcon, SpeedDialAction } from '@mui/material'
+import React, { useState, useCallback, useMemo } from 'react'
+import { Box, Button, Drawer, Snackbar, Alert, SpeedDial, SpeedDialIcon, SpeedDialAction } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { FormProvider, useForm } from 'react-hook-form'
 import SaveIcon from '@mui/icons-material/Save'
 import PreviewIcon from '@mui/icons-material/Preview'
-import ShareIcon from '@mui/icons-material/Share'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { Person as PersonIcon } from '@mui/icons-material'
 import { AccountBalance as AccountBalanceIcon } from '@mui/icons-material'
 
 import {
-   HelpOutline as HelpOutlineIcon,
    ArrowBackIosNew as ArrowBackIosNewIcon,
    PhoneIphone as PhoneIphoneIcon,
    Tablet as TabletIcon,
@@ -129,103 +127,12 @@ const PreviewFrame = styled(motion.div)(({ theme }) => ({
    '&::-webkit-scrollbar': {
       display: 'none',
    },
-   '&::after': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%)',
-      borderRadius: 'inherit',
-      zIndex: 1,
-   },
 }))
 
 /**
- * 탭 패널 내부
+ * 탭 컨테이너
+ * - 탭 버튼 그룹 표시
  */
-const TabPanelContent = styled(Box)(({ theme }) => ({
-   backgroundColor: 'transparent',
-   borderRadius: theme.shape.borderRadius * 2,
-   minHeight: '400px',
-}))
-
-const StyledTabs = styled(Tabs)(({ theme }) => ({
-   borderBottom: `1px solid ${COLORS.accent.main}15`,
-   '& .MuiTab-root': {
-      textTransform: 'none',
-      fontFamily: 'Pretendard, sans-serif',
-      fontSize: '0.9rem',
-      minHeight: 48,
-      padding: '6px 16px',
-      color: COLORS.text.secondary,
-      '&.Mui-selected': {
-         color: COLORS.accent.main,
-         fontWeight: 500,
-      },
-   },
-   '& .MuiTabs-indicator': {
-      backgroundColor: COLORS.accent.main,
-   },
-}))
-
-const TabPanel = styled(Box)({
-   padding: '24px 0',
-})
-
-const MobileSpeedDial = styled(SpeedDial)(({ theme }) => ({
-   position: 'fixed',
-   bottom: theme.spacing(2),
-   right: theme.spacing(2),
-   '& .MuiSpeedDial-fab': {
-      backgroundColor: COLORS.accent.main,
-      '&:hover': {
-         backgroundColor: COLORS.accent.dark,
-      },
-   },
-}))
-
-const GreetingPreview = styled(motion.div)(({ theme }) => ({
-   padding: theme.spacing(4),
-   backgroundColor: '#FFFFFF',
-   borderRadius: theme.shape.borderRadius * 2,
-   position: 'relative',
-   '&::before': {
-      content: '"""',
-      position: 'absolute',
-      top: theme.spacing(2),
-      left: theme.spacing(2),
-      color: '#C0A583',
-      fontSize: '2rem',
-      fontFamily: 'serif',
-      opacity: 0.2,
-   },
-   '&::after': {
-      content: '"""',
-      position: 'absolute',
-      bottom: theme.spacing(2),
-      right: theme.spacing(2),
-      color: '#C0A583',
-      fontSize: '2rem',
-      fontFamily: 'serif',
-      opacity: 0.2,
-   },
-}))
-
-const GreetingText = styled(Typography)(({ theme }) => ({
-   fontSize: '1.1rem',
-   lineHeight: 1.8,
-   color: theme.palette.text.primary,
-   textAlign: 'center',
-   whiteSpace: 'pre-line',
-   fontFamily: 'Noto Serif KR, serif',
-   '& strong': {
-      color: '#C0A583',
-      fontWeight: 500,
-   },
-}))
-
 const TabsContainer = styled(Box)(({ theme }) => ({
    display: 'flex',
    gap: '8px',
@@ -244,6 +151,10 @@ const TabsContainer = styled(Box)(({ theme }) => ({
    },
 }))
 
+/**
+ * 탭 버튼
+ * - 탭 버튼 스타일 정의
+ */
 const TabButton = styled(Button)(({ theme, selected }) => ({
    minWidth: 'unset',
    padding: '8px 16px',
@@ -255,6 +166,27 @@ const TabButton = styled(Button)(({ theme, selected }) => ({
       backgroundColor: selected ? `${COLORS.accent.main}25` : 'rgba(0, 0, 0, 0.04)',
    },
    whiteSpace: 'nowrap',
+}))
+
+/**
+ * 공통 SpeedDial
+ */
+const UniversalSpeedDial = styled(SpeedDial)(({ theme }) => ({
+   position: 'fixed',
+   bottom: theme.spacing(2),
+   right: theme.spacing(2),
+   zIndex: 1000,
+   '& .MuiSpeedDial-fab': {
+      backgroundColor: COLORS.accent.main,
+      '&:hover': {
+         backgroundColor: COLORS.accent.dark,
+      },
+   },
+   // 반응형 위치 조정
+   [theme.breakpoints.up('md')]: {
+      bottom: theme.spacing(4),
+      right: theme.spacing(4),
+   },
 }))
 
 // ===================== sections / 탭 구성 =====================
@@ -339,7 +271,6 @@ const editorVariants = {
 
 const TemplateEditor = () => {
    const navigate = useNavigate()
-   const isMobile = useMediaQuery((theme) => theme.breakpoints.down('md'))
 
    // Zustand store
    const { template, isLoading, error, updateTemplate, saveTemplate } = useTemplateStore()
@@ -400,9 +331,6 @@ const TemplateEditor = () => {
 
    // 테마 훅
    const { theme: themeSettings, handleThemeChange, resetTheme, undo, redo, canUndo, canRedo } = useThemeControl()
-
-   // 이미지 갤러리 훅
-   const { images, handleImageUpload, handleImageDelete, reorderImages } = useImageGallery()
 
    // sections
    const themeProps = {
@@ -501,18 +429,15 @@ const TemplateEditor = () => {
       [navigate, showNotification]
    )
 
-   // 미리보기 사이즈 아이콘
-   const previewSizeIcons = {
-      mobile: <PhoneIphoneIcon />,
-      tablet: <TabletIcon />,
-      desktop: <DesktopWindowsIcon />,
-   }
-
-   // SpeedDial 액션 (모바일 화면에서만 보여짐)
-   const speedDialActions = [
-      { icon: <SaveIcon />, name: '저장하기', action: handleSubmit(onSubmit) },
-      { icon: <PreviewIcon />, name: '미리보기', action: () => setIsPreviewOpen(true) },
-   ]
+   // SpeedDial 액션
+   const speedDialActions = useMemo(
+      () => [
+         { icon: <SaveIcon />, name: '저장하기', action: handleSubmit(onSubmit) },
+         { icon: <PreviewIcon />, name: '미리보기', action: () => setIsPreviewOpen(true) },
+         // 필요한 경우 추가 액션들을 여기에 추가
+      ],
+      [handleSubmit, onSubmit]
+   )
 
    // ThemeSection에 전달할 props
    const themeSectionProps = {
@@ -526,20 +451,34 @@ const TemplateEditor = () => {
       theme: themeSettings,
    }
 
+   const formData = watch() // 모든 form 필드 감시
+
+   // 공유 상태
+   const [previewState, setPreviewState] = useState({
+      showInvitation: false,
+      showSections: false,
+      sectionAnimationIndex: -1,
+   })
+
+   // 프리뷰 패널 공통 props
+   const previewPanelProps = {
+      formData: watch(),
+      theme: themeSettings,
+      previewState,
+      setPreviewState,
+      isDrawer: false,
+   }
+
+   const drawerPreviewProps = {
+      ...previewPanelProps,
+      isDrawer: true,
+   }
+
    return (
       <FormProvider {...methods}>
          <EditorContainer variants={containerVariants} initial="initial" animate="animate">
-            <PreviewContainer variants={previewVariants}>
-               <PreviewFrame>
-                  <PreviewPanel
-                     formData={{
-                        ...watch(),
-                        type: currentType,
-                     }}
-                     previewSize={previewSize}
-                     theme={themeSettings}
-                  />
-               </PreviewFrame>
+            <PreviewContainer>
+               <PreviewFrame>{isPreviewLoading ? <PreviewLoading /> : <PreviewPanel {...drawerPreviewProps} />}</PreviewFrame>
             </PreviewContainer>
 
             <EditorPanel variants={editorVariants}>
@@ -565,7 +504,7 @@ const TemplateEditor = () => {
                </Box>
             </EditorPanel>
 
-            {/* 모바일에서의 드로어 미리보기 */}
+            {/* 드로어 미리보기 */}
             <Drawer
                anchor="right"
                open={isPreviewOpen}
@@ -573,22 +512,28 @@ const TemplateEditor = () => {
                sx={{
                   '& .MuiDrawer-paper': {
                      width: '100%',
-                     maxWidth: 375,
+                     maxWidth: 500,
                      height: '100%',
                   },
                }}
             >
-               {isPreviewLoading ? <PreviewLoading /> : <PreviewPanel formData={watch()} theme={themeSettings} />}
+               {isPreviewLoading ? <PreviewLoading /> : <PreviewPanel {...drawerPreviewProps} />}
             </Drawer>
 
-            {/* 모바일 환경 SpeedDial */}
-            {isMobile && (
-               <MobileSpeedDial ariaLabel="SpeedDial" icon={<SpeedDialIcon openIcon={<MoreVertIcon />} />} direction="up">
-                  {speedDialActions.map((action) => (
-                     <SpeedDialAction key={action.name} icon={action.icon} tooltipTitle={action.name} onClick={action.action} />
-                  ))}
-               </MobileSpeedDial>
-            )}
+            {/* 공통 SpeedDial */}
+            <UniversalSpeedDial ariaLabel="SpeedDial" icon={<SpeedDialIcon openIcon={<MoreVertIcon />} />} direction="up" open={isSpeedDialOpen} onOpen={() => setIsSpeedDialOpen(true)} onClose={() => setIsSpeedDialOpen(false)}>
+               {speedDialActions.map((action) => (
+                  <SpeedDialAction
+                     key={action.name}
+                     icon={action.icon}
+                     tooltipTitle={action.name}
+                     onClick={() => {
+                        action.action()
+                        setIsSpeedDialOpen(false)
+                     }}
+                  />
+               ))}
+            </UniversalSpeedDial>
          </EditorContainer>
 
          {/* 알림 메시지 */}

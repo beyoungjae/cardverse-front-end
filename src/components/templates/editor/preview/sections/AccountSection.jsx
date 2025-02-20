@@ -65,7 +65,7 @@ const AccountSection = ({ accounts, style, type, getAccountLabel, textStyle }) =
                            backgroundColor: `${style.color}15`,
                         },
                         display: 'inline-block',
-                        marginLeft: '50px',
+                        marginLeft: '10px',
                      }}
                   >
                      <ContentCopyIcon />

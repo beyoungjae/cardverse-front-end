@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useState, useCallback } from 'react'
 import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ko'
 import FavoriteIcon from '@mui/icons-material/Favorite'
@@ -25,9 +25,9 @@ import SettingSection from './sections/SettingSection'
 // dayjs 한글 설정
 dayjs.locale('ko')
 
-const PreviewContainer = styled(Box)(({ theme }) => ({
-   width: '100%',
-   height: '100vh',
+const PreviewContainer = styled(Box)(({ theme, isDrawer }) => ({
+   width: isDrawer ? '100%' : '375px', // 폰 미리보기: 고정 폭 적용 (예: 375px)
+   height: isDrawer ? '100vh' : '667px', // 폰 미리보기: 고정 높이 (예: 667px)
    backgroundColor: '#FFFFFF',
    borderRadius: '16px',
    position: 'relative',
@@ -237,24 +237,89 @@ const invitationTypes = [
    { id: 'invitation', label: '초빙장', icon: <EmojiEventsIcon />, format: '특별한 행사가 (D-Day)일 남았습니다.' },
 ]
 
-const PreviewPanel = React.memo(({ formData, theme }) => {
+const PreviewPanel = React.memo(({ formData, theme, isDrawer }) => {
    const [loadedImages, setLoadedImages] = useState(new Set())
    const [selectedType, setSelectedType] = useState('wedding')
    const [selectedImageIndex, setSelectedImageIndex] = useState(null)
+   const [showInvitation, setShowInvitation] = useState(false)
+   const [showSections, setShowSections] = useState(false)
+   const [sectionAnimationIndex, setSectionAnimationIndex] = useState(-1)
+
+   const sectionOrder = useMemo(() => ['title', 'profile', 'greeting', 'datetime', 'location', 'account', 'gallery'], [])
 
    console.log('formData:', formData) // 디버깅을 위한 로그 추가
 
+   // formData 기본값 설정
+   const defaultFormData = {
+      setting: { animation: null, imgs: [] },
+      profiles: [],
+      showProfiles: false,
+      type: 'wedding',
+      title: '',
+      greeting: '',
+      dateTime: null,
+      showCountdown: false,
+      location: {
+         name: '',
+         address: '',
+         detail: '',
+         guide: '',
+         showMap: false,
+         url: '',
+      },
+      images: [],
+      accounts: [],
+      showAccounts: false,
+      backgroundColor: '#ffffff',
+      primaryColor: '#000000',
+      secondaryColor: '#666666',
+      fontFamily: 'Malgun Gothic',
+      animation: null,
+   }
+
+   // formData와 defaultFormData 병합
+   const mergedFormData = useMemo(
+      () => ({
+         ...defaultFormData,
+         ...formData,
+      }),
+      [formData]
+   )
+
+   // SettingSection 완료 핸들러
+   const handleSettingComplete = useCallback(() => {
+      setShowInvitation(true)
+   }, [])
+
+   const startSectionAnimations = useCallback(() => {
+      let currentIndex = 0
+      const animateNextSection = () => {
+         if (currentIndex < sectionOrder.length) {
+            setSectionAnimationIndex(currentIndex)
+            currentIndex++
+            setTimeout(animateNextSection, 300)
+         }
+      }
+      animateNextSection()
+   }, [sectionOrder])
+
+   const handleInvitationClick = useCallback(() => {
+      setShowInvitation(false)
+      setShowSections(true)
+      startSectionAnimations()
+   }, [startSectionAnimations])
+
    useEffect(() => {
       // formData.type이 있으면 해당 값을 사용, 없으면 프로필의 type 확인
-      if (formData.type) {
-         setSelectedType(formData.type)
-      } else if (formData.profiles?.[0]?.type) {
-         setSelectedType(formData.profiles[0].type)
+      if (mergedFormData.type) {
+         setSelectedType(mergedFormData.type)
+      } else if (mergedFormData.profiles?.[0]?.type) {
+         setSelectedType(mergedFormData.profiles[0].type)
       }
-   }, [formData.type, formData.profiles])
+   }, [mergedFormData.type, mergedFormData.profiles])
 
-   // selectedType 대신 formData.type을 우선적으로 사용
-   const type = formData.type || selectedType
+   // selectedType 대신 mergedFormData.type을 우선적으로 사용
+   const type = mergedFormData.type || selectedType
    const typeStyle = InvitationType[type]
 
    // typeStyle과 theme를 결합하되, theme가 우선순위를 가지도록 설정
@@ -343,7 +408,7 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
    )
 
    const getAccountLabel = (index) => {
-      const type = formData.type || 'wedding'
+      const type = mergedFormData.type || 'wedding'
       const labels = {
          wedding: ['신랑측', '신부측'],
          newYear: ['보내는 분'],
@@ -365,18 +430,18 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
 
          // 동적으로 포맷 문자열 치환
          if (type === 'wedding') {
-            format = format.replace('(신랑)', formData?.profiles?.[0]?.name || '').replace('(신부)', formData?.profiles?.[1]?.name || '')
+            format = format.replace('(신랑)', mergedFormData?.profiles?.[0]?.name || '').replace('(신부)', mergedFormData?.profiles?.[1]?.name || '')
          } else if (type === 'birthday') {
-            format = format.replace('(이름)', formData?.profiles?.[0]?.name || '')
+            format = format.replace('(이름)', mergedFormData?.profiles?.[0]?.name || '')
          } else if (type === 'invitation') {
-            format = format.replace('(이름)', formData?.profiles?.[0]?.name || '')
+            format = format.replace('(이름)', mergedFormData?.profiles?.[0]?.name || '')
          } else if (type === 'newYear') {
-            format = format.replace('(이름)', formData?.profiles?.[0]?.name || '')
+            format = format.replace('(이름)', mergedFormData?.profiles?.[0]?.name || '')
          }
 
          return format.replace('(D-Day)', diff)
       },
-      [formData]
+      [mergedFormData]
    )
 
    // 이미지 모달 열기
@@ -392,7 +457,7 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
    // 다음 이미지로 이동
    const handleNextImage = (e) => {
       e.stopPropagation()
-      if (selectedImageIndex < formData.images.length - 1) {
+      if (selectedImageIndex < mergedFormData.images.length - 1) {
          setSelectedImageIndex((prev) => prev + 1)
       } else {
          setSelectedImageIndex(0) // 마지막 이미지에서 처음으로 순환
@@ -405,7 +470,7 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
       if (selectedImageIndex > 0) {
          setSelectedImageIndex((prev) => prev - 1)
       } else {
-         setSelectedImageIndex(formData.images.length - 1) // 첫 이미지에서 마지막으로 순환
+         setSelectedImageIndex(mergedFormData.images.length - 1) // 첫 이미지에서 마지막으로 순환
       }
    }
 
@@ -441,13 +506,30 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
    )
 
    // 애니메이션이 적용될 요소인지 확인하는 함수
-   const shouldAnimate = useCallback((elementId) => theme?.animationTargets?.includes(elementId), [theme?.animationTargets])
+   const shouldAnimate = useCallback((elementId) => {
+      // 항상 true 반환하거나, 특정 조건 추가
+      return true
+   }, [])
 
    // 현재 선택된 애니메이션 variant
    const currentAnimation = useMemo(() => animationVariants[theme?.animation || 'fade'], [animationVariants, theme?.animation])
 
+   const shouldShowSection = useCallback(
+      (sectionId) => {
+         return showSections && sectionAnimationIndex >= sectionOrder.indexOf(sectionId)
+      },
+      [showSections, sectionAnimationIndex, sectionOrder]
+   )
+
+   // AnimatedSection 컴포넌트에 새로운 props 전달
+   const renderSection = (sectionId, content) => (
+      <AnimatedSection shouldAnimate={true} animation={currentAnimation} show={true}>
+         {content}
+      </AnimatedSection>
+   )
+
    return (
-      <PreviewContainer style={containerStyle}>
+      <PreviewContainer style={containerStyle} isDrawer={isDrawer}>
          <PreviewContent
             className="PreviewContent"
             style={{
@@ -455,47 +537,51 @@ const PreviewPanel = React.memo(({ formData, theme }) => {
                fontFamily: combinedStyle.fontFamily,
             }}
          >
-            {/* 설정 섹션 */}
-            <AnimatedSection shouldAnimate={shouldAnimate('setting')} animation={currentAnimation}>
-               {formData.setting && <SettingSection setting={formData.setting} style={sectionStyle} textStyle={textStyle} />}
-            </AnimatedSection>
-
-            {/* 제목 섹션 */}
-            <AnimatedSection shouldAnimate={shouldAnimate('title')} animation={currentAnimation}>
-               {formData.title && <TitleSection title={formData.title} style={sectionStyle} combinedStyle={combinedStyle} />}
-            </AnimatedSection>
-
-            {/* 프로필 섹션 */}
-            <AnimatedSection shouldAnimate={shouldAnimate('profile')} animation={currentAnimation}>
-               {formData.showProfiles && formData.profiles?.length > 0 && <ProfileSection profiles={formData.profiles} style={profileStyle} combinedStyle={combinedStyle} textStyle={textStyle} />}
-            </AnimatedSection>
-
-            {/* 인사말 섹션 */}
-            <AnimatedSection shouldAnimate={shouldAnimate('greeting')} animation={currentAnimation}>
-               {formData.greeting && <GreetingSection greeting={formData.greeting} style={sectionStyle} combinedStyle={combinedStyle} textStyle={textStyle} />}
-            </AnimatedSection>
-
-            {/* 날짜/시간 섹션 */}
-            <AnimatedSection shouldAnimate={shouldAnimate('datetime')} animation={currentAnimation}>
-               {formData.dateTime && <DateTimeSection dateTime={formData.dateTime} showCountdown={formData.showCountdown} style={sectionStyle} typeStyle={typeStyle} formatDDay={formatDDay} type={formData.type} textStyle={textStyle} />}
-            </AnimatedSection>
-
-            {/* 장소 섹션 */}
-            <AnimatedSection shouldAnimate={shouldAnimate('location')} animation={currentAnimation}>
-               {formData.location && Object.values(formData.location).some((value) => value) && <LocationSection formData={formData} style={sectionStyle} textStyle={typeStyle} />}
-            </AnimatedSection>
-
-            {/* 계좌 섹션 */}
-            <AnimatedSection shouldAnimate={shouldAnimate('account')} animation={currentAnimation}>
-               {formData.showAccounts && formData.accounts?.length > 0 && <AccountSection accounts={formData.accounts} style={accountStyle} typeStyle={typeStyle} type={formData.type} getAccountLabel={getAccountLabel} textStyle={textStyle} />}
-            </AnimatedSection>
-
-            {/* 갤러리 섹션 */}
-            <AnimatedSection shouldAnimate={shouldAnimate('gallery')} animation={currentAnimation}>
-               {formData.images?.length > 0 && (
-                  <GallerySection images={formData.images} layout={formData.galleryLayout} style={galleryStyle} typeStyle={typeStyle} selectedImageIndex={selectedImageIndex} onImageClick={handleImageClick} onCloseModal={handleCloseModal} onPrevImage={handlePrevImage} onNextImage={handleNextImage} />
+            <AnimatePresence mode="wait">
+               {!showInvitation && !showSections && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ width: '100%', height: '100%' }}>
+                     <SettingSection onComplete={handleSettingComplete} />
+                  </motion.div>
                )}
-            </AnimatedSection>
+
+               {/* 초대장 이미지 (추후에 템플릿 페이지에서 썸네일 이미지로 교체) */}
+               {showInvitation && !showSections && (
+                  <motion.img src="/images/templates/card5.png" alt="Invitation" onClick={handleInvitationClick} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.5 }} style={{ width: '100%', cursor: 'pointer' }} />
+               )}
+
+               {showSections && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+                     {renderSection('title', mergedFormData.title && <TitleSection title={mergedFormData.title} style={sectionStyle} combinedStyle={combinedStyle} />)}
+
+                     {renderSection('profile', mergedFormData.showProfiles && mergedFormData.profiles?.length > 0 && <ProfileSection profiles={mergedFormData.profiles} style={profileStyle} combinedStyle={combinedStyle} textStyle={textStyle} />)}
+
+                     {renderSection('greeting', mergedFormData.greeting && <GreetingSection greeting={mergedFormData.greeting} style={sectionStyle} combinedStyle={combinedStyle} textStyle={textStyle} />)}
+
+                     {renderSection('datetime', mergedFormData.dateTime && <DateTimeSection dateTime={mergedFormData.dateTime} showCountdown={mergedFormData.showCountdown} style={sectionStyle} typeStyle={typeStyle} formatDDay={formatDDay} type={mergedFormData.type} textStyle={textStyle} />)}
+
+                     {renderSection('location', mergedFormData.location && Object.values(mergedFormData.location).some((value) => value) && <LocationSection formData={mergedFormData} style={sectionStyle} textStyle={typeStyle} />)}
+
+                     {renderSection('account', mergedFormData.showAccounts && mergedFormData.accounts?.length > 0 && <AccountSection accounts={mergedFormData.accounts} style={accountStyle} typeStyle={typeStyle} type={mergedFormData.type} getAccountLabel={getAccountLabel} textStyle={textStyle} />)}
+
+                     {renderSection(
+                        'gallery',
+                        mergedFormData.images?.length > 0 && (
+                           <GallerySection
+                              images={mergedFormData.images}
+                              layout={mergedFormData.galleryLayout}
+                              style={galleryStyle}
+                              typeStyle={typeStyle}
+                              selectedImageIndex={selectedImageIndex}
+                              onImageClick={handleImageClick}
+                              onCloseModal={handleCloseModal}
+                              onPrevImage={handlePrevImage}
+                              onNextImage={handleNextImage}
+                           />
+                        )
+                     )}
+                  </motion.div>
+               )}
+            </AnimatePresence>
          </PreviewContent>
       </PreviewContainer>
    )
