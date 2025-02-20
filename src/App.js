@@ -12,6 +12,7 @@ import Navbar from './components/shared/Navbar'
 import { Home, MyPage, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage } from './pages'
 import Footer from './components/shared/Footer'
 import { Login } from './components/auth'
+import ReviewEditor from './components/review/ReviewEditor'
 
 // 라우트 세팅
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom'
@@ -94,7 +95,10 @@ function App() {
                   <Route index element={<Login />} />
                   <Route path="*" element={<Navigate to="/login" replace />} />
                </Route>
+               {/* 리뷰 목록 페이지 */}
                <Route path="/review" element={<ReviewPage />} />
+               {/* 리뷰 작성 페이지 */}
+               <Route path="/review/write" element={<ReviewEditor />} />
             </Routes>
          </MainContent>
 
