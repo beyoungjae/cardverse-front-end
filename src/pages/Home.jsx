@@ -5,6 +5,7 @@ import { Autoplay } from 'swiper/modules'
 import React from 'react'
 import { useInView } from 'react-intersection-observer'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 
 // Swiper
 import 'swiper/css'
@@ -93,6 +94,7 @@ const BannerSubtitle = styled('img')(({ theme }) => ({
    },
 }))
 
+// 슬라이더 타이틀
 const SliderTitle = styled(Typography)(({ theme }) => ({
    ...theme.typography.h1,
    textAlign: 'center',
@@ -143,6 +145,31 @@ const SliderSection = styled(Box)(({ theme }) => ({
    },
 }))
 
+// 슬라이드 스타일 컴포넌트
+const StyledSlide = styled(Box)(({ theme }) => ({
+   paddingTop: '50px',
+   width: '400px',
+   height: '660px',
+   backgroundColor: 'transparent',
+   margin: '0 auto',
+   marginBottom: '100px',
+   [theme.breakpoints.down('lg')]: {
+      width: '300px',
+      height: '580px',
+      marginBottom: '60px',
+   },
+   [theme.breakpoints.down('md')]: {
+      width: '280px',
+      height: '460px',
+      marginBottom: '70px',
+   },
+   [theme.breakpoints.down('sm')]: {
+      width: '200px',
+      height: '395px',
+      marginBottom: '80px',
+   },
+}))
+
 // 슬라이더 이미지
 const SlideImage = styled('img')(({ theme }) => ({
    width: '100%',
@@ -165,8 +192,10 @@ const SlideImage = styled('img')(({ theme }) => ({
 
 // 슬라이더 컨테이너
 const StyledSwiper = styled(Swiper)(({ theme }) => ({
-   padding: '50px 0',
    '.swiper-slide': {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
       transition: 'all 0.5s ease',
       opacity: 0.4,
       transform: 'scale(0.8)',
@@ -316,7 +345,7 @@ const GalleryGrid = styled(Box)(({ theme }) => ({
    width: '100%',
    position: 'relative',
    overflow: 'hidden',
-   marginBottom: '20rem',
+   marginBottom: '5rem',
 }))
 
 // 갤러리 아이템
@@ -363,7 +392,7 @@ const ImageWrapper = styled(Box)(({ theme }) => ({
    overflow: 'hidden',
    '&::after': {
       content: '""',
-      position: 'fixed',
+      position: 'absolute',
       top: '50%',
       transform: 'translateY(-50%)',
       width: '20%',
@@ -435,20 +464,17 @@ const GalleryItemText = styled(Typography)(({ theme }) => ({
 }))
 
 // 리드모어 버튼
-const ReadMore = styled(Box)(({ theme }) => ({
-   display: 'flex',
+const ReadMore = styled(Link)(({ theme }) => ({
+   display: 'inline-flex',
    alignItems: 'center',
-   gap: '8px',
-   color: theme.palette.text.disabled,
-   cursor: 'pointer',
+   gap: '0.5rem',
+   color: theme.palette.text.primary,
+   textDecoration: 'none',
    fontSize: '0.9rem',
-   transition: 'all 0.3s ease',
+   marginTop: '1rem',
    '&:hover': {
-      gap: '12px',
-      color: theme.palette.text.primary,
-   },
-   [theme.breakpoints.down('sm')]: {
-      flexDirection: 'row',
+      fontSize: '0.95rem',
+      transition: 'all 0.3s ease',
    },
 }))
 
@@ -459,24 +485,28 @@ const galleryItems = [
       title: '청첩장 갤러리',
       image: '/images/home/1.png',
       description: '간편하고 세련된 모바일 청첩장 솔루션 한 번으로 특별한 날을 초대하세요. 디지털로 전달되는 모바일 청첩장으로, 소중한 순간을 더 많은 사람들과 쉽게 나누고, 기억에 남을 초대장을 만들어 보세요.',
+      path: '/template/wedding',
    },
    {
       id: 2,
       title: '연하장 갤러리',
       image: '/images/home/2.png',
       description: '간편하고 세련된 모바일 청첩장 솔루션 한 번으로 특별한 날을 초대하세요. 디지털로 전달되는 모바일 청첩장으로, 소중한 순간을 더 많은 사람들과 쉽게 나누고, 기억에 남을 초대장을 만들어 보세요.',
+      path: '/template/newyear',
    },
    {
       id: 3,
       title: '고희연 갤러리',
       image: '/images/home/3.png',
       description: '간편하고 세련된 모바일 청첩장 솔루션 한 번으로 특별한 날을 초대하세요. 디지털로 전달되는 모바일 청첩장으로, 소중한 순간을 더 많은 사람들과 쉽게 나누고, 기억에 남을 초대장을 만들어 보세요.',
+      path: '/template/gohyeon',
    },
    {
       id: 4,
       title: '초빙장 갤러리',
       image: '/images/home/4.png',
       description: '간편하고 세련된 모바일 청첩장 솔루션 한 번으로 특별한 날을 초대하세요. 디지털로 전달되는 모바일 청첩장으로, 소중한 순간을 더 많은 사람들과 쉽게 나누고, 기억에 남을 초대장을 만들어 보세요.',
+      path: '/template/invitation',
    },
 ]
 
@@ -552,7 +582,7 @@ const Home = () => {
                modules={[Autoplay]}
                style={{
                   width: '100%',
-                  padding: '50px 0',
+                  padding: '15px 0',
                }}
                breakpoints={{
                   320: {
@@ -568,17 +598,10 @@ const Home = () => {
                spaceBetween={30}
             >
                {cards.map((card, index) => (
-                  <SwiperSlide
-                     key={card.id}
-                     onClick={() => handleSlideClick(index)}
-                     style={{
-                        paddingTop: '50px',
-                        width: '400px',
-                        height: '700px',
-                        backgroundColor: 'transparent',
-                     }}
-                  >
-                     <SlideImage src={card.image} alt={card.title} />
+                  <SwiperSlide key={card.id} onClick={() => handleSlideClick(index)}>
+                     <StyledSlide>
+                        <SlideImage src={card.image} alt={card.title} />
+                     </StyledSlide>
                   </SwiperSlide>
                ))}
             </StyledSwiper>
@@ -602,7 +625,7 @@ const Home = () => {
                         <GalleryContent data-reverse={isReverse}>
                            <GalleryItemTitle>{item.title}</GalleryItemTitle>
                            <GalleryItemText>{item.description}</GalleryItemText>
-                           <ReadMore>
+                           <ReadMore to={item.path}>
                               Read More
                               <motion.span animate={{ x: [0, 5, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
                                  →

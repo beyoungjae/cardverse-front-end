@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaInstagram, FaFacebookF, FaYoutube } from 'react-icons/fa'
-import { AppBar, Toolbar, IconButton, Box, useTheme, Drawer, List, ListItem, ListItemText, Collapse } from '@mui/material'
+import { AppBar, Toolbar, IconButton, Box, Drawer, List, ListItem, ListItemText, Collapse } from '@mui/material'
 import { styled } from '@mui/system'
 import { motion, AnimatePresence } from 'framer-motion'
 import MenuIcon from '@mui/icons-material/Menu'
@@ -29,8 +29,13 @@ const SocialIcons = styled(Box)(({ theme }) => ({
 }))
 
 const LogoContainer = styled(Box)(({ theme }) => ({
+   display: 'flex',
+   justifyContent: 'center',
+   alignItems: 'center',
    flexGrow: 1,
-   textAlign: 'center',
+   position: 'absolute',
+   left: '50%',
+   transform: 'translateX(-50%)',
    [theme.breakpoints.down('md')]: {
       flexGrow: 0,
       marginRight: 'auto',
@@ -41,6 +46,13 @@ const Logoimg = styled('img')(({ theme }) => ({
    margin: '0 auto',
    height: '40px',
    cursor: 'pointer',
+   '&:hover': {
+      transform: 'translateY(-2px)',
+   },
+   transition: 'transform 0.3s ease',
+   '&:active': {
+      transform: 'scale(0.9)',
+   },
    [theme.breakpoints.down('md')]: {
       height: '30px',
    },
@@ -50,6 +62,7 @@ const NavLinks = styled(Box)(({ theme }) => ({
    display: 'flex',
    gap: '2rem',
    color: theme.palette.text.secondary,
+   marginLeft: 'auto',
    '& a': {
       textDecoration: 'none',
       color: 'inherit',
@@ -199,8 +212,6 @@ const Navbar = () => {
    const [activeMenu, setActiveMenu] = useState(null)
    const [mobileOpen, setMobileOpen] = useState(false)
    const [expandedMenus, setExpandedMenus] = useState({})
-   // eslint-disable-next-line
-   const theme = useTheme()
 
    const menuItems = {
       HOME: [
@@ -208,11 +219,7 @@ const Navbar = () => {
          { name: '소개', path: '/about' },
          { name: '공지사항', path: '/notice' },
       ],
-      TEMPLATE: [
-         { name: '전체 템플릿', path: '/template' },
-         { name: '인기 템플릿', path: '/template/popular' },
-         { name: '신규 템플릿', path: '/template/new' },
-      ],
+      TEMPLATE: [{ name: '템플릿 모아보기', path: '/template' }],
       EVENT: [
          { name: '진행중인 이벤트', path: '/event' },
          { name: '종료된 이벤트', path: '/event/ended' },
@@ -266,7 +273,7 @@ const Navbar = () => {
          <DrawerItem component={Link} to="/support" onClick={handleDrawerToggle}>
             <ListItemText primary="고객센터" />
          </DrawerItem>
-         <DrawerItem component={Link} to="/mypage" onClick={handleDrawerToggle}>
+         <DrawerItem component={Link} to="/my" onClick={handleDrawerToggle}>
             <ListItemText primary="마이페이지" />
          </DrawerItem>
          <DrawerItem component={Link} to="/signup" onClick={handleDrawerToggle}>
@@ -297,11 +304,14 @@ const Navbar = () => {
                   </IconButton>
                </SocialIcons>
                <LogoContainer>
-                  <Logoimg component={Link} to="/" src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="로고" />
+                  <Link to="/">
+                     <Logoimg src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="로고" />
+                  </Link>
                </LogoContainer>
                <NavLinks>
+                  <Link to="/admin">관리자</Link>
                   <Link to="/support">고객센터</Link>
-                  <Link to="/mypage">마이페이지</Link>
+                  <Link to="/my">마이페이지</Link>
                   <Link to="/signup">회원가입</Link>
                   <Link to="/login">로그인</Link>
                </NavLinks>
@@ -310,7 +320,7 @@ const Navbar = () => {
          <BottomNav>
             {Object.keys(menuItems).map((menu) => (
                <NavItem key={menu} onMouseEnter={() => setActiveMenu(menu)} onMouseLeave={() => setActiveMenu(null)}>
-                  <Link to={`/${menu.toLowerCase()}`}>{menu}</Link>
+                  <Link>{menu}</Link>
                   <AnimatePresence>
                      {activeMenu === menu && (
                         <DropdownMenu variants={dropdownVariants} initial="hidden" animate="visible" exit="exit">
