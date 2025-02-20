@@ -9,10 +9,9 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 // 컴포넌트 import
 import Navbar from './components/shared/Navbar'
-import { Home, MyPage, TemplatePage, LoginPage, SignupPage, NoticePage, ReviewPage } from './pages'
+import { Home, MyPage, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage } from './pages'
 import Footer from './components/shared/Footer'
 import { Login } from './components/auth'
-import { NoticeProvider } from './pages'
 
 // 라우트 세팅
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom'
@@ -85,15 +84,7 @@ function App() {
                <Route path="/" element={<Home />} />
                <Route path="/my/*" element={<MyPage />} />
                <Route path="/signup" element={<SignupPage />} />
-               <Route path="/notice" element={<NoticePage />} />
-               <Route
-                  path="/context"
-                  element={
-                     <NoticeProvider>
-                        <NoticePage />
-                     </NoticeProvider>
-                  }
-               />
+               <Route path="/support" element={<CustomerPage />} />
                <Route path="/template">
                   {/* /template 접근 시 기본 탭으로 리다이렉트 */}
                   <Route index element={<Navigate to="/template/wedding" replace />} />

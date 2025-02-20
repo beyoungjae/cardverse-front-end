@@ -217,7 +217,6 @@ const Navbar = () => {
       HOME: [
          { name: '메인', path: '/' },
          { name: '소개', path: '/about' },
-         { name: '공지사항', path: '/notice' },
       ],
       TEMPLATE: [{ name: '템플릿 모아보기', path: '/template' }],
       EVENT: [
