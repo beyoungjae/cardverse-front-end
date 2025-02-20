@@ -513,6 +513,12 @@ const TemplateEditor = () => {
                   '& .MuiDrawer-paper': {
                      width: '100%',
                      maxWidth: 500,
+                     '@media (max-width: 1280px)': {
+                        maxWidth: 400,
+                     },
+                     '@media (max-width: 1024px)': {
+                        maxWidth: 300,
+                     },
                      height: '100%',
                   },
                }}
