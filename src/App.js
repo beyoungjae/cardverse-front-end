@@ -9,7 +9,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 // 컴포넌트 import
 import Navbar from './components/shared/Navbar'
-import { Home, MyPage, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage } from './pages'
+import { Home, MyPage, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, AdminPage } from './pages'
 import Footer from './components/shared/Footer'
 import { Login } from './components/auth'
 import ReviewEditor from './components/review/ReviewEditor'
@@ -71,7 +71,7 @@ const GlobalStyle = createGlobalStyle`
 
 function App() {
    const location = useLocation()
-   const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup')
+   const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname.startsWith('/admin')
 
    return (
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
@@ -99,6 +99,9 @@ function App() {
                <Route path="/review" element={<ReviewPage />} />
                {/* 리뷰 작성 페이지 */}
                <Route path="/review/write" element={<ReviewEditor />} />
+
+               {/* 관리자 페이지 */}
+               <Route path="/admin" element={<AdminPage />} />
             </Routes>
          </MainContent>
 
