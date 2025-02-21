@@ -453,6 +453,12 @@ const TemplateDetail = () => {
       })
    }
 
+   const handlePurchase = () => {
+      navigate(`/template/${currentTab}/purchase/${templateId}`, {
+         state: { templateData, currentTab },
+      })
+   }
+
    // 임시 데이터 (추후 API 연동 필요)
    const templateData = {
       id: templateId,
@@ -524,7 +530,7 @@ const TemplateDetail = () => {
                </BeforePurchasingButton>
                <Typography className="price-text">Price | {templateData.price}</Typography>
                <ButtonGroup>
-                  <BuyButton>구매하기</BuyButton>
+                  <BuyButton onClick={handlePurchase}>구매하기</BuyButton>
                   <PreviewButton onClick={handlePreviewOpen}>미리보기</PreviewButton>
                </ButtonGroup>
             </PriceSection>
