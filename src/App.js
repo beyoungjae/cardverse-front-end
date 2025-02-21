@@ -9,7 +9,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 // 컴포넌트 import
 import Navbar from './components/shared/Navbar'
-import { Home, MyPage, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, AdminPage } from './pages'
+import { Home, MyPage, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, AdminPage, CreatePostPage } from './pages'
 import Footer from './components/shared/Footer'
 import { Login } from './components/auth'
 import ReviewEditor from './components/review/ReviewEditor'
@@ -95,13 +95,13 @@ function App() {
                   <Route index element={<Login />} />
                   <Route path="*" element={<Navigate to="/login" replace />} />
                </Route>
-               {/* 리뷰 목록 페이지 */}
+               {/* 리뷰 페이지 */}
                <Route path="/review" element={<ReviewPage />} />
-               {/* 리뷰 작성 페이지 */}
                <Route path="/review/write" element={<ReviewEditor />} />
 
+               <Route path="/post/new" element={<CreatePostPage />} />
                {/* 관리자 페이지 */}
-               <Route path="/admin" element={<AdminPage />} />
+               <Route path="/admin/*" element={<AdminPage />} />
             </Routes>
          </MainContent>
 

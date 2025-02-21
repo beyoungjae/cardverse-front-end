@@ -303,7 +303,7 @@ const Login = () => {
                </FormContainer>
             </Form>
             <StyledTypography className="kakao-comment" sx={{ marginBottom: '16px', color: '#cccccc' }}>
-               ────────────── or ──────────────
+               ───────────── or ─────────────
             </StyledTypography>
             <Button
                // 브레이크 포인트

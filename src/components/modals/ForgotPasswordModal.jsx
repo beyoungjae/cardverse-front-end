@@ -1,4 +1,4 @@
-import { styled, shouldForwardProp } from '@mui/system'
+import { styled } from '@mui/system'
 import { Box, IconButton, TextField, Typography, Alert } from '@mui/material'
 
 import { Visibility, VisibilityOff, Lock, Error } from '@mui/icons-material'
@@ -8,32 +8,33 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { isEmailValid } from '../../utils/validation'
 
-// 🔹 닫기 버튼 스타일
-const CloseButton = styled(IconButton)(({ theme }) => ({
-   position: 'absolute',
-   top: '10px',
-   right: '10px',
-   color: '#555',
-   backgroundColor: '#f2f2f2',
-
-   '&:hover': {
-      backgroundColor: '#e0e0e0',
-   },
-}))
+import useMessage from '../../utils/useMessage'
+import { bps } from '../../styles/responsiveStyles'
 
 const Wrapper = styled(Box)(({ theme }) => ({
    display: 'flex',
    gap: '32px',
    justifyContent: 'center',
    alignItems: 'center',
+   alignItems: 'stretch',
+   // align-items: stretch;
    '&.verify-code-wrap': {
       gap: '16px',
-      [theme.breakpoints.down('sm')]: { gap: '4px' },
+      ...bps(theme, {
+         1600: { gap: '13px' },
+         1280: { gap: '10px' },
+         960: { gap: '6px' },
+         600: { gap: '4px' },
+      }),
    },
 
-   [theme.breakpoints.down('md')]: {},
-   [theme.breakpoints.down('sm')]: { gap: '8px' },
-   [theme.breakpoints.down('md')]: {},
+   border: '1px solid red',
+   ...bps(theme, {
+      1600: { gap: '26px' },
+      1280: { gap: '20px' },
+      960: { gap: '12px' },
+      600: { gap: '8px' },
+   }),
 }))
 
 const Section = styled(Box)(({ theme }) => ({
@@ -41,10 +42,12 @@ const Section = styled(Box)(({ theme }) => ({
    flexDirection: 'column',
    gap: '8px',
 
-   [theme.breakpoints.down('md')]: {},
-   [theme.breakpoints.down('sm')]: {
-      gap: '4px',
-   },
+   ...bps(theme, {
+      1600: { gap: '7px' },
+      1280: { gap: '6px' },
+      960: { gap: '5px' },
+      600: { gap: '4px' },
+   }),
 }))
 
 const StyledText = styled(Typography)(({ theme }) => ({
@@ -64,6 +67,7 @@ const StyledText = styled(Typography)(({ theme }) => ({
          fontSize: '0.9rem',
       },
    },
+   [theme.breakpoints.down('lg')]: { fontSize: '1.3rem' },
 
    [theme.breakpoints.down('md')]: {},
    [theme.breakpoints.down('sm')]: {},
@@ -74,19 +78,34 @@ const StyledText = styled(Typography)(({ theme }) => ({
 
 const SubTitle = styled(Typography)(({ theme }) => ({
    textAlign: 'start',
+   fontSize: '1rem',
+   [theme.breakpoints.down(1600)]: { fontSize: '0.9rem' },
+   [theme.breakpoints.down('lg')]: { fontSize: '0.8   rem' },
+   [theme.breakpoints.down('md')]: {},
+   [theme.breakpoints.down('sm')]: {},
+   [theme.breakpoints.down(480)]: {},
 }))
 
 const InputField = styled(TextField, {
    shouldForwardProp: (prop) => prop !== '$isDisabled', // $isDisabled 제외
 })(({ theme, $isDisabled }) => ({
    flex: '4',
-   caretColor: 'transparent',
+   // maxHeight: '30px',
+   height: 'auto',
+   display: 'flex',
 
    '& .MuiInputBase-input': {
       fontSize: '0.9rem',
       caretColor: $isDisabled ? 'transparent' : 'black',
 
-      [theme.breakpoints.down('sm')]: { padding: '8px' },
+      ...bps(theme, {
+         1600: { padding: '12px' },
+         1280: { padding: '10px' },
+         960: { padding: '9px' },
+         600: { padding: '9px' },
+         480: { padding: '9px' },
+      }),
+      // [theme.breakpoints.down('sm')]: { padding: '8px' },
    },
 
    '&.verify-code-input': {
@@ -96,7 +115,7 @@ const InputField = styled(TextField, {
 
 const StyledButton = styled('button')(({ theme }) => ({
    flex: '1',
-   padding: '10px 10px',
+   padding: '14px 10px',
    fontSize: '1rem',
    backgroundColor: '#dddddd',
    outline: 0,
@@ -104,11 +123,18 @@ const StyledButton = styled('button')(({ theme }) => ({
    boxShadow: '0 0 1px 1px #bbbbbb',
    borderRadius: '4px',
    cursor: 'pointer',
+   display: 'inline-block',
+   height: 'auto',
+   boxShadow: 'none',
+   border: '1px solid #cccccc',
 
-   [theme.breakpoints.down('md')]: {},
-   [theme.breakpoints.down('sm')]: {
-      fontSize: '0.7rem',
-   },
+   ...bps(theme, {
+      1600: { fontSize: '0.9rem', padding: '11px 0px' },
+      1280: { fontSize: '0.84rem', padding: '10px 0px' },
+      960: { fontSize: '0.78rem', padding: '9px 0px' },
+      600: { fontSize: '0.72rem', padding: '9px 0px' },
+      480: { fontSize: '0.7rem', padding: '9px 0px' },
+   }),
 }))
 
 const TimerBox = styled(Box)({
@@ -118,12 +144,16 @@ const TimerBox = styled(Box)({
    alignItems: 'center',
    color: 'red',
    fontWeight: 'bold',
+   height: 'auto',
+   border: '1px solid blue',
 })
 
 const ForgotPasswordModal = ({ onVerifySuccess }) => {
+   const { errorMessage, successMessage, setError, setSuccess, clearMessages } = useMessage()
    const [isClosing, setIsClosing] = useState(false)
-   const [errorMessage, setErrorMessage] = useState('')
-   const [successMessage, setSuccessMessage] = useState('')
+
+   // const [errorMessage, setErrorMessage] = useState('')
+   // const [successMessage, setSuccessMessage] = useState('')
 
    const [email, setEmail] = useState('')
    const [emailStatus, setEmailStatus] = useState('메일을 인증해주세요') // 이메일 인증 상태
@@ -168,23 +198,23 @@ const ForgotPasswordModal = ({ onVerifySuccess }) => {
       const isRegistered = email === 'test@example.com' // 예제
 
       if (isEmailValid(email)) {
-         setEmailStatus('메일이 인증에 성공했습니다!')
+         setSuccess('메일이 인증에 성공했습니다!')
          setEmailConfirmed(true)
       } else {
-         //  setEmailStatus('메일이 존재하지 않습니다!')
-         setEmailConfirmed(false)
-         setSuccessMessage('')
+         setError('메일이 존재하지 않습니다!')
+         // setEmailConfirmed(false)
+         // setSuccessMessage('')
       }
 
       if (isRegistered) {
-         setEmailStatus('메일이 인증에 성공했습니다!')
+         setSuccess('메일이 인증에 성공했습니다!')
          setEmailConfirmed(true)
-         setSuccessMessage('메일 인증에 성공했습니다!')
+         // setSuccessMessage('메일 인증에 성공했습니다!')
       } else {
-         setEmailStatus('메일이 존재하지 않습니다!')
+         setError('메일이 존재하지 않습니다!')
          setEmailConfirmed(false)
          //  setErrorMessage('메일이 존재하지 않습니다!')
-         setSuccessMessage('')
+         // setSuccess('')
       }
    }
 
@@ -232,20 +262,20 @@ const ForgotPasswordModal = ({ onVerifySuccess }) => {
 
          {errorMessage && (
             <Alert severity="error" icon={<Error />} sx={{ textAlign: 'left' }}>
-               <StyledText>{emailStatus}</StyledText>
+               <StyledText>{errorMessage}</StyledText>
             </Alert>
          )}
 
          {successMessage && (
             <Alert severity="success" sx={{ textAlign: 'left' }}>
-               {emailStatus}
+               {successMessage}
             </Alert>
          )}
 
          <Section>
             <SubTitle>2. 인증번호 발급받기</SubTitle>
             <Wrapper className="verify-code-wrap">
-               <InputField className="verify-code-input" />
+               <InputField placeholder="6자리 코드" className="verify-code-input" />
                <TimerBox>
                   {Math.floor(timer / 60)}:{('0' + (timer % 60)).slice(-2)}
                </TimerBox>
@@ -258,9 +288,9 @@ const ForgotPasswordModal = ({ onVerifySuccess }) => {
          <Section>
             <SubTitle>3. 인증 확인하기</SubTitle>
             <Wrapper>
-               <StyledButton>인증 확인</StyledButton>
+               <StyledButton onClick={handleSendCode}>재발급 받기</StyledButton>
 
-               <StyledButton onClick={handleCheckVerify}>번호 재발급</StyledButton>
+               <StyledButton onClick={handleCheckVerify}>인증 하기</StyledButton>
             </Wrapper>
          </Section>
       </>
