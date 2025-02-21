@@ -3,9 +3,11 @@ import { Box } from '@mui/material'
 
 const Container = styled(Box)(({ theme }) => ({
    // marginLeft: '280px',
-   backgroundColor: 'tan',
+   backgroundColor: '#f0f0f0',
    minWidth: '1630px',
    width: '1630px',
+   height: '100vh',
+   overflowY: 'scroll',
    display: 'flex',
    flexDirection: 'column',
    padding: '20px',

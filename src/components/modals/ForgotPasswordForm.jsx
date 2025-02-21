@@ -1,11 +1,12 @@
-import { Box } from '@mui/material'
-
-import { Visibility, VisibilityOff, Lock, Error } from '@mui/icons-material'
-
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import React, { useState, useEffect, useRef } from 'react'
-import { isEmailValid } from '../../utils/validation'
 
+import { Box } from '@mui/material'
+import { Visibility, VisibilityOff, Lock, Error } from '@mui/icons-material'
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
+
+import OTPInput from './OTPInput'
+
+import { isEmailValid } from '../../utils/validation'
 import useMessage from '../../utils/useMessage'
 import { bps } from '../../styles/responsiveStyles'
 
@@ -91,7 +92,7 @@ function ForgotPasswordForm({ onVerifySuccess }) {
          setIsVerifyComplete(true)
 
          // 페이지 이동 타이머
-         let count = 2
+         let count = 3
          setCountdown(count)
          const moveTimer = setInterval(() => {
             count--
@@ -133,63 +134,6 @@ function ForgotPasswordForm({ onVerifySuccess }) {
       }, 1000)
    }
 
-   /*  const handleVerifySuccess = () => {
-      if (verifyCode.length !== 6) {
-         codeMessage.setErrorWithType('verify', '인증번호는 6자리여야 합니다.')
-         return
-      }
-
-      const isVerify = verifyCode === '111111'
-
-      if (!isVerify) {
-         codeMessage.setErrorWithType('verify', '인증번호가 일치하지 않습니다.')
-      } else {
-         codeMessage.setSuccess('인증이 완료되었습니다!')
-         setButtonLabel('번호 발급')
-         setIsTimerActive(false)
-         setTimer(180)
-         setIsButtonDisabled(false)
-         setIsVerifyComplete(true)
-
-         // 비동기로 카운트다운 처리
-         setTimeout(() => {
-            let count = 2
-            const timer = setInterval(() => {
-               if (count <= 0) {
-                  clearInterval(timer)
-                  onVerifySuccess()
-               }
-               setCountdown(count)
-               count--
-            }, 1000)
-         }, 0)
-      }
-   } */
-
-   /*  const handleSendCode = () => {
-      setIsTimerActive(true)
-      setTimer(180) // 3분 타이머 시작
-      setIsButtonDisabled(true)
-
-      let count = 30
-      setButtonLabel(`재발급(${count})`)
-
-      const buttonTimer = setInterval(() => {
-         count--
-         if (count >= 0) {
-            setButtonLabel(`재발급(${count})`)
-         }
-         if (count === 0) {
-            clearInterval(buttonTimer)
-            setIsButtonDisabled(false)
-            setButtonLabel('번호 발급')
-         }
-      }, 1000)
-
-      // 컴포넌트 언마운트나 재실행 시 이전 타이머 정리
-      return () => clearInterval(buttonTimer)
-   } */
-
    return (
       <>
          <Title variant="h3">
@@ -205,6 +149,7 @@ function ForgotPasswordForm({ onVerifySuccess }) {
             </StyledBox>
          </Section>
 
+         {/* 이메일 성공 및 에러 */}
          {emailMessage.messages.success && (
             <StyledAlert severity="success">
                <StyledText>{emailMessage.messages.success}</StyledText>
@@ -216,10 +161,11 @@ function ForgotPasswordForm({ onVerifySuccess }) {
             </StyledAlert>
          )}
 
+         {/* 인증코드 성공시 OTP 입력 활성 */}
          {emailConfirmed && (
             <Section>
                <StyledBox>
-                  <InputField $isDisabled={isVerifyComplete} disabled={isVerifyComplete} variant="outlined" autoComplete="one-time-code" label={`${Math.floor(timer / 60)}:${('0' + (timer % 60)).slice(-2)}`} onChange={(e) => setVerifyCode(e.target.value)} />
+                  <OTPInput value={verifyCode} onChange={setVerifyCode} isDisabled={isVerifyComplete} timer={timer} />
                   <StyledButton sx={{ width: '25%' }} onClick={handleSendCode} disabled={isButtonDisabled || isVerifyComplete}>
                      {buttonLabel}
                   </StyledButton>

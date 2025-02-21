@@ -4,6 +4,7 @@ import { styled } from '@mui/system'
 
 import TemplateActive from './templates/TemplateActive'
 import TemplateInactive from './templates/TemplateInactive'
+import TemplateForm from './templates/TemplateForm'
 
 const Template = () => {
    return (
@@ -12,6 +13,7 @@ const Template = () => {
             <Route index element={<Navigate to="tab-acitve" replace />} />
             <Route path="tab-active" element={<TemplateActive />} />
             <Route path="tab-inactive" element={<TemplateInactive />} />
+            <Route path="new" element={<TemplateForm />} />
          </Routes>
       </>
    )

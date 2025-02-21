@@ -8,10 +8,10 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 const drawerWidth = 280
 
 const LogoImgLink = styled('img')(({ theme }) => ({
-   width: '270px',
+   width: '240px',
    position: 'absolute',
-   left: '0px',
-   top: '1px',
+   left: '20px',
+   top: '10px',
    padding: '5px',
    borderBottom: '1px solid #f5f5f5',
 
