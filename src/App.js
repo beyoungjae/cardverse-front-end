@@ -9,7 +9,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 // 컴포넌트 import
 import Navbar from './components/shared/Navbar'
-import { Home, MyPage, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, AdminPage, CreatePostPage } from './pages'
+import { Home, MyPage, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, AdminPage, CreatePostPage, AboutPage } from './pages'
 import Footer from './components/shared/Footer'
 import { Login } from './components/auth'
 import ReviewEditor from './components/review/ReviewEditor'
@@ -83,6 +83,7 @@ function App() {
          <MainContent $hideLayout={hideLayout}>
             <Routes>
                <Route path="/" element={<Home />} />
+               <Route path="/about" element={<AboutPage />} />
                <Route path="/my/*" element={<MyPage />} />
                <Route path="/signup" element={<SignupPage />} />
                <Route path="/support" element={<CustomerPage />} />
