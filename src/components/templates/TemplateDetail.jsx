@@ -586,7 +586,9 @@ const TemplateDetail = () => {
                   <ActionButton variant="try" onClick={handleEditorOpen}>
                      구매하기 전 잠깐 사용해보기
                   </ActionButton>
-                  <ActionButton variant="buy">구매하기</ActionButton>
+                  <ActionButton variant="buy" onClick={handlePurchase}>
+                     구매하기
+                  </ActionButton>
                </div>
             </div>
          </PreviewModal>
