@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import { Box, Typography } from '@mui/material'
+import { Box, Typography, Select, MenuItem, FormControl, Pagination } from '@mui/material'
 import { display, styled } from '@mui/system'
 import { Container } from '../layouts/boxCommon'
 import { Title } from '../layouts/textCommon'
@@ -10,25 +10,26 @@ import EditIcon from '@mui/icons-material/Edit'
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline'
 import RemoveShoppingCartIcon from '@mui/icons-material/RemoveShoppingCart'
 import { Link, useNavigate } from 'react-router-dom'
+import { CATEGORIES, ITEMS_PER_PAGE } from '../constants/template'
 
 const CardContainer = styled(Box)(({ theme }) => ({
    display: 'grid',
    gridTemplateColumns: 'repeat(2, 1fr)', // 2열
-   gridTemplateRows: 'repeat(4, 1fr)', // 3행
-   gap: '24px',
-   height: '84%',
-   padding: '20px 60px 40px 60px',
-   //    width: '1280px',
-   //    margin: '0 auto',
+   gridTemplateRows: 'repeat(3, 1fr)', // 3행
+   gap: '16px',
+   padding: '10px',
+   border: '1px solid #cccccc',
+   borderRadius: '8px',
+   backgroundColor: '#f8f8f4',
 }))
 
 const CardItem = styled(Box)(({ theme }) => ({
-   padding: '10px',
+   padding: '2px',
    display: 'flex',
-   gap: '16px',
+   gap: '8px',
    backgroundColor: '#f5f5f5',
 
-   border: '1px solid #bbbbbb',
+   border: '1px solid #a0a0a0',
    borderRadius: '6px',
 }))
 
@@ -49,33 +50,35 @@ const CardInfoWrap = styled(Box)(({ theme }) => ({
    flexDirection: 'column',
    justifyContent: 'space-between',
    backgroundColor: '#ffffff',
-   gap: '16px',
+   gap: '24px',
+}))
+
+const TitleBox = styled(Box)(({ theme }) => ({
+   display: 'flex',
+   justifyContent: 'space-between',
+   // gap: '12px',
+   paddingBottom: '12px',
+   borderBottom: '1px solid #f0f0f0',
+   alignItems: 'center',
+   '&.sub-title': {
+      alignItems: 'stretch',
+      gap: '4px',
+   },
+}))
+
+const CardTitle = styled(Typography)(({ theme }) => ({
+   fontSize: '1.4rem',
+   width: 'fit-content',
+   flex: '5',
+   height: '100%',
+   display: 'flex',
+   alignItems: 'center',
 }))
 
 const TextBox = styled(Box)(({ theme }) => ({
    display: 'grid',
    gridTemplateRows: 'repeat(5, 1fr)', // 3행
    gap: '10px',
-}))
-
-const CardTitle = styled(Typography)(({ theme }) => ({
-   fontSize: '1.4rem',
-   width: 'fit-content',
-   flex: '7',
-   height: '100%',
-   display: 'flex',
-   alignItems: 'center',
-}))
-
-const TitleBox = styled(Box)(({ theme }) => ({
-   display: 'flex',
-   justifyContent: 'space-between',
-   gap: '12px',
-   alignItems: 'center',
-   '&.sub-title': {
-      alignItems: 'stretch',
-      gap: '4px',
-   },
 }))
 
 const StyledLink = styled(Link)(({ theme }) => ({
@@ -97,7 +100,9 @@ const StyledLink = styled(Link)(({ theme }) => ({
 // width: 'fit-content'
 
 const TemplateActive = () => {
-   const [view, setView] = useState(6)
+   const [selectedCategory, setSelectedCategory] = useState('all') // 초기값을 'all'로 설정
+   const [currentPage, setCurrentPage] = useState(1)
+   // const [pages, setPages] = useState(1)
 
    const cards = [
       { id: 1, title: '무슨카드1', category: 'wedding', content: '내용1', price: 13000, createdAt: '2025-01-13', status: 'published', thumbnail: '이미지2' },
@@ -106,15 +111,74 @@ const TemplateActive = () => {
       { id: 4, title: '무슨카드4', category: 'wedding', content: '내용4', price: 13000, createdAt: '2025-01-13', status: 'published', thumbnail: '이미지1' },
       { id: 5, title: '무슨카드5', category: 'wedding', content: '내용5', price: 13000, createdAt: '2025-01-13', status: 'published', thumbnail: '이미지5' },
       { id: 6, title: '무슨카드6', category: 'wedding', content: '내용6', price: 13000, createdAt: '2025-01-13', status: 'published', thumbnail: '이미지6' },
-      //   { id: 7, title: '무슨카드7', category: 'wedding', content: '내용7', price: 13000, createdAt: '2025-01-13', status: 'published', thumbnail: '이미지7' },
+      { id: 7, title: '무슨카드7', category: 'wedding', content: '내용7', price: 13000, createdAt: '2025-01-13', status: 'published', thumbnail: '이미지7' },
    ]
 
-   const infoItems = [{ label: '구분' }, { label: '가격' }, { label: '등록일' }, { label: '총 판매량' }, { label: '평균 리뷰' }]
+   const getCategoryLabel = (value) => {
+      const category = CATEGORIES.find((cat) => cat.value === value)
+      return category ? category.label : value
+   }
+
+   const handleCategoryChange = (event) => {
+      setSelectedCategory(event.target.value)
+      setCurrentPage(1)
+   }
+
+   const handlePageChange = (event, value) => {
+      setCurrentPage(value)
+      // 페이지 상단으로 스크롤
+      window.scrollTo({
+         top: 0,
+         behavior: 'smooth',
+      })
+   }
+
+   const filteredCards = selectedCategory === 'all' ? cards : cards.filter((card) => card.category === selectedCategory)
+
+   const pageCount = Math.ceil(filteredCards.length / ITEMS_PER_PAGE)
+   const currentCards = filteredCards.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 
    return (
       <Container>
-         <TitleBox className="main-title" sx={{ padding: '0 60px', width: '100%' }}>
-            <Title>판매중 템플릿</Title>
+         <TitleBox className="main-title" sx={{ paddingBottom: '10px', width: '100%' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', height: 'stretch' }}>
+               <Title sx={{ height: '40px', padding: '0' }}>판매중 템플릿</Title>
+               <Box
+                  sx={{
+                     padding: '10px 30px',
+                     display: 'flex',
+                     alignItems: 'center',
+                     gap: '10px',
+                  }}
+               >
+                  <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                     구분:
+                  </Typography>
+                  <FormControl sx={{ minWidth: 180 }}>
+                     <Select
+                        value={selectedCategory}
+                        onChange={handleCategoryChange}
+                        sx={{
+                           textAlign: 'center',
+                           width: '80%',
+                           backgroundColor: '#fff',
+                           '& .MuiSelect-select': {
+                              padding: '8px 14px',
+                           },
+                           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#666',
+                           },
+                        }}
+                     >
+                        {CATEGORIES.map((category) => (
+                           <MenuItem key={category.value} value={category.value} disabled={category.value === '전체보기'}>
+                              {category.label}
+                           </MenuItem>
+                        ))}
+                     </Select>
+                  </FormControl>
+               </Box>
+            </Box>
             <StyledLink to="/admin/template/new">
                <EditIcon sx={{ fontSize: '1.5rem', color: 'black' }} />
                <Typography sx={{ fontSize: '1rem' }}>새 템플릿 등록</Typography>
@@ -122,6 +186,122 @@ const TemplateActive = () => {
          </TitleBox>
 
          <CardContainer>
+            {currentCards.length === 0 && (
+               <CardItem>
+                  <CardImgWrap>
+                     <img src={'/images/default.jpg'} alt="card-img" style={{ width: '100%' }} />
+                  </CardImgWrap>
+                  <CardInfoWrap>
+                     <TitleBox className="sub-title">
+                        <CardTitle variant="h3">등록된 상품이 없습니다.</CardTitle>
+                        <StyledButton>
+                           <DriveFileRenameOutlineIcon sx={{ fontSize: '1.3rem' }} />
+                        </StyledButton>
+                        <StyledButton>
+                           <RemoveShoppingCartIcon sx={{ fontSize: '1.2rem' }} />
+                        </StyledButton>
+                     </TitleBox>
+                     <TextBox>
+                        <Typography variant="body1" sx={{ fontSize: '1rem' }}>
+                           구분:
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontSize: '1rem' }}>
+                           가격:
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontSize: '1rem' }}>
+                           등록일:
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontSize: '1rem' }}>
+                           총 판매량:
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontSize: '1rem' }}>
+                           평균 리뷰:
+                        </Typography>
+                     </TextBox>
+                  </CardInfoWrap>
+               </CardItem>
+            )}
+
+            {currentCards.map((card) => {
+               const formattedPrice = `${card.price.toLocaleString()}원`
+               return (
+                  <CardItem key={card.id}>
+                     <CardImgWrap>
+                        <img src={card.thumbnail.startsWith('http') ? card.thumbnail : '/images/default.jpg'} alt="카드 이미지" style={{ width: '100%' }} />
+                     </CardImgWrap>
+                     <CardInfoWrap>
+                        <TitleBox className="sub-title">
+                           <CardTitle variant="h3">{card.title}</CardTitle>
+                           <StyledButton>
+                              <DriveFileRenameOutlineIcon sx={{ fontSize: '1.3rem' }} />
+                           </StyledButton>
+                           <StyledButton>
+                              <RemoveShoppingCartIcon sx={{ fontSize: '1.2rem' }} />
+                           </StyledButton>
+                        </TitleBox>
+                        <TextBox>
+                           <Typography variant="body1" sx={{ fontSize: '1rem' }}>
+                              구분: {getCategoryLabel(card.category)}
+                           </Typography>
+                           <Typography variant="body1" sx={{ fontSize: '1rem' }}>
+                              가격: {formattedPrice}
+                           </Typography>
+                           <Typography variant="body1" sx={{ fontSize: '1rem' }}>
+                              등록일: {card.createdAt}
+                           </Typography>
+                           <Typography variant="body1" sx={{ fontSize: '1rem' }}>
+                              총 판매량: n개
+                           </Typography>
+                           <Typography variant="body1" sx={{ fontSize: '1rem' }}>
+                              평균 리뷰: ☆☆☆
+                           </Typography>
+                        </TextBox>
+                     </CardInfoWrap>
+                  </CardItem>
+               )
+            })}
+         </CardContainer>
+
+         {filteredCards.length > 0 && (
+            <Box
+               sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '40px 0 40px',
+               }}
+            >
+               <Pagination
+                  count={pageCount}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  variant="outlined"
+                  shape="rounded"
+                  sx={{
+                     '& .MuiPaginationItem-root': {
+                        color: '#666',
+                        '&.Mui-selected': {
+                           backgroundColor: '#666',
+                           color: '#fff',
+                           '&:hover': {
+                              backgroundColor: '#555',
+                           },
+                        },
+                     },
+                  }}
+               />
+            </Box>
+         )}
+
+         {/* <Pagination count={10} variant="outlined" shape="rounded" sx={{ margin: '50px auto' }} /> */}
+      </Container>
+   )
+}
+
+export default TemplateActive
+
+/* 
+
+ <CardContainer>
             {cards.map((card) => {
                const formattedPrice = `${card.price.toLocaleString()}원` // 13000 → "13,000원"
                return (
@@ -162,8 +342,5 @@ const TemplateActive = () => {
                )
             })}
          </CardContainer>
-      </Container>
-   )
-}
 
-export default TemplateActive
+*/

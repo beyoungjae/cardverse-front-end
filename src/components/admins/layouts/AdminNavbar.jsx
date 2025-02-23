@@ -111,9 +111,9 @@ function AdminNavbar() {
    )
 
    return (
-      <Box sx={{ display: 'flex' }}>
-         <StyledDrawer>
-            <Link to="/">
+      <Box sx={{ display: 'flex', border: '1px solid black' }}>
+         <StyledDrawer sx={{}}>
+            <Link to="/admin">
                <LogoImgLink src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="로고" />
             </Link>
             <List>

@@ -12,3 +12,7 @@ const ManageFaq = () => {
 }
 
 export default ManageFaq
+
+// validityDays
+
+// minPurchase
