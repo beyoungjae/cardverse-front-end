@@ -1,200 +1,169 @@
-import { Box, Typography, TextField, InputAdornment, Card, CardContent } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
-import { styled } from '@mui/system'
+import { Box, Typography, FormControl, OutlinedInput, InputAdornment, Button } from '@mui/material'
+import { styled } from '@mui/material/styles'
 import SearchIcon from '@mui/icons-material/Search'
 import { Link } from 'react-router-dom'
-import Button from '@mui/material/Button'
+import Top4Card from '../components/customer/Top4Card'
 
-/* 배너 컨테이너 */
-const BannerContainer = styled(Box)(({ theme }) => ({
+// 고객센터 페이지 컨테이너
+const CustomerContainer = styled(Box)(({ theme }) => ({
+   width: '100%',
+   backgroundColor: theme.palette.background.default,
+   minHeight: '100vh',
+}))
+
+// 배너 이미지
+const Bannerimg = styled(Box)(() => ({
    width: '100%',
    height: '212px',
-   position: 'relative',
-   overflow: 'hidden',
-   [theme.breakpoints.down('lg')]: {
-      height: '550px',
+   backgroundImage: "url('/images/home/login-background.png')",
+   backgroundSize: 'cover',
+   backgroundPosition: 'center',
+   backgroundRepeat: 'no-repeat',
+}))
+
+// 배너 타이틀
+const BannerTitle = styled(Typography)(({ theme }) => ({
+   ...theme.typography.h1,
+   textAlign: 'center',
+   lineHeight: '185px',
+   color: theme.palette.text.secondary,
+   [theme.bps.md]: {
+      fontSize: '2rem',
    },
-   [theme.breakpoints.down('md')]: {
-      height: '450px',
-   },
-   [theme.breakpoints.down('sm')]: {
-      height: '250px',
+   [theme.bps.sm]: {
+      fontSize: '1.5rem',
    },
 }))
 
-/* 배너 이미지 */
-const Bannerimg = styled('img')(({ theme }) => ({
-   width: '100%',
-   height: '100%',
-   objectFit: 'cover',
-   [theme.breakpoints.down('sm')]: {
-      objectPosition: 'center center',
-   },
-}))
-
-/* 검색창 */
-const SearchBox = styled(Box)(({ theme }) => ({
-   position: 'absolute',
-   top: '320px',
-   left: '50%',
-   transform: 'translateX(-50%)',
-   width: '30%',
-   zIndex: 10,
-   backgroundColor: 'white',
-   [theme.breakpoints.down('sm')]: {
+// 검색창
+const SearchBox = styled(FormControl)(({ theme }) => ({
+   width: '581px',
+   backgroundColor: theme.palette.background.default,
+   margin: '0 auto',
+   display: 'flex',
+   borderRadius: '20px',
+   [theme.bps.md]: {
       width: '80%',
-      top: '250px',
+   },
+   [theme.bps.sm]: {
+      width: '60%',
    },
 }))
 
-/* 카드 */
-const CardBox = styled(Box)(({ theme }) => ({
-   display: 'inline-block',
-   width: '200px',
-   height: '240px',
-   mx: theme.spacing(2),
-   my: theme.spacing(1),
-   transform: 'scale(0.8)',
+// 자주묻는질문 컨테이너
+const CustomerContentContainer = styled(Box)(({ theme }) => ({
+   padding: '80px 40px',
+   backgroundColor: theme.palette.background.default,
+   minHeight: '100vh',
+   maxWidth: '1200px',
+   margin: '0 auto',
+   [theme.bps.md]: {
+      padding: '80px 24px',
+   },
+   [theme.bps.sm]: {
+      padding: '60px 24px',
+   },
+}))
+
+// 그 외의 타이틀
+const SecondeTitle = styled(Typography)(({ theme }) => ({
+   ...theme.typography.h3,
+   color: theme.palette.text.primary,
+   fontWeight: 'bold',
+   textAlign: 'left',
+   marginBottom: '15px',
+   [theme.bps.md]: {
+      fontSize: '1.4rem',
+   },
+   [theme.bps.sm]: {
+      fontSize: '1.2rem',
+   },
+}))
+
+// 전체보기 링크
+const ViewLink = styled(Typography)(({ theme }) => ({
+   width: '100%',
+   textAlign: 'right',
+   display: 'flex',
+   justifyContent: 'flex-end',
+   paddingRight: '10px',
+   color: 'black',
+   textDecoration: 'none',
+   '& img': {
+      width: '10px',
+      height: '10px',
+      marginLeft: '4px',
+   },
+   [theme.bps.md]: {
+      fontSize: '1.4rem',
+   },
+   [theme.bps.sm]: {
+      fontSize: '1.2rem',
+   },
+}))
+
+// 버튼 스타일
+const CustomerButton = styled(Button)(({ theme }) => ({
+   backgroundColor: theme.palette.primary.contrastText,
+   color: 'black',
+   padding: '6px 12px',
+   textAlign: 'center',
+   border: `1px solid #D3D3D3`,
+   fontSize: '10px',
+   height: '36px',
+   display: 'inline-flex',
+   alignItems: 'center',
+   [theme.bps.lg]: {
+      right: 0,
+   },
+   [theme.bps.md]: {
+      padding: '8px 16px',
+      fontSize: '0.9rem',
+   },
+   [theme.bps.sm]: {
+      padding: '6px 12px',
+      fontSize: '0.8rem',
+      right: 0,
+   },
 }))
 
 const CustomerPage = () => {
-   const theme = useTheme()
-
    return (
-      <div>
-         <style>
-            {`
-             @font-face {
-             font-family: 'Cafe24Oneprettynight';
-             src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Oneprettynight.woff') format('woff');
-             font-weight: normal;
-             font-style: normal;
-               }
-            `}
-         </style>
-
-         <BannerContainer>
-            <Bannerimg src="/images/home/login-background.png" alt="Banner Image" />
-            <Box
-               sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  textAlign: 'center',
-                  color: theme.palette.primary.contrastText,
-               }}
-            >
-               <Typography
-                  variant="h2"
-                  sx={{
-                     fontFamily: 'Cafe24Oneprettynight, sans-serif',
-                     fontWeight: 200,
-                     fontSize: '50px',
-                     color: '#3C3A3A',
-                     [theme.breakpoints.down('sm')]: {
-                        fontSize: '24px',
-                     },
-                  }}
-               >
-                  CardVerse 고객센터
-               </Typography>
-            </Box>
-         </BannerContainer>
-
-         <SearchBox>
-            <TextField
-               fullWidth
-               placeholder="CardVerse의 모든 것을 검색해 보세요"
-               id="search"
-               variant="outlined"
-               InputProps={{
-                  endAdornment: (
+      <CustomerContainer>
+         {/* 배너, 검색창 */}
+         <Bannerimg>
+            <BannerTitle>CardVerse 고객센터</BannerTitle>
+            <SearchBox>
+               <OutlinedInput
+                  placeholder="CardVerse의 모든것을 검색해 보세요."
+                  endAdornment={
                      <InputAdornment position="end">
                         <SearchIcon />
                      </InputAdornment>
-                  ),
-               }}
-            />
-         </SearchBox>
+                  }
+                  sx={{ borderRadius: '20px' }}
+               />
+            </SearchBox>
+         </Bannerimg>
 
-         <Box
-            sx={{
-               paddingTop: '100px',
-               display: 'flex',
-               flexDirection: 'row',
-               justifyContent: 'center',
-               alignItems: 'center',
-               gap: theme.spacing(50),
-            }}
-         >
-            <Typography
-               variant="h6"
-               sx={{
-                  //   paddingLeft: '500px',
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '24px',
-               }}
-            >
-               자주 묻는 질문 TOP4
-            </Typography>
-
-            <Typography sx={{ fontSize: '24px', textDecoration: 'none', textAlign: 'center' }}>
-               <Link to="/">전체보기</Link>
-            </Typography>
-         </Box>
-
-         <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <CardBox>
-               <Card variant="outlined">
-                  <CardContent>
-                     <Typography variant="h6">Q. 로그인이 안될 경우 해결방법</Typography>
-                     <Link to="/" style={{ textDecoration: 'none', color: theme.palette.primary.main, fontSize: '10px' }}>
-                        자세히 보기
-                     </Link>
-                  </CardContent>
-               </Card>
-            </CardBox>
-            <CardBox>
-               <Card variant="outlined">
-                  <CardContent>
-                     <Typography variant="h6">Q. 로그인이 안될 경우 해결방법</Typography>
-                     <Link to="/" style={{ textDecoration: 'none', color: theme.palette.primary.main, fontSize: '10px' }}>
-                        자세히 보기
-                     </Link>
-                  </CardContent>
-               </Card>
-            </CardBox>
-            <CardBox>
-               <Card variant="outlined">
-                  <CardContent>
-                     <Typography variant="h6">Q. 로그인이 안될 경우 해결방법</Typography>
-                     <Link to="/" style={{ textDecoration: 'none', color: theme.palette.primary.main, fontSize: '10px' }}>
-                        자세히 보기
-                     </Link>
-                  </CardContent>
-               </Card>
-            </CardBox>
-            <CardBox>
-               <Card variant="outlined">
-                  <CardContent>
-                     <Typography variant="h6">Q. 로그인이 안될 경우 해결방법</Typography>
-                     <Link to="/" style={{ textDecoration: 'none', color: theme.palette.primary.main, fontSize: '10px' }}>
-                        자세히 보기
-                     </Link>
-                  </CardContent>
-               </Card>
-            </CardBox>
-         </Box>
-
-         <div style={{ fontSize: '13px', textAlign: 'right', paddingBottom: '50px', paddingRight: '580px' }}>
-            더자세한 질문은{' '}
-            <Button variant="outlined" component={Link} to="/" sx={{ size: 'small', fontSize: '12px' }}>
-               1:1문의하기
-            </Button>
-         </div>
-      </div>
+         {/* 자주묻는질문 */}
+         <CustomerContentContainer>
+            <SecondeTitle>자주 묻는 질문 TOP4</SecondeTitle>
+            <ViewLink>
+               <Link to="/">
+                  전체보기
+                  <img src="images/right arrow.png" alt="arrow" />
+               </Link>
+            </ViewLink>
+            <Top4Card />
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+               <Typography sx={{ marginRight: '8px', fontSize: '10px' }}>더 자세한 질문은</Typography>
+               <Link to="/">
+                  <CustomerButton>1:1문의하기</CustomerButton>
+               </Link>
+            </Box>
+         </CustomerContentContainer>
+      </CustomerContainer>
    )
 }
 
