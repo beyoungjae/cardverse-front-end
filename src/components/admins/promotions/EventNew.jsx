@@ -40,7 +40,7 @@ const ButtonBox = styled(Box)(() => ({
    justifyContent: 'flex-end',
 }))
 
-function TemplateForm() {
+function EventNew() {
    const [error, setError] = useState(null)
    const [errors, setErrors] = useState({})
    const [isSubmitted, setIsSubmitted] = useState(false)
@@ -68,7 +68,7 @@ function TemplateForm() {
                {category.label}
             </MenuItem>
          )),
-      []
+      [],
    )
 
    // 폼 유효성 검사(유즈콜백)
@@ -138,7 +138,7 @@ function TemplateForm() {
             reader.readAsDataURL(file)
          }
       },
-      [isSubmitted]
+      [isSubmitted],
    )
 
    // 마우스 블러 이벤트
@@ -169,13 +169,13 @@ function TemplateForm() {
             }))
          }
       },
-      [formData]
+      [formData],
    )
 
    return (
       <FormContainer>
          <Typography variant="h3" gutterBottom sx={{ paddingBottom: '16px', marginBottom: '32px', borderBottom: '1px solid #c0c0c0' }}>
-            새 템플릿 등록
+            새 이벤트 등록
          </Typography>
 
          {error && (
@@ -230,8 +230,7 @@ function TemplateForm() {
                            '&.Mui-focused': {
                               backgroundColor: 'white',
                            },
-                        }}
-                     >
+                        }}>
                         카테고리
                      </InputLabel>
                      <Select labelId="category-label" name="category" value={formData.category} onChange={handleChange} required label="카테고리">
@@ -280,4 +279,4 @@ function TemplateForm() {
    )
 }
 
-export default TemplateForm
+export default EventNew

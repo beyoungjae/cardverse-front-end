@@ -1,16 +1,17 @@
 import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 
-import { Box, Typography, Select, MenuItem, FormControl, Pagination } from '@mui/material'
-import { display, styled } from '@mui/system'
 import { Container } from '../layouts/boxCommon'
 import { Title } from '../layouts/textCommon'
 import { StyledButton } from '../layouts/btnCommon'
+import { CATEGORIES, ITEMS_PER_PAGE } from '../constants/template'
+
+import { Box, Typography, Select, MenuItem, FormControl, Pagination } from '@mui/material'
+import { styled } from '@mui/system'
 
 import EditIcon from '@mui/icons-material/Edit'
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline'
 import RemoveShoppingCartIcon from '@mui/icons-material/RemoveShoppingCart'
-import { Link, useNavigate } from 'react-router-dom'
-import { CATEGORIES, ITEMS_PER_PAGE } from '../constants/template'
 
 const CardContainer = styled(Box)(({ theme }) => ({
    display: 'grid',
@@ -50,19 +51,22 @@ const CardInfoWrap = styled(Box)(({ theme }) => ({
    flexDirection: 'column',
    justifyContent: 'space-between',
    backgroundColor: '#ffffff',
-   gap: '24px',
+   gap: '8px',
 }))
 
-const TitleBox = styled(Box)(({ theme }) => ({
+const TitleContainer = styled(Box)(({ theme }) => ({
    display: 'flex',
    justifyContent: 'space-between',
-   // gap: '12px',
-   paddingBottom: '12px',
+   paddingBottom: '4px',
    borderBottom: '1px solid #f0f0f0',
    alignItems: 'center',
-   '&.sub-title': {
+   '&.sub': {
       alignItems: 'stretch',
       gap: '4px',
+   },
+   '&.main': {
+      paddingBottom: '10px',
+      width: '100%',
    },
 }))
 
@@ -78,7 +82,7 @@ const CardTitle = styled(Typography)(({ theme }) => ({
 const TextBox = styled(Box)(({ theme }) => ({
    display: 'grid',
    gridTemplateRows: 'repeat(5, 1fr)', // 3행
-   gap: '10px',
+   gap: '8px',
 }))
 
 const StyledLink = styled(Link)(({ theme }) => ({
@@ -86,11 +90,10 @@ const StyledLink = styled(Link)(({ theme }) => ({
    display: 'flex',
    alignItems: 'center',
    textDecoration: 'none',
-   gap: '8px', // 아이콘과 텍스트 사이 간격
+   gap: '8px', 
    padding: '10px 15px 10px 10px',
    borderRadius: '4px',
    border: '1px solid #e5e5e5',
-   //    height: '10px',
 
    '&:hover': {
       backgroundColor: '#eeeeee',
@@ -140,17 +143,16 @@ const TemplateActive = () => {
 
    return (
       <Container>
-         <TitleBox className="main-title" sx={{ paddingBottom: '10px', width: '100%' }}>
+         <TitleContainer className="main">
             <Box sx={{ display: 'flex', alignItems: 'center', height: 'stretch' }}>
-               <Title sx={{ height: '40px', padding: '0' }}>판매중 템플릿</Title>
+               <Title sx={{ padding: '0' }}>판매중 템플릿</Title>
                <Box
                   sx={{
                      padding: '10px 30px',
                      display: 'flex',
                      alignItems: 'center',
                      gap: '10px',
-                  }}
-               >
+                  }}>
                   <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
                      구분:
                   </Typography>
@@ -168,8 +170,7 @@ const TemplateActive = () => {
                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                               borderColor: '#666',
                            },
-                        }}
-                     >
+                        }}>
                         {CATEGORIES.map((category) => (
                            <MenuItem key={category.value} value={category.value} disabled={category.value === '전체보기'}>
                               {category.label}
@@ -183,7 +184,7 @@ const TemplateActive = () => {
                <EditIcon sx={{ fontSize: '1.5rem', color: 'black' }} />
                <Typography sx={{ fontSize: '1rem' }}>새 템플릿 등록</Typography>
             </StyledLink>
-         </TitleBox>
+         </TitleContainer>
 
          <CardContainer>
             {currentCards.length === 0 && (
@@ -192,7 +193,7 @@ const TemplateActive = () => {
                      <img src={'/images/default.jpg'} alt="card-img" style={{ width: '100%' }} />
                   </CardImgWrap>
                   <CardInfoWrap>
-                     <TitleBox className="sub-title">
+                     <TitleContainer className="sub">
                         <CardTitle variant="h3">등록된 상품이 없습니다.</CardTitle>
                         <StyledButton>
                            <DriveFileRenameOutlineIcon sx={{ fontSize: '1.3rem' }} />
@@ -200,7 +201,7 @@ const TemplateActive = () => {
                         <StyledButton>
                            <RemoveShoppingCartIcon sx={{ fontSize: '1.2rem' }} />
                         </StyledButton>
-                     </TitleBox>
+                     </TitleContainer>
                      <TextBox>
                         <Typography variant="body1" sx={{ fontSize: '1rem' }}>
                            구분:
@@ -230,7 +231,7 @@ const TemplateActive = () => {
                         <img src={card.thumbnail.startsWith('http') ? card.thumbnail : '/images/default.jpg'} alt="카드 이미지" style={{ width: '100%' }} />
                      </CardImgWrap>
                      <CardInfoWrap>
-                        <TitleBox className="sub-title">
+                        <TitleContainer className="sub">
                            <CardTitle variant="h3">{card.title}</CardTitle>
                            <StyledButton>
                               <DriveFileRenameOutlineIcon sx={{ fontSize: '1.3rem' }} />
@@ -238,7 +239,7 @@ const TemplateActive = () => {
                            <StyledButton>
                               <RemoveShoppingCartIcon sx={{ fontSize: '1.2rem' }} />
                            </StyledButton>
-                        </TitleBox>
+                        </TitleContainer>
                         <TextBox>
                            <Typography variant="body1" sx={{ fontSize: '1rem' }}>
                               구분: {getCategoryLabel(card.category)}
@@ -267,9 +268,8 @@ const TemplateActive = () => {
                sx={{
                   display: 'flex',
                   justifyContent: 'center',
-                  padding: '40px 0 40px',
-               }}
-            >
+                  padding: '10px 0',
+               }}>
                <Pagination
                   count={pageCount}
                   page={currentPage}
@@ -291,56 +291,8 @@ const TemplateActive = () => {
                />
             </Box>
          )}
-
-         {/* <Pagination count={10} variant="outlined" shape="rounded" sx={{ margin: '50px auto' }} /> */}
       </Container>
    )
 }
 
 export default TemplateActive
-
-/* 
-
- <CardContainer>
-            {cards.map((card) => {
-               const formattedPrice = `${card.price.toLocaleString()}원` // 13000 → "13,000원"
-               return (
-                  <CardItem key={card.id}>
-                     <CardImgWrap>
-                        <img src={card.thumbnail.startsWith('http') ? card.thumbnail : '/images/default.jpg'} alt="카드 이미지" style={{ width: '100%' }} />
-                     </CardImgWrap>
-                     <CardInfoWrap>
-                        <TitleBox className="sub-title">
-                           <CardTitle variant="h3">{card.title}</CardTitle>
-                           <StyledButton>
-                              <DriveFileRenameOutlineIcon sx={{ fontSize: '1.3rem' }} />
-                           </StyledButton>
-                           <StyledButton>
-                              <RemoveShoppingCartIcon sx={{ fontSize: '1.2rem' }} />
-                           </StyledButton>
-                        </TitleBox>
-
-                        <TextBox>
-                           <Typography variant="body1" sx={{ fontSize: '1rem' }}>
-                              구분: 연회장
-                           </Typography>
-                           <Typography variant="body1" sx={{ fontSize: '1rem' }}>
-                              가격: {formattedPrice}
-                           </Typography>
-                           <Typography variant="body1" sx={{ fontSize: '1rem' }}>
-                              등록일: yyyy-mm-dd
-                           </Typography>
-                           <Typography variant="body1" sx={{ fontSize: '1rem' }}>
-                              총 판매량: n개
-                           </Typography>
-                           <Typography variant="body1" sx={{ fontSize: '1rem' }}>
-                              평균 리뷰: ☆☆☆
-                           </Typography>
-                        </TextBox>
-                     </CardInfoWrap>
-                  </CardItem>
-               )
-            })}
-         </CardContainer>
-
-*/
