@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { styled } from '@mui/system'
 import { Box, List, ListItem, ListItemText, Collapse } from '@mui/material'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
@@ -69,29 +69,37 @@ const SubMenuItem = styled(ListItem, {
 
 function AdminNavbar() {
    const location = useLocation()
+   const { id, tabId } = useParams() // 현재 URL의 id, tabId 가져오기
    const [expandedMenus, setExpandedMenus] = useState({})
 
+   // const menuItems = {
+   //    분석: [
+   //       { name: '개요', path: '/admin/analytics/tab-overview' },
+   //       { name: '템플릿', path: '/admin/analytics/tab-template' },
+   //       { name: '유저', path: '/admin/analytics/tab-user' },
+   //       { name: '버그 및 오류', path: '/admin/analytics/tab-error' },
+   //    ],
+   //    운영: [
+   //       { name: '공지', path: '/admin/manage/tab-notice' },
+   //       { name: '문의', path: '/admin/manage/tab-qna' },
+   //       { name: '자주묻는질문', path: '/admin/manage/tab-faq' },
+   //       { name: '리뷰', path: '/admin/manage/tab-review' },
+   //    ],
+   //    프로모션: [
+   //       { name: '이벤트', path: '/admin/promotion/tab-event' },
+   //       { name: '쿠폰', path: '/admin/promotion/tab-coupon' },
+   //    ],
+   //    템플릿: [
+   //       { name: '판매중', path: '/admin/template/tab-active' },
+   //       { name: '판매중지', path: '/admin/template/tab-inactive' },
+   //    ],
+   // }
+
    const menuItems = {
-      분석: [
-         { name: '개요', path: '/admin/analytics/tab-overview' },
-         { name: '템플릿', path: '/admin/analytics/tab-template' },
-         { name: '유저', path: '/admin/analytics/tab-user' },
-         { name: '버그 및 오류', path: '/admin/analytics/tab-error' },
-      ],
-      운영: [
-         { name: '공지', path: '/admin/manage/tab-notice' },
-         { name: '문의', path: '/admin/manage/tab-qna' },
-         { name: '자주묻는질문', path: '/admin/manage/tab-faq' },
-         { name: '리뷰', path: '/admin/manage/tab-review' },
-      ],
-      프로모션: [
-         { name: '이벤트', path: '/admin/promotion/tab-event' },
-         { name: '쿠폰', path: '/admin/promotion/tab-coupon' },
-      ],
-      템플릿: [
-         { name: '판매중', path: '/admin/template/tab-active' },
-         { name: '판매중지', path: '/admin/template/tab-inactive' },
-      ],
+      분석: ['tab-overview', 'tab-template', 'tab-user', 'tab-error'],
+      운영: ['tab-notice', 'tab-qna', 'tab-faq', 'tab-review'],
+      프로모션: ['tab-event', 'tab-coupon'],
+      템플릿: ['tab-active', 'tab-inactive'],
    }
 
    const handleMenuToggle = useCallback((menu) => {
@@ -101,7 +109,11 @@ function AdminNavbar() {
       }))
    }, [])
 
-   const isPathActive = useCallback((path) => location.pathname === path, [location])
+   const isPathActive = useCallback(
+      (tab) => `/admin/${id}/${tab}` === location.pathname, // 동적으로 path 생성
+      [location, id],
+   )
+   // const isPathActive = useCallback((path) => location.pathname === path, [location])
 
    const isCategoryActive = useCallback(
       (items) => {
@@ -117,17 +129,18 @@ function AdminNavbar() {
                <LogoImgLink src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="로고" />
             </Link>
             <List>
-               {Object.entries(menuItems).map(([category, items]) => (
+               {Object.entries(menuItems).map(([category, tabs]) => (
                   <React.Fragment key={category}>
-                     <DrawerItem $isExpanded={expandedMenus[category]} $isActive={isCategoryActive(items)} onClick={() => handleMenuToggle(category)}>
+                     <DrawerItem $isExpanded={expandedMenus[category]} $isActive={isCategoryActive(tabs)} onClick={() => handleMenuToggle(category)}>
                         <ListItemText primary={category} />
                         {expandedMenus[category] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                      </DrawerItem>
                      <Collapse in={expandedMenus[category]} timeout="auto" unmountOnExit>
                         <List component="div">
-                           {items.map((item) => (
-                              <SubMenuItem key={item.name} component={Link} to={item.path} $isActive={isPathActive(item.path)}>
-                                 <ListItemText primary={item.name} />
+                           {tabs.map((tab) => (
+                              // <SubMenuItem key={item.name} component={Link} to={item.path} $isActive={isPathActive(item.path)}>
+                              <SubMenuItem key={tab} component={Link} to={`/admin/${id}/${tab}`} $isActive={isPathActive(tab)}>
+                                 <ListItemText primary={tab.replace('tab-', '')} />
                               </SubMenuItem>
                            ))}
                         </List>

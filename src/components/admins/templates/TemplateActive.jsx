@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { Container } from '../layouts/boxCommon'
 import { Title } from '../layouts/textCommon'
 import { StyledButton } from '../layouts/btnCommon'
 import { CATEGORIES, ITEMS_PER_PAGE } from '../constants/template'
+import { CreateBtn, DeleteBtn, EditBtn } from '../../button'
 
 import { Box, Typography, Select, MenuItem, FormControl, Pagination } from '@mui/material'
 import { styled } from '@mui/system'
@@ -90,7 +91,7 @@ const StyledLink = styled(Link)(({ theme }) => ({
    display: 'flex',
    alignItems: 'center',
    textDecoration: 'none',
-   gap: '8px', 
+   gap: '8px',
    padding: '10px 15px 10px 10px',
    borderRadius: '4px',
    border: '1px solid #e5e5e5',
@@ -105,7 +106,8 @@ const StyledLink = styled(Link)(({ theme }) => ({
 const TemplateActive = () => {
    const [selectedCategory, setSelectedCategory] = useState('all') // 초기값을 'all'로 설정
    const [currentPage, setCurrentPage] = useState(1)
-   // const [pages, setPages] = useState(1)
+   const { id } = useParams()
+   const navigate = useNavigate()
 
    const cards = [
       { id: 1, title: '무슨카드1', category: 'wedding', content: '내용1', price: 13000, createdAt: '2025-01-13', status: 'published', thumbnail: '이미지2' },
@@ -136,9 +138,14 @@ const TemplateActive = () => {
       })
    }
 
+   const handleEdit = (postId) => {
+      navigate(`/admin/${id}/edit/${postId}`)
+   }
+
    const filteredCards = selectedCategory === 'all' ? cards : cards.filter((card) => card.category === selectedCategory)
 
    const pageCount = Math.ceil(filteredCards.length / ITEMS_PER_PAGE)
+
    const currentCards = filteredCards.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 
    return (
@@ -180,10 +187,11 @@ const TemplateActive = () => {
                   </FormControl>
                </Box>
             </Box>
-            <StyledLink to="/admin/template/new">
+            <CreateBtn type="template" />
+            {/* <StyledLink to="/admin/template/new">
                <EditIcon sx={{ fontSize: '1.5rem', color: 'black' }} />
                <Typography sx={{ fontSize: '1rem' }}>새 템플릿 등록</Typography>
-            </StyledLink>
+            </StyledLink> */}
          </TitleContainer>
 
          <CardContainer>
@@ -195,12 +203,14 @@ const TemplateActive = () => {
                   <CardInfoWrap>
                      <TitleContainer className="sub">
                         <CardTitle variant="h3">등록된 상품이 없습니다.</CardTitle>
-                        <StyledButton>
+                        <EditBtn />
+                        {/* <StyledButton>
                            <DriveFileRenameOutlineIcon sx={{ fontSize: '1.3rem' }} />
-                        </StyledButton>
-                        <StyledButton>
+                        </StyledButton> */}
+                        {/* <StyledButton>
                            <RemoveShoppingCartIcon sx={{ fontSize: '1.2rem' }} />
-                        </StyledButton>
+                        </StyledButton> */}
+                        {/* <DeleteBtn /> */}
                      </TitleContainer>
                      <TextBox>
                         <Typography variant="body1" sx={{ fontSize: '1rem' }}>
@@ -233,12 +243,15 @@ const TemplateActive = () => {
                      <CardInfoWrap>
                         <TitleContainer className="sub">
                            <CardTitle variant="h3">{card.title}</CardTitle>
-                           <StyledButton>
+                           <EditBtn type="template" id={card.id} />
+                           {/* <StyledButton onClick={() => handleEdit(card.id)}>
                               <DriveFileRenameOutlineIcon sx={{ fontSize: '1.3rem' }} />
-                           </StyledButton>
-                           <StyledButton>
+                           </StyledButton> */}
+                           <DeleteBtn type="template" />
+
+                           {/* <StyledButton>
                               <RemoveShoppingCartIcon sx={{ fontSize: '1.2rem' }} />
-                           </StyledButton>
+                           </StyledButton> */}
                         </TitleContainer>
                         <TextBox>
                            <Typography variant="body1" sx={{ fontSize: '1rem' }}>

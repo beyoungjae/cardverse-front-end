@@ -40,7 +40,7 @@ const ButtonBox = styled(Box)(() => ({
    justifyContent: 'flex-end',
 }))
 
-function EventNew() {
+function TemplateForm() {
    const [error, setError] = useState(null)
    const [errors, setErrors] = useState({})
    const [isSubmitted, setIsSubmitted] = useState(false)
@@ -175,7 +175,7 @@ function EventNew() {
    return (
       <FormContainer>
          <Typography variant="h3" gutterBottom sx={{ paddingBottom: '16px', marginBottom: '32px', borderBottom: '1px solid #c0c0c0' }}>
-            새 이벤트 등록
+            새 템플릿 등록
          </Typography>
 
          {error && (
@@ -279,4 +279,4 @@ function EventNew() {
    )
 }
 
-export default EventNew
+export default TemplateForm

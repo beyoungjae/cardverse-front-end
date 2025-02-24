@@ -7,7 +7,7 @@ import AnalyticsTemplate from './analysis/AnalyticsTemplate'
 import AnalyticsUser from './analysis/AnalyticsUser'
 import AnalyticsError from './analysis/AnalyticsError'
 
-const Analytics = () => {
+const AnalyticsRoutes = () => {
    return (
       <>
          <Routes>
@@ -21,4 +21,4 @@ const Analytics = () => {
    )
 }
 
-export default Analytics
+export default AnalyticsRoutes

@@ -29,27 +29,3 @@ export const TitleContainer = styled(Box)(({ theme }) => ({
       width: '100%',
    },
 }))
-
-export const Titles = ({ title }) => {
-   return (
-      <>
-         <TitleContainer className="main">
-            <Box sx={{ display: 'flex', alignItems: 'center', height: 'stretch' }}>
-               <Typography sx={{ fontSize: '2rem', letterSpacing: '1.75px', padding: '0' }}>{title}</Typography>
-
-               <Box
-                  sx={{
-                     padding: '10px 30px',
-                     display: 'flex',
-                     alignItems: 'center',
-                     gap: '10px',
-                  }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                     구분:
-                  </Typography>
-               </Box>
-            </Box>
-         </TitleContainer>
-      </>
-   )
-}

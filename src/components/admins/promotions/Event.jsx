@@ -1,9 +1,7 @@
 import React, { useState } from 'react'
 
-import { Box, Typography, Select, MenuItem, FormControl, Pagination } from '@mui/material'
-import { display, styled } from '@mui/system'
-// import { Container } from '../layouts/boxCommon'
-import { Title } from '../layouts/textCommon'
+import { Box, Typography } from '@mui/material'
+import { styled } from '@mui/system'
 import { StyledButton } from '../layouts/btnCommon'
 import TitleContainer from '../layouts/TitleContainer'
 import MainContainer from '../layouts/MainContainer'
@@ -11,8 +9,6 @@ import MainContainer from '../layouts/MainContainer'
 const Container = styled(Box)(() => ({
    width: '100%',
    height: '100%',
-   //    height: '100vh',
-   //    height: '960px',
    padding: '40px 40px 20px 40px',
    borderRadius: '8px',
    backgroundColor: '#ffffff',
@@ -22,16 +18,13 @@ const Container = styled(Box)(() => ({
    gap: '16px',
 
    margin: '0 auto',
-
-   '&::after': {},
 }))
 
 const ItemWrap = styled(Box)(({ theme }) => ({
-   border: '1px solid red',
    display: 'flex',
    gap: '12px',
-   height: '13%',
-   padding: '4px',
+   height: '20%',
+   padding: '12px 4px',
 }))
 
 const ImgWrap = styled(Box)(({ theme }) => ({
@@ -50,48 +43,26 @@ const Image = styled('img')(() => ({
 }))
 
 function Event() {
+   const CATEGORIES = [
+      { value: 'all', label: '전체보기' },
+      { value: 'attendance', label: '출석' },
+      { value: 'purchase', label: '구매' },
+      { value: 'review', label: '리뷰' },
+      { value: 'signup', label: '회원가입' },
+   ]
+
+   const items = [
+      { id: 1, type: 'attendance', title: '제목1', content: '이벤트 이미지1 json', startDate: 'yyyy-mm-dd(s)', endDate: 'yyyy-mm-dd(e)', isLimited: false, bannerUrl: '배너 이미지 주소1', maxParticipants: null },
+      { id: 2, type: 'attendance', title: '제목2', content: '이벤트 이미지2 json', startDate: 'yyyy-mm-dd(s)', endDate: 'yyyy-mm-dd(e)', isLimited: false, bannerUrl: '배너 이미지 주소2', maxParticipants: null },
+      { id: 3, type: 'attendance', title: '제목3', content: '이벤트 이미지3 json', startDate: 'yyyy-mm-dd(s)', endDate: 'yyyy-mm-dd(e)', isLimited: false, bannerUrl: '배너 이미지 주소3', maxParticipants: null },
+      { id: 4, type: 'attendance', title: '제목4', content: '이벤트 이미지4 json', startDate: 'yyyy-mm-dd(s)', endDate: 'yyyy-mm-dd(e)', isLimited: false, bannerUrl: '배너 이미지 주소4', maxParticipants: null },
+      { id: 5, type: 'attendance', title: '제목5', content: '이벤트 이미지5 json', startDate: 'yyyy-mm-dd(s)', endDate: 'yyyy-mm-dd(e)', isLimited: false, bannerUrl: '배너 이미지 주소5', maxParticipants: null },
+   ]
+
    return (
       <Container>
          <TitleContainer title="이벤트" add="이벤트 추가" />
-         <MainContainer type="list">
-            <ItemWrap>
-               <ImgWrap>
-                  <Image src="images/default.jpg" alt="배너 이미지" />
-               </ImgWrap>
-               <InfoWrap></InfoWrap>
-            </ItemWrap>
-            <ItemWrap>
-               <ImgWrap>
-                  <Image src="images/default.jpg" alt="배너 이미지" />
-               </ImgWrap>
-               <InfoWrap></InfoWrap>
-            </ItemWrap>
-            <ItemWrap>
-               <ImgWrap>
-                  <Image src="images/default.jpg" alt="배너 이미지" />
-               </ImgWrap>
-               <InfoWrap></InfoWrap>
-            </ItemWrap>
-            <ItemWrap>
-               <ImgWrap>
-                  <Image src="images/default.jpg" alt="배너 이미지" />
-               </ImgWrap>
-               <InfoWrap></InfoWrap>
-            </ItemWrap>
-            <ItemWrap>
-               <ImgWrap>
-                  <Image src="images/default.jpg" alt="배너 이미지" />
-               </ImgWrap>
-               <InfoWrap></InfoWrap>
-            </ItemWrap>
-            <ItemWrap>
-               <ImgWrap>
-                  <Image src="images/default.jpg" alt="배너 이미지" />
-               </ImgWrap>
-               <InfoWrap></InfoWrap>
-            </ItemWrap>
-         </MainContainer>
-         <Pagination />
+         <MainContainer type="list" categories={CATEGORIES} itemData={items}></MainContainer>
       </Container>
    )
 }

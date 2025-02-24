@@ -52,7 +52,7 @@ const Title = styled(Typography)(({ theme }) => ({
    width: '300px',
 }))
 
-const TitleContainer = ({ title, path, add }) => {
+const TitleContainer = ({ title, path }) => {
    const { id } = useParams()
 
    return (

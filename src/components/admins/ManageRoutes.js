@@ -7,7 +7,7 @@ import ManageQna from './manages/ManageQna'
 import ManageReview from './manages/ManageReview'
 import ManageFaq from './manages/ManageFaq'
 
-const Manage = () => {
+const ManageRoutes = () => {
    return (
       <>
          <Routes>
@@ -21,4 +21,4 @@ const Manage = () => {
    )
 }
 
-export default Manage
+export default ManageRoutes
