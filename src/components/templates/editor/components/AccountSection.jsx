@@ -1,18 +1,19 @@
 import React, { useState, useCallback } from 'react'
-import { Box, Chip, Typography, IconButton, Tooltip, FormControlLabel, Checkbox, Button } from '@mui/material'
+import { Box, Chip, Typography, IconButton, Tooltip, FormControlLabel, Checkbox } from '@mui/material'
 import { useFormContext, Controller } from 'react-hook-form'
 import { motion, AnimatePresence } from 'framer-motion'
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import CelebrationIcon from '@mui/icons-material/Celebration'
 import CakeIcon from '@mui/icons-material/Cake'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import { SectionContainer, SectionTitle, TitleText, StyledTextField, HelpText, IconButtonWrapper, fadeInUp, easeTransition, COLORS } from '../styles/commonStyles'
+import { width } from '@mui/system'
 
+// 초대장 유형 정의
 const invitationTypes = [
    {
       id: 'wedding',
@@ -51,7 +52,14 @@ const invitationTypes = [
    },
 ]
 
+// 은행 목록
 const banks = ['국민은행', '신한은행', '우리은행', '하나은행', '농협은행', '기업은행', '카카오뱅크', '토스뱅크', '새마을금고', '우체국']
+
+// 계좌번호 포맷 함수 (숫자와 하이픈만 허용)
+const formatAccountNumber = (value) => {
+   // 숫자와 하이픈만 남기고 나머지는 제거
+   return value.replace(/[^\d-]/g, '')
+}
 
 const AccountSection = () => {
    const [showHelp, setShowHelp] = useState(false)
@@ -114,7 +122,7 @@ const AccountSection = () => {
                   <ul>
                      <li>초대장 유형에 맞는 계좌번호 정보를 입력해주세요.</li>
                      <li>은행명, 계좌번호, 예금주를 정확히 입력해주세요.</li>
-                     <li>계좌번호는 자동으로 하이픈(-)이 추가됩니다.</li>
+                     <li>계좌번호는 숫자와 하이픈(-)만 입력 가능합니다.</li>
                      <li>복사 버튼을 통해 손쉽게 계좌정보를 복사할 수 있습니다.</li>
                   </ul>
                </HelpText>
@@ -221,14 +229,30 @@ const AccountSection = () => {
                                     message: '숫자와 하이픈(-)만 입력 가능합니다',
                                  },
                               }}
-                              render={({ field, fieldState: { error } }) => <StyledTextField {...field} placeholder={accountType.placeholder} error={!!error} helperText={error?.message} />}
+                              render={({ field, fieldState: { error } }) => {
+                                 const { value, onChange, ...rest } = field
+                                 // 입력 시 자동 포맷 적용
+                                 const handleNumberChange = (e) => {
+                                    const formattedValue = formatAccountNumber(e.target.value)
+                                    onChange(formattedValue)
+                                 }
+                                 return (
+                                    <motion.div
+                                       // 에러 발생 시 좌우 흔들림 애니메이션 적용
+                                       animate={error ? { x: [0, -10, 10, -10, 10, 0] } : {}}
+                                       transition={{ duration: error ? 0.4 : 0 }}
+                                    >
+                                       <StyledTextField {...rest} value={value} onChange={handleNumberChange} placeholder={accountType.placeholder} error={!!error} helperText={error?.message} sx={{ width: '230px' }} />
+                                    </motion.div>
+                                 )
+                              }}
                            />
                            <Controller
                               name={`accounts.${index}.holder`}
                               control={control}
                               defaultValue=""
                               rules={{ required: '예금주를 입력해주세요' }}
-                              render={({ field, fieldState: { error } }) => <StyledTextField {...field} placeholder="예금주명을 입력해주세요" error={!!error} helperText={error?.message} />}
+                              render={({ field, fieldState: { error } }) => <StyledTextField {...field} placeholder="예금주명을 입력해주세요" error={!!error} helperText={error?.message} sx={{ width: '230px' }} />}
                            />
                         </Box>
                      </Box>

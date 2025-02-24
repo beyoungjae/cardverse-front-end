@@ -36,13 +36,13 @@ const DateTimeSection = ({ dateTime, showCountdown, style, textStyle, formatDDay
       // 날짜 셀 생성
       let currentDate = startDate
       while (currentDate.isBefore(endDate) || currentDate.isSame(endDate, 'day')) {
-         const isCurrentMonth = currentDate.month() === date.month()
-         const isSelected = currentDate.isSame(date, 'day')
-         const isSunday = currentDate.day() === 0
-         const isSaturday = currentDate.day() === 6
+         const iscurrentmonth = currentDate.month() === date.month()
+         const isselected = currentDate.isSame(date, 'day')
+         const issunday = currentDate.day() === 0
+         const issaturday = currentDate.day() === 6
 
          cells.push(
-            <PreviewDateCell key={currentDate.format('YYYY-MM-DD')} isSelected={isSelected} isCurrentMonth={isCurrentMonth} isSunday={isSunday} isSaturday={isSaturday}>
+            <PreviewDateCell key={currentDate.format('YYYY-MM-DD')} $isselected={isselected} $iscurrentmonth={iscurrentmonth} $issunday={issunday} $issaturday={issaturday}>
                <Typography sx={{ fontSize: '0.7rem' }}>{currentDate.date()}</Typography>
             </PreviewDateCell>
          )

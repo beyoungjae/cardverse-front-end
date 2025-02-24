@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { Box, Button, Drawer, Snackbar, Alert, SpeedDial, SpeedDialIcon, SpeedDialAction } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -278,10 +278,13 @@ const TemplateEditor = () => {
    // react-hook-form
    const methods = useForm({
       defaultValues: {
-         // 설정
          setting: {
-            animation: null,
-            imgs: [],
+            animation: 'fade',
+            images: [
+               { file: null, url: '/images/samples/wedding-sample1.png', name: 'wedding-sample1.png' },
+               { file: null, url: '/images/samples/wedding-sample2.png', name: 'wedding-sample2.png' },
+               { file: null, url: '/images/samples/wedding-sample3.png', name: 'wedding-sample3.png' },
+            ],
          },
          // 기본 정보
          profiles: [],
@@ -352,12 +355,19 @@ const TemplateEditor = () => {
    const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false)
    const [previewSize, setPreviewSize] = useState('mobile') // mobile, tablet, desktop
    const [activeSection, setActiveSection] = useState('profile')
+   const [previewState, setPreviewState] = useState({
+      showInvitation: false,
+      showSections: false,
+      sectionAnimationIndex: -1,
+   })
 
    // type 관련 상태와 핸들러
    const currentType = watch('type') || 'wedding'
    const handleTypeChange = useCallback(
       (newType) => {
-         methods.setValue('type', newType, { shouldValidate: true })
+         requestAnimationFrame(() => {
+            methods.setValue('type', newType, { shouldValidate: true })
+         })
       },
       [methods]
    )
@@ -451,34 +461,45 @@ const TemplateEditor = () => {
       theme: themeSettings,
    }
 
-   const formData = watch() // 모든 form 필드 감시
+   const formData = watch()
 
-   // 공유 상태
-   const [previewState, setPreviewState] = useState({
-      showInvitation: false,
-      showSections: false,
-      sectionAnimationIndex: -1,
-   })
+   const handlePreviewStateChange = useCallback((newState) => {
+      setPreviewState((prev) => ({
+         ...prev,
+         ...newState,
+      }))
+   }, [])
 
-   // 프리뷰 패널 공통 props
-   const previewPanelProps = {
-      formData: watch(),
-      theme: themeSettings,
-      previewState,
-      setPreviewState,
-      isDrawer: false,
-   }
+   const previewPanelProps = useMemo(
+      () => ({
+         formData,
+         theme: themeSettings,
+         previewState,
+         setPreviewState,
+         isDrawer: false,
+      }),
+      [formData, themeSettings, previewState]
+   )
 
-   const drawerPreviewProps = {
-      ...previewPanelProps,
-      isDrawer: true,
-   }
+   const drawerPreviewProps = useMemo(
+      () => ({
+         ...previewPanelProps,
+         isDrawer: true,
+         onPreviewStateChange: (newState) => {
+            setPreviewState((prev) => ({
+               ...prev,
+               ...newState,
+            }))
+         },
+      }),
+      [previewPanelProps, previewState]
+   )
 
    return (
       <FormProvider {...methods}>
          <EditorContainer variants={containerVariants} initial="initial" animate="animate">
             <PreviewContainer>
-               <PreviewFrame>{isPreviewLoading ? <PreviewLoading /> : <PreviewPanel {...drawerPreviewProps} />}</PreviewFrame>
+               <PreviewFrame>{isPreviewLoading ? <PreviewLoading /> : <PreviewPanel {...previewPanelProps} onPreviewStateChange={handlePreviewStateChange} />}</PreviewFrame>
             </PreviewContainer>
 
             <EditorPanel variants={editorVariants}>

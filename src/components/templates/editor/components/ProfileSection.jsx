@@ -93,6 +93,30 @@ const invitationTypes = [
    },
 ]
 
+const formatPhoneNumber = (value) => {
+   const numbers = value.replace(/[^\d]/g, '') // 숫자만 남김
+
+   if (numbers.startsWith('02')) {
+      // 서울 지역번호 (02)
+      if (numbers.length <= 2) return numbers
+      if (numbers.length <= 5) return `${numbers.slice(0, 2)}-${numbers.slice(2)}`
+      return `${numbers.slice(0, 2)}-${numbers.slice(2, 5)}-${numbers.slice(5, 9)}`
+   } else if (/^0[3-9][0-9]/.test(numbers)) {
+      // 03X~09X 지역번호 (부산 051, 대구 053 등)
+      if (numbers.length <= 3) return numbers
+      if (numbers.length <= 6) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`
+   } else if (numbers.startsWith('010')) {
+      // 휴대폰 번호 (010)
+      if (numbers.length <= 3) return numbers
+      if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`
+   } else {
+      // 기타 번호
+      return numbers
+   }
+}
+
 const ProfileSection = ({ currentType: propType, onTypeChange }) => {
    const [showHelp, setShowHelp] = useState(false)
    const { control, setValue, watch } = useFormContext()
@@ -138,6 +162,9 @@ const ProfileSection = ({ currentType: propType, onTypeChange }) => {
       [profiles, setValue]
    )
 
+   const isPhoneField = (name) => name === 'phone' || name === 'contact'
+   const isAgeField = (name) => name === 'age'
+
    return (
       <SectionContainer component={motion.div} variants={fadeInUp} initial="initial" animate="animate" exit="exit" transition={easeTransition}>
          <SectionTitle>
@@ -146,8 +173,12 @@ const ProfileSection = ({ currentType: propType, onTypeChange }) => {
                <Box className="title">기본 정보</Box>
             </TitleText>
             <IconButtonWrapper>
-               <HelpOutlineIcon onClick={handleHelpToggle} />
-               <RestartAltIcon onClick={handleReset} />
+               <Tooltip title="도움말 보기">
+                  <HelpOutlineIcon onClick={handleHelpToggle} />
+               </Tooltip>
+               <Tooltip title="초기화">
+                  <RestartAltIcon onClick={handleReset} />
+               </Tooltip>
             </IconButtonWrapper>
          </SectionTitle>
 
@@ -277,8 +308,43 @@ const ProfileSection = ({ currentType: propType, onTypeChange }) => {
                                  name={`profiles.${profileIndex}.${field.name}`}
                                  control={control}
                                  defaultValue=""
-                                 rules={{ required: `${field.label}을(를) 입력해주세요` }}
-                                 render={({ field: { value, onChange }, fieldState: { error } }) => <StyledTextField label={field.label} placeholder={field.placeholder} value={value} onChange={onChange} error={!!error} helperText={error?.message} />}
+                                 rules={{
+                                    required: `${field.label}을(를) 입력해주세요`,
+                                    ...(isPhoneField(field.name) && {
+                                       pattern: {
+                                          value: /^\d{3}-\d{3,4}-\d{4}$/,
+                                          message: '올바른 전화번호 형식이 아닙니다',
+                                       },
+                                    }),
+                                    ...(isAgeField(field.name) && {
+                                       pattern: {
+                                          value: /^\d{2}$/,
+                                          message: '2자리 숫자를 입력해주세요',
+                                       },
+                                    }),
+                                 }}
+                                 render={({ field: { value, onChange }, fieldState: { error } }) => (
+                                    <StyledTextField
+                                       label={field.label}
+                                       placeholder={field.placeholder}
+                                       value={value}
+                                       onChange={(e) => {
+                                          if (isPhoneField(field.name)) {
+                                             const formatted = formatPhoneNumber(e.target.value)
+                                             if (formatted.length <= 13) {
+                                                onChange(formatted)
+                                             }
+                                          } else {
+                                             onChange(e.target.value)
+                                          }
+                                       }}
+                                       error={!!error}
+                                       helperText={error?.message}
+                                       inputProps={{
+                                          inputMode: isPhoneField(field.name) ? 'numeric' : 'text',
+                                       }}
+                                    />
+                                 )}
                               />
                            ))}
                         </Box>

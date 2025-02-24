@@ -210,9 +210,9 @@ export const HelpText = styled(motion.div)(({ theme }) => ({
 }))
 
 // 문자 수 카운터
-export const CharacterCount = styled(Typography)(({ theme, isNearLimit }) => ({
+export const CharacterCount = styled(Typography)(({ theme }) => ({
    textAlign: 'right',
-   color: isNearLimit ? COLORS.warning : COLORS.text.hint,
+   color: COLORS.text.hint,
    fontSize: '0.75rem',
    marginTop: theme.spacing(1),
    fontFamily: 'Pretendard, sans-serif',

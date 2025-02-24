@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react'
-import { Box, Chip, Typography, IconButton, Tooltip } from '@mui/material'
+import React, { useState, useCallback } from 'react'
+import { Box, Chip, Typography, Tooltip } from '@mui/material'
 import { useFormContext, Controller } from 'react-hook-form'
 import { motion, AnimatePresence } from 'framer-motion'
 import MessageIcon from '@mui/icons-material/Message'
@@ -27,6 +27,14 @@ const greetingTemplates = {
          title: '영원한 약속',
          content: '평생을 함께하고 싶은 사람을 만났습니다.\n\n서로 아끼고 사랑하며\n이제 한 가정을 이루려 합니다.\n\n저희의 첫걸음에 축복을 더해주시면\n더없는 기쁨으로 간직하겠습니다.',
       },
+      {
+         title: '축복의 시작',
+         content: '행복한 결혼 생활의 첫걸음을\n함께 축복해주시면 감사하겠습니다.\n\n사랑으로 맺어진 저희가\n오랜 인연을 이어갈 수 있도록\n많은 응원 부탁드립니다.',
+      },
+      {
+         title: '행복의 순간',
+         content: '서로가 서로에게\n가장 소중한 사람이 되었기에\n함께하길 약속했습니다.\n\n저희의 행복한 순간을\n함께 나누어주시면 좋겠습니다.',
+      },
    ],
    newYear: [
       {
@@ -36,6 +44,10 @@ const greetingTemplates = {
       {
          title: '감사의 마음',
          content: '지난 한 해 동안\n베풀어주신 은혜에 감사드리며\n다가오는 새해에도\n더욱 건강하시고\n뜻하시는 모든 일이 이루어지길\n진심으로 기원합니다.',
+      },
+      {
+         title: '희망찬 새해',
+         content: '새로운 시작과 함께\n더 큰 꿈과 소망이 이뤄지길 바랍니다.\n\n한 해 동안 보내주신 격려에\n진심으로 감사드리며\n앞으로도 많은 관심 부탁드립니다.',
       },
    ],
    birthday: [
@@ -47,6 +59,10 @@ const greetingTemplates = {
          title: '인생의 지혜',
          content: '70년의 세월 동안\n한결같은 마음으로 가족을 사랑하시고\n이웃을 배려하며 살아오신\n부모님의 귀한 생신을 맞이하여\n축하와 감사의 자리를 마련했습니다.',
       },
+      {
+         title: '인생의 축복',
+         content: '인생의 새로운 장을 열며\n과거의 기억과 앞으로의 희망을\n함께 나누고 싶습니다.\n\n소중한 분들께서 함께해 주시면\n이보다 더 큰 축복은 없을 것 같습니다.',
+      },
    ],
    invitation: [
       {
@@ -56,6 +72,10 @@ const greetingTemplates = {
       {
          title: '특별한 초대',
          content: '소중한 분을 모시고자 합니다.\n\n귀한 시간 내어주시어\n함께 해주신다면\n더없는 기쁨이 되겠습니다.\n\n부디 참석하시어\n자리를 빛내주시기 바랍니다.',
+      },
+      {
+         title: '뜻깊은 만남',
+         content: '이번 자리는 저희에게\n매우 소중하고 특별한 의미가 있습니다.\n\n함께 자리해 주신다면\n감사의 마음을 오래도록 간직하겠습니다.',
       },
    ],
 }
@@ -113,9 +133,15 @@ const GreetingSection = () => {
                <Box className="title">인사말</Box>
             </TitleText>
             <IconButtonWrapper>
-               <AutoFixHighIcon onClick={handleTemplatesToggle} />
-               <HelpOutlineIcon onClick={handleHelpToggle} />
-               <RestartAltIcon onClick={handleReset} />
+               <Tooltip title="기본 템플릿 보기">
+                  <AutoFixHighIcon onClick={handleTemplatesToggle} />
+               </Tooltip>
+               <Tooltip title="도움말 보기">
+                  <HelpOutlineIcon onClick={handleHelpToggle} />
+               </Tooltip>
+               <Tooltip title="초기화">
+                  <RestartAltIcon onClick={handleReset} />
+               </Tooltip>
             </IconButtonWrapper>
          </SectionTitle>
 
@@ -199,6 +225,7 @@ const GreetingSection = () => {
             )}
          </AnimatePresence>
 
+         {/* 인사말 입력 부분 */}
          <Controller
             name="greeting"
             control={control}
@@ -210,14 +237,42 @@ const GreetingSection = () => {
                   message: '최대 500자까지 입력 가능합니다',
                },
             }}
-            render={({ field, fieldState: { error } }) => (
-               <Box>
-                  <StyledTextArea {...field} multiline rows={8} placeholder="정성스러운 마음을 담아 인사말을 작성해주세요." error={!!error} helperText={error?.message} />
-                  <CharacterCount isNearLimit={field.value?.length >= 450}>{field.value?.length || 0}/500</CharacterCount>
-               </Box>
-            )}
+            render={({ field, fieldState: { error } }) => {
+               // 500자 초과 입력을 막기 위한 onChange 핸들러
+               const handleChange = (e) => {
+                  const text = e.target.value
+                  // 500자 초과 시 잘라냄
+                  if (text.length <= 500) {
+                     field.onChange(text)
+                  } else {
+                     field.onChange(text.slice(0, 500))
+                  }
+               }
+
+               return (
+                  <Box>
+                     <StyledTextArea
+                        {...field}
+                        multiline
+                        rows={8}
+                        placeholder="정성스러운 마음을 담아 인사말을 작성해주세요."
+                        error={!!error}
+                        helperText={error?.message}
+                        // 긴 단어도 자동으로 줄바꿈되도록 스타일 지정
+                        sx={{
+                           whiteSpace: 'pre-wrap',
+                           wordWrap: 'break-word',
+                           overflowWrap: 'break-word',
+                        }}
+                        onChange={handleChange}
+                     />
+                     <CharacterCount>{field.value?.length || 0}/500</CharacterCount>
+                  </Box>
+               )
+            }}
          />
 
+         {/* 미리보기 영역 */}
          {greeting && (
             <Box
                component={motion.div}
@@ -247,7 +302,20 @@ const GreetingSection = () => {
                <Box sx={{ position: 'relative', zIndex: 1 }}>
                   {currentType.icon}
                   <Box sx={{ mt: 1, color: COLORS.accent.main, fontWeight: 500 }}>{currentType.label} 미리보기</Box>
-                  <Box sx={{ mt: 2, color: COLORS.text.primary, whiteSpace: 'pre-line', textAlign: 'center', lineHeight: 1.8 }}>{greeting}</Box>
+                  <Box
+                     sx={{
+                        mt: 2,
+                        color: COLORS.text.primary,
+                        // 긴 단어도 화면을 벗어나지 않도록 처리
+                        whiteSpace: 'pre-wrap',
+                        wordWrap: 'break-word',
+                        overflowWrap: 'break-word',
+                        textAlign: 'center',
+                        lineHeight: 1.8,
+                     }}
+                  >
+                     {greeting}
+                  </Box>
                </Box>
             </Box>
          )}

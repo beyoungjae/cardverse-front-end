@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { debounce } from 'lodash'
 import imageCompression from 'browser-image-compression'
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
 const useImageGallery = (initialImages = []) => {
@@ -19,7 +19,7 @@ const useImageGallery = (initialImages = []) => {
          return '지원하지 않는 파일 형식입니다.'
       }
       if (file.size > MAX_FILE_SIZE) {
-         return '파일 크기는 5MB를 초과할 수 없습니다.'
+         return '파일 크기는 10MB를 초과할 수 없습니다.'
       }
       return null
    }, [])

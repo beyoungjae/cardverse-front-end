@@ -50,15 +50,20 @@ const useTemplateStore = create(
 
             // 템플릿 액션
             updateTemplate: (updates) => {
-               const currentTemplate = get().template
-               const hasChanges = Object.keys(updates).some((key) => JSON.stringify(currentTemplate[key]) !== JSON.stringify(updates[key]))
+               requestAnimationFrame(() => {
+                  set((state) => {
+                     const currentTemplate = state.template
+                     const hasChanges = Object.keys(updates).some((key) => JSON.stringify(currentTemplate[key]) !== JSON.stringify(updates[key]))
 
-               if (hasChanges) {
-                  set((state) => ({
-                     template: { ...state.template, ...updates },
-                     isDirty: true,
-                  }))
-               }
+                     if (hasChanges) {
+                        return {
+                           template: { ...currentTemplate, ...updates },
+                           isDirty: true,
+                        }
+                     }
+                     return state
+                  })
+               })
             },
 
             updateStyle: (styleUpdates) =>
