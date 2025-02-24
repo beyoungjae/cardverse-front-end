@@ -15,7 +15,8 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel'
 import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
 import { SectionContainer, SectionTitle, TitleText, HelpText, IconButtonWrapper, fadeInUp, easeTransition, COLORS } from '../styles/commonStyles'
-import { uploadImages, deleteImage } from '../../../../api/galleryApi'
+import { deleteImage } from '../../../../api/galleryApi'
+import useImageUpload from '../hooks/useImageUpload'
 
 const invitationTypes = [
    {
@@ -74,66 +75,72 @@ const GallerySection = () => {
    const [uploadProgress, setUploadProgress] = useState(0)
    const [showHelp, setShowHelp] = useState(false)
    const [selectedType, setSelectedType] = useState('wedding')
+   const { uploadImage } = useImageUpload()
 
    const { control, watch, setValue } = useFormContext()
    const images = watch('images') || []
 
    // 이미지 URL 생성 및 관리
    useEffect(() => {
-      const urls = images.map((image) => {
-         // 이미 URL이 있는 경우 그대로 사용
-         if (image.url) {
-            return {
-               url: image.url,
-               id: `${image.name || 'image'}-${Date.now()}`,
+      const urls = images
+         .map((image) => {
+            // 이미 URL이 있는 경우 (서버에서 받은 이미지)
+            if (image.url) {
+               return {
+                  url: image.url.startsWith('http') ? image.url : `${process.env.REACT_APP_API_URL}${image.url}`,
+                  id: image.id || `image-${Date.now()}`,
+               }
             }
-         }
 
-         // File 객체인 경우 URL 생성
-         if (image instanceof File) {
-            return {
-               url: URL.createObjectURL(image),
-               id: `${image.name}-${image.lastModified}`,
+            // File 객체인 경우 (새로 업로드한 이미지)
+            if (image instanceof File) {
+               return {
+                  url: URL.createObjectURL(image),
+                  id: `${image.name}-${Date.now()}`,
+               }
             }
-         }
 
-         // 둘 다 아닌 경우 기본 값 반환
-         return {
-            url: '',
-            id: `image-${Date.now()}`,
-         }
-      })
+            // 잘못된 데이터인 경우
+            console.warn('Invalid image data:', image)
+            return null
+         })
+         .filter(Boolean) // null 값 제거
 
       setPreviewUrls(urls)
 
       // Cleanup
       return () => {
-         urls.forEach(({ url }) => {
-            // 직접 생성한 URL만 해제
-            if (url && !url.startsWith('data:') && !url.startsWith('http')) {
-               URL.revokeObjectURL(url)
+         urls.forEach((urlObj) => {
+            if (urlObj && urlObj.url && urlObj.url.startsWith('blob:')) {
+               URL.revokeObjectURL(urlObj.url)
             }
          })
       }
    }, [images])
 
    const handleImageDelete = async (index) => {
-      const image = images[index]
-
       try {
-         const response = await deleteImage(image.id)
+         const imageToDelete = images[index]
 
-         if (!response.ok) {
-            throw new Error('이미지 삭제 실패')
+         // 서버에 저장된 이미지인 경우
+         if (imageToDelete.id) {
+            await deleteImage(imageToDelete.id)
          }
 
-         // Controller 값 업데이트
-         const newImages = [...images]
-         newImages.splice(index, 1)
-         setValue('images', newImages, { shouldValidate: true })
+         // form 상태 업데이트
+         setValue(
+            'images',
+            images.filter((_, i) => i !== index),
+            { shouldValidate: true }
+         )
+
+         // 프리뷰 URL 정리
+         if (previewUrls[index]?.url && !previewUrls[index].url.startsWith('http')) {
+            URL.revokeObjectURL(previewUrls[index].url)
+         }
+         setPreviewUrls((prev) => prev.filter((_, i) => i !== index))
       } catch (error) {
-         console.error('이미지 삭제 오류:', error)
-         // 에러 처리
+         console.error('이미지 삭제 실패:', error)
       }
    }
 
@@ -165,29 +172,27 @@ const GallerySection = () => {
 
    const handleImageUpload = async (event) => {
       const files = Array.from(event.target.files)
+      if (!files.length) return
 
       try {
+         const currentType = invitationTypes.find((type) => type.id === selectedType)
+         if (files.length + images.length > currentType.maxImages) {
+            alert(`이미지는 최대 ${currentType.maxImages}장까지 업로드 가능합니다.`)
+            return
+         }
+
          setUploadProgress(0)
-         const response = await uploadImages(files)
-
-         // Controller에 이미지 데이터 설정
-         setValue(
-            'images',
-            [
-               ...images,
-               ...response.data.map((img) => ({
-                  id: img.id,
-                  url: img.url,
-                  order: img.order,
-               })),
-            ],
-            { shouldValidate: true }
-         )
-
+         const uploadPromises = files.map((file) => uploadImage(file, 'gallery'))
+         const uploadedImages = await Promise.all(uploadPromises)
          setUploadProgress(100)
+
+         const validImages = uploadedImages.filter(Boolean)
+         if (validImages.length > 0) {
+            setValue('images', [...images, ...validImages], { shouldValidate: true })
+         }
       } catch (error) {
          console.error('이미지 업로드 오류:', error)
-         // 에러 처리
+         setUploadProgress(0)
       }
    }
 

@@ -11,6 +11,7 @@ import CelebrationIcon from '@mui/icons-material/Celebration'
 import CakeIcon from '@mui/icons-material/Cake'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import { SectionContainer, SectionTitle, TitleText, StyledTextField, HelpText, IconButtonWrapper, fadeInUp, easeTransition, COLORS } from '../styles/commonStyles'
+import useImageUpload from '../hooks/useImageUpload'
 
 const invitationTypes = [
    {
@@ -120,6 +121,7 @@ const formatPhoneNumber = (value) => {
 const ProfileSection = ({ currentType: propType, onTypeChange }) => {
    const [showHelp, setShowHelp] = useState(false)
    const { control, setValue, watch } = useFormContext()
+   const { uploadImage, deleteUploadedImage } = useImageUpload()
 
    const currentType = invitationTypes.find((type) => type.id === propType)
    const profiles = watch('profiles') || []
@@ -143,24 +145,21 @@ const ProfileSection = ({ currentType: propType, onTypeChange }) => {
       [setValue, onTypeChange]
    )
 
-   const handleImageUpload = useCallback(
-      (event, profileIndex) => {
-         const file = event.target.files[0]
-         if (file) {
-            const reader = new FileReader()
-            reader.onload = (e) => {
-               const newProfiles = [...profiles]
-               if (!newProfiles[profileIndex]) {
-                  newProfiles[profileIndex] = {}
-               }
-               newProfiles[profileIndex].image = e.target.result
-               setValue('profiles', newProfiles, { shouldValidate: true })
-            }
-            reader.readAsDataURL(file)
+   const handleImageUpload = async (event, profileIndex) => {
+      const file = event.target.files[0]
+      if (!file) return
+
+      const uploadedImage = await uploadImage(file, 'profile')
+      if (uploadedImage) {
+         const updatedProfiles = [...profiles]
+         updatedProfiles[profileIndex] = {
+            ...updatedProfiles[profileIndex],
+            image: uploadedImage.url,
+            imageId: uploadedImage.id,
          }
-      },
-      [profiles, setValue]
-   )
+         setValue('profiles', updatedProfiles, { shouldValidate: true })
+      }
+   }
 
    const isPhoneField = (name) => name === 'phone' || name === 'contact'
    const isAgeField = (name) => name === 'age'

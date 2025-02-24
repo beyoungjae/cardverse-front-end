@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { debounce } from 'lodash'
 import imageCompression from 'browser-image-compression'
-import { uploadImages } from '../../../../api/galleryApi'
+import { uploadImages, deleteImage } from '../../../../api/galleryApi'
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
@@ -84,19 +84,33 @@ const useImageGallery = (initialImages = []) => {
    }, [])
 
    // 이미지 삭제
-   const handleImageDelete = useCallback((index) => {
-      setImages((prev) => {
-         const newImages = [...prev]
-         newImages.splice(index, 1)
-         return newImages
-      })
-      setPreviewUrls((prev) => {
-         const newUrls = [...prev]
-         URL.revokeObjectURL(newUrls[index]) // 메모리 해제
-         newUrls.splice(index, 1)
-         return newUrls
-      })
-   }, [])
+   const handleImageDelete = useCallback(
+      async (index) => {
+         try {
+            const imageToDelete = images[index]
+
+            // 서버에 저장된 이미지인 경우
+            if (imageToDelete.id) {
+               await deleteImage(imageToDelete.id)
+            }
+
+            // 상태 업데이트
+            setImages((prev) => prev.filter((_, i) => i !== index))
+
+            // 프리뷰 URL 정리
+            setPreviewUrls((prev) => {
+               const newUrls = prev.filter((_, i) => i !== index)
+               if (prev[index]?.url && !prev[index].url.startsWith('http')) {
+                  URL.revokeObjectURL(prev[index].url)
+               }
+               return newUrls
+            })
+         } catch (error) {
+            console.error('이미지 삭제 실패:', error)
+         }
+      },
+      [images]
+   )
 
    // 이미지 순서 변경
    const reorderImages = useCallback((startIndex, endIndex) => {

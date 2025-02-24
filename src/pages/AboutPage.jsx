@@ -185,7 +185,7 @@ const AboutPage = () => {
          description: '디지털 시대에 맞는 혁신적인 초대장 솔루션을 제공합니다.',
       },
       {
-         title: '개인 터치',
+         title: '다양한 디자인',
          description: '각 순간의 특별함을 담아내는 맞춤형 디자인을 제공합니다.',
       },
       {
@@ -229,7 +229,7 @@ const AboutPage = () => {
 
          <MissionSection ref={missionRef}>
             <Container>
-               <SectionTitle>비전</SectionTitle>
+               <SectionTitle>혁신적인 초대장 솔루션</SectionTitle>
                <MissionGrid>
                   {missions.map((mission, index) => (
                      <MissionCard key={mission.title} initial={{ opacity: 0, y: 50 }} animate={missionInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5, delay: index * 0.2 }}>
@@ -245,7 +245,7 @@ const AboutPage = () => {
 
          <ValuesSection ref={valuesRef}>
             <Container>
-               <SectionTitle>가치</SectionTitle>
+               <SectionTitle>끊임없는 혁신으로 디지털 초대장의 새로운 기준을 만듭니다.</SectionTitle>
                <ValuesGrid>
                   {values.map((value, index) => (
                      <ValueItem key={value.title} initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }} animate={valuesInView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.5, delay: index * 0.2 }}>

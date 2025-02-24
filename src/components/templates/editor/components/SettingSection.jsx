@@ -7,6 +7,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { SectionContainer, SectionTitle, TitleText, IconButtonWrapper, fadeInUp, COLORS } from '../styles/commonStyles'
+import useImageUpload from '../hooks/useImageUpload'
 
 // 사용할 애니메이션 옵션
 const animationOptions = [
@@ -28,6 +29,7 @@ const SettingSection = () => {
    const setting = watch('setting') || { animation: 'fade', images: [] }
    const images = setting.images || []
    const animationType = setting.animation || 'fade'
+   const { uploadImage, deleteUploadedImage, uploadMultipleImages } = useImageUpload()
 
    useEffect(() => {
       if (!sessionStorage.getItem('userInitialized')) {
@@ -44,22 +46,28 @@ const SettingSection = () => {
    }, [setValue])
 
    const handleFileChange = useCallback(
-      (e) => {
-         const files = Array.from(e.target.files).filter((file) => file.type.startsWith('image/'))
+      async (e) => {
+         const files = Array.from(e.target.files)
          if (files.length + images.length > 3) {
             alert('이미지는 최대 3장까지 업로드 가능합니다.')
             return
          }
 
-         const newImages = files.map((file) => ({
-            file,
-            url: URL.createObjectURL(file),
-            name: file.name,
-         }))
+         try {
+            setUploadProgress(0)
+            const uploadPromises = files.map((file) => uploadImage(file, 'setting'))
+            const uploadedImages = await Promise.all(uploadPromises)
+            setUploadProgress(100)
 
-         setValue('setting.images', [...images, ...newImages], { shouldValidate: true })
+            const validImages = uploadedImages.filter(Boolean)
+            if (validImages.length > 0) {
+               setValue('setting.images', [...images, ...validImages], { shouldValidate: true })
+            }
+         } catch (error) {
+            console.error('이미지 업로드 실패:', error)
+         }
       },
-      [images, setValue]
+      [images, setValue, uploadImage]
    )
 
    const handleAnimationChange = useCallback(
