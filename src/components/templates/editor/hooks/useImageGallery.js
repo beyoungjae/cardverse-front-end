@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect } from 'react'
 import { debounce } from 'lodash'
 import imageCompression from 'browser-image-compression'
+import { uploadImages } from '../../../../api/galleryApi'
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
 const useImageGallery = (initialImages = []) => {
@@ -12,6 +13,7 @@ const useImageGallery = (initialImages = []) => {
    const [uploadProgress, setUploadProgress] = useState({})
    const [errors, setErrors] = useState([])
    const [previewUrls, setPreviewUrls] = useState([])
+   const [uploading, setUploading] = useState(false)
 
    // 이미지 유효성 검사
    const validateImage = useCallback((file) => {
@@ -19,7 +21,7 @@ const useImageGallery = (initialImages = []) => {
          return '지원하지 않는 파일 형식입니다.'
       }
       if (file.size > MAX_FILE_SIZE) {
-         return '파일 크기는 10MB를 초과할 수 없습니다.'
+         return '파일 크기는 20MB를 초과할 수 없습니다.'
       }
       return null
    }, [])
@@ -41,49 +43,22 @@ const useImageGallery = (initialImages = []) => {
 
    // 이미지 업로드 처리
    const handleImageUpload = useCallback(
-      async (files) => {
-         const newErrors = []
-         const validFiles = []
-         const newPreviewUrls = []
+      async (event) => {
+         const files = Array.from(event.target.files).filter((file) => file.type.startsWith('image/'))
 
-         // 파일 유효성 검사
-         for (let i = 0; i < files.length; i++) {
-            const file = files[i]
-            const error = validateImage(file)
+         try {
+            setUploadProgress(0)
+            const response = await uploadImages(files)
 
-            if (error) {
-               newErrors.push({ file: file.name, message: error })
-            } else {
-               validFiles.push(file)
-               // 미리보기 URL 생성
-               const previewUrl = URL.createObjectURL(file)
-               newPreviewUrls.push(previewUrl)
-            }
+            // 업로드된 이미지 URL 업데이트
+            setPreviewUrls((prev) => [...prev, ...response.data.urls])
+            setImages((prev) => [...prev, ...response.data.urls])
+         } catch (error) {
+            console.error('이미지 업로드 실패:', error)
+            // 에러 처리
          }
-
-         setErrors(newErrors)
-
-         if (validFiles.length > 0) {
-            // 업로드 진행률 초기화
-            const newProgress = {}
-            validFiles.forEach((file) => {
-               newProgress[file.name] = 0
-            })
-            setUploadProgress(newProgress)
-
-            // 업로드 시뮬레이션
-            const optimizedFiles = await Promise.all(validFiles.map(optimizeImage))
-            optimizedFiles.forEach((file) => {
-               simulateUpload(file)
-            })
-
-            setImages((prev) => [...prev, ...optimizedFiles])
-            setPreviewUrls((prev) => [...prev, ...newPreviewUrls])
-         }
-
-         return { success: validFiles.length > 0, errors: newErrors }
       },
-      [validateImage, optimizeImage]
+      [setImages]
    )
 
    // 업로드 진행률 시뮬레이션
