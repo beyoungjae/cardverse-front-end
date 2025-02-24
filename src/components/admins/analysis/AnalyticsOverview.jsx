@@ -1,7 +1,7 @@
-import { Container } from '../layouts/boxCommon'
+import Layout from '../layouts/Layout'
 
 const AnalyticsOverview = () => {
-   return <Container></Container>
+   return <Layout></Layout>
 }
 
 export default AnalyticsOverview

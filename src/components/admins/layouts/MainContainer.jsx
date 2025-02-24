@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Form, Link, useNavigate, useParams } from 'react-router-dom'
 
-import { Container } from '../layouts/boxCommon'
-import { Title } from '../layouts/textCommon'
 import ItemForm from './ItemForm'
 import { CreateBtn, EditBtn, DeleteBtn } from '../../button'
 

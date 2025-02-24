@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Container } from '../layouts/boxCommon'
+import Layout from '../layouts/Layout'
 import { Title } from '../layouts/textCommon'
 
 import { Box, TextField, IconButton, Typography, Checkbox, Button } from '@mui/material'
@@ -194,7 +194,7 @@ function Coupon() {
     }
 
     return (
-        <Container>
+        <Layout>
             <CouponContainer>
                 {/* 쿠폰 리스트 */}
 
@@ -318,7 +318,7 @@ function Coupon() {
                     </CouponRow>
                 ))}
             </CouponContainer>
-        </Container>
+        </Layout>
     )
 }
 

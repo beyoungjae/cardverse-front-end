@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
-import { Container } from '../layouts/boxCommon'
+// import { Container } from '../layouts/boxCommon'
+import Layout from '../layouts/Layout'
 import { Title } from '../layouts/textCommon'
-import { StyledButton } from '../layouts/btnCommon'
 import { CATEGORIES, ITEMS_PER_PAGE } from '../constants/template'
 import { CreateBtn, DeleteBtn, EditBtn } from '../../button'
 
@@ -149,7 +149,7 @@ const TemplateActive = () => {
    const currentCards = filteredCards.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 
    return (
-      <Container>
+      <Layout>
          <TitleContainer className="main">
             <Box sx={{ display: 'flex', alignItems: 'center', height: 'stretch' }}>
                <Title sx={{ padding: '0' }}>판매중 템플릿</Title>
@@ -304,7 +304,7 @@ const TemplateActive = () => {
                />
             </Box>
          )}
-      </Container>
+      </Layout>
    )
 }
 

@@ -8,19 +8,11 @@ const CreateBtn = ({ type }) => {
    const navigate = useNavigate()
 
    const handleCreate = () => {
-      switch (type) {
-         case 'template':
-            navigate('/admin/template/new')
-            break
-         case 'event':
-            navigate('/admin/event/new')
-            break
-         case 'manage':
-            navigate('/admin/manage/new')
-            break
-         default:
-            console.error('Unknown type')
+      if (!type) {
+         console.error('Type is required')
+         return
       }
+      navigate(`/admin/${type}/new`)
    }
 
    return (
