@@ -10,9 +10,6 @@ const KAKAO_SDK_URL = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REAC
 const LocationSection = ({ formData, style, textStyle, combinedStyle, isDrawer }) => {
    const { name, address, detail, guide, showMap, coordinates } = formData.location || {}
 
-   console.log('textStyle:', textStyle)
-   console.log('combinedStyle:', combinedStyle)
-
    // 드로어와 일반 미리보기를 구분하는 고유 ID 생성
    const mapId = `preview-kakao-map-${isDrawer ? 'drawer' : 'main'}`
 
@@ -109,7 +106,7 @@ const LocationSection = ({ formData, style, textStyle, combinedStyle, isDrawer }
 
    return (
       <Section style={style}>
-         <Typography sx={{ textAlign: 'center', color: style.color, fontWeight: 'bold', mb: 2 }}>오시는 길</Typography>
+         <Typography sx={{ textAlign: 'center', color: combinedStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit', fontWeight: 'bold', mb: 2 }}>오시는 길</Typography>
          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box
                sx={{
@@ -121,26 +118,26 @@ const LocationSection = ({ formData, style, textStyle, combinedStyle, isDrawer }
                }}
             >
                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                  <LocationOnIcon sx={{ color: style.color }} />
-                  <Typography sx={{ fontSize: '1.3rem', fontWeight: 600, color: style.color }}>{name}</Typography>
+                  <LocationOnIcon sx={{ color: combinedStyle?.color || 'inherit' }} />
+                  <Typography sx={{ fontSize: '1.3rem', fontWeight: 600, color: combinedStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>{name}</Typography>
                </Box>
 
                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Typography sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1, color: textStyle.color }}>{address}</Typography>
+                  <Typography sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1, color: textStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>{address}</Typography>
 
                   {detail && (
                      <Box sx={{ p: 2, borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.7)', border: `1px solid ${COLORS.accent.main}15` }}>
-                        <Typography sx={{ color: textStyle.color, fontSize: '0.95rem', whiteSpace: 'pre-line' }}>{detail}</Typography>
+                        <Typography sx={{ color: textStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit', fontSize: '0.95rem', whiteSpace: 'pre-line' }}>{detail}</Typography>
                      </Box>
                   )}
 
                   {guide && (
                      <Box sx={{ p: 2, borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.7)', border: `1px solid ${COLORS.accent.main}15` }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, color: style.color }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, color: combinedStyle?.color || 'inherit' }}>
                            <DirectionsIcon fontSize="small" />
-                           <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>교통편 안내</Typography>
+                           <Typography sx={{ fontWeight: 500, fontSize: '0.9rem', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>교통편 안내</Typography>
                         </Box>
-                        <Typography sx={{ color: textStyle.color, fontSize: '0.95rem', whiteSpace: 'pre-line' }}>{guide}</Typography>
+                        <Typography sx={{ color: textStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit', fontSize: '0.95rem', whiteSpace: 'pre-line' }}>{guide}</Typography>
                      </Box>
                   )}
 

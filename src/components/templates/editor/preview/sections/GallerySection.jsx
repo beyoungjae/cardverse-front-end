@@ -8,7 +8,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import { Section } from '../styles/PreviewStyles'
 import { COLORS } from '../../styles/commonStyles'
 
-const GallerySection = ({ images, layout, style, typeStyle }) => {
+const GallerySection = ({ images, layout, style, typeStyle, combinedStyle }) => {
    const [isModalOpen, setIsModalOpen] = useState(false)
    const [selectedIndex, setSelectedIndex] = useState(null)
    const [swiper, setSwiper] = useState(null)
@@ -157,10 +157,11 @@ const GallerySection = ({ images, layout, style, typeStyle }) => {
          <Typography
             sx={{
                textAlign: 'center',
-               color: style.color,
+               color: combinedStyle?.color || 'inherit',
                fontWeight: 'bold',
                mb: 2.5,
                fontSize: '1.1rem',
+               fontFamily: combinedStyle?.fontFamily || 'inherit',
             }}
          >
             {typeStyle.galleryTitle || '갤러리'}

@@ -46,6 +46,7 @@ const PreviewContent = styled(motion.div)(({ theme, backgroundColor }) => ({
 
 const InvitationType = {
    wedding: {
+      galleryTitle: '웨딩 갤러리',
       icon: <FavoriteIcon />,
       color: '#B699BB',
       gradient: 'linear-gradient(135deg, #FFF0F5 0%, #FFE4E1 100%)',
@@ -78,6 +79,7 @@ const InvitationType = {
       },
    },
    newYear: {
+      galleryTitle: '지난 해 추억을 담은 갤러리',
       icon: <CelebrationIcon />,
       color: '#FFD700',
       gradient: 'linear-gradient(135deg, #FFFAF0 0%, #FFF8DC 100%)',
@@ -110,6 +112,7 @@ const InvitationType = {
       },
    },
    birthday: {
+      galleryTitle: '고희연 갤러리',
       icon: <CakeIcon />,
       color: '#9370DB',
       gradient: 'linear-gradient(135deg, #F0E6FF 0%, #E6E6FA 100%)',
@@ -142,6 +145,7 @@ const InvitationType = {
       },
    },
    invitation: {
+      galleryTitle: '갤러리',
       icon: <EmojiEventsIcon />,
       color: '#4169E1',
       gradient: 'linear-gradient(135deg, #F0F8FF 0%, #E6F3FF 100%)',
@@ -552,9 +556,15 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                   {renderSection('title', mergedFormData.title && <TitleSection title={mergedFormData.title} style={sectionStyle} combinedStyle={combinedStyle} />)}
                   {renderSection('profile', mergedFormData.showProfiles && mergedFormData.profiles?.length > 0 && <ProfileSection profiles={mergedFormData.profiles} style={profileStyle} combinedStyle={combinedStyle} textStyle={textStyle} />)}
                   {renderSection('greeting', mergedFormData.greeting && <GreetingSection greeting={mergedFormData.greeting} style={sectionStyle} combinedStyle={combinedStyle} textStyle={textStyle} />)}
-                  {renderSection('datetime', mergedFormData.dateTime && <DateTimeSection dateTime={mergedFormData.dateTime} showCountdown={mergedFormData.showCountdown} style={sectionStyle} typeStyle={typeStyle} formatDDay={formatDDay} type={mergedFormData.type} textStyle={textStyle} />)}
-                  {renderSection('location', mergedFormData.location && Object.values(mergedFormData.location).some((value) => value) && <LocationSection formData={mergedFormData} style={sectionStyle} textStyle={typeStyle} combinedStyle={combinedStyle} isDrawer={isDrawer} />)}
-                  {renderSection('account', mergedFormData.showAccounts && mergedFormData.accounts?.length > 0 && <AccountSection accounts={mergedFormData.accounts} style={accountStyle} typeStyle={typeStyle} type={mergedFormData.type} getAccountLabel={getAccountLabel} textStyle={textStyle} />)}
+                  {renderSection(
+                     'datetime',
+                     mergedFormData.dateTime && <DateTimeSection dateTime={mergedFormData.dateTime} showCountdown={mergedFormData.showCountdown} style={sectionStyle} typeStyle={typeStyle} formatDDay={formatDDay} type={mergedFormData.type} textStyle={textStyle} combinedStyle={combinedStyle} />
+                  )}
+                  {renderSection('location', mergedFormData.location && Object.values(mergedFormData.location).some((value) => value) && <LocationSection formData={mergedFormData} style={sectionStyle} textStyle={textStyle} combinedStyle={combinedStyle} isDrawer={isDrawer} />)}
+                  {renderSection(
+                     'account',
+                     mergedFormData.showAccounts && mergedFormData.accounts?.length > 0 && <AccountSection accounts={mergedFormData.accounts} style={accountStyle} typeStyle={typeStyle} type={mergedFormData.type} getAccountLabel={getAccountLabel} textStyle={textStyle} combinedStyle={combinedStyle} />
+                  )}
                   {renderSection(
                      'gallery',
                      mergedFormData.images?.length > 0 && (
@@ -568,6 +578,7 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                            onCloseModal={handleCloseModal}
                            onPrevImage={handlePrevImage}
                            onNextImage={handleNextImage}
+                           combinedStyle={combinedStyle}
                         />
                      )
                   )}
@@ -658,7 +669,7 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                                  {sectionId === 'datetime' && mergedFormData.dateTime && (
                                     <DateTimeSection dateTime={mergedFormData.dateTime} showCountdown={mergedFormData.showCountdown} style={sectionStyle} typeStyle={typeStyle} formatDDay={formatDDay} type={mergedFormData.type} textStyle={textStyle} combinedStyle={combinedStyle} />
                                  )}
-                                 {sectionId === 'location' && mergedFormData.location && Object.values(mergedFormData.location).some((value) => value) && <LocationSection formData={mergedFormData} style={sectionStyle} textStyle={typeStyle} combinedStyle={combinedStyle} isDrawer={isDrawer} />}
+                                 {sectionId === 'location' && mergedFormData.location && Object.values(mergedFormData.location).some((value) => value) && <LocationSection formData={mergedFormData} style={sectionStyle} textStyle={textStyle} combinedStyle={combinedStyle} isDrawer={isDrawer} />}
                                  {sectionId === 'account' && mergedFormData.showAccounts && mergedFormData.accounts?.length > 0 && (
                                     <AccountSection accounts={mergedFormData.accounts} style={accountStyle} typeStyle={typeStyle} type={mergedFormData.type} getAccountLabel={getAccountLabel} textStyle={textStyle} combinedStyle={combinedStyle} />
                                  )}
@@ -673,6 +684,7 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                                        onCloseModal={handleCloseModal}
                                        onPrevImage={handlePrevImage}
                                        onNextImage={handleNextImage}
+                                       combinedStyle={combinedStyle}
                                     />
                                  )}
                               </motion.div>

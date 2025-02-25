@@ -27,7 +27,7 @@ const AccountStyle = styled(Section)(({ theme }) => ({
    },
 }))
 
-const AccountSection = ({ accounts, style, type, getAccountLabel, textStyle }) => {
+const AccountSection = ({ accounts, style, type, getAccountLabel, textStyle, combinedStyle }) => {
    const getTitle = () => {
       switch (type) {
          case 'wedding':
@@ -48,21 +48,21 @@ const AccountSection = ({ accounts, style, type, getAccountLabel, textStyle }) =
 
    return (
       <AccountStyle style={style}>
-         <Typography sx={{ textAlign: 'center', color: style.color, fontWeight: 'bold', mb: 2 }}>{getTitle()}</Typography>
+         <Typography sx={{ textAlign: 'center', color: combinedStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit', fontWeight: 'bold', mb: 2 }}>{getTitle()}</Typography>
          {accounts.map((account, index) => (
             <Box key={index} className="account-item">
-               <Typography className="account-label" style={{ color: style.color }}>
+               <Typography className="account-label" style={{ color: combinedStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>
                   {getAccountLabel(index)}
                </Typography>
 
-               <Typography className="account-number" style={{ color: textStyle.color }}>
+               <Typography className="account-number" style={{ color: textStyle.color, fontFamily: combinedStyle?.fontFamily || 'inherit' }}>
                   {account.bank} {account.number}
                   <IconButton
                      onClick={() => handleCopyAccount(account)}
                      sx={{
-                        color: style.color,
+                        color: textStyle?.color || 'inherit',
                         '&:hover': {
-                           backgroundColor: `${style.color}15`,
+                           backgroundColor: `${textStyle?.color}15`,
                         },
                         display: 'inline-block',
                         marginLeft: '10px',
@@ -71,7 +71,9 @@ const AccountSection = ({ accounts, style, type, getAccountLabel, textStyle }) =
                      <ContentCopyIcon />
                   </IconButton>
                </Typography>
-               <Typography className="account-holder">{account.holder}</Typography>
+               <Typography className="account-holder" style={{ fontFamily: combinedStyle?.fontFamily || 'inherit' }}>
+                  {account.holder}
+               </Typography>
             </Box>
          ))}
       </AccountStyle>

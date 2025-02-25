@@ -12,7 +12,7 @@ dayjs.extend(weekday)
 dayjs.extend(weekOfYear)
 dayjs.locale('ko')
 
-const DateTimeSection = ({ dateTime, showCountdown, style, textStyle, formatDDay, type }) => {
+const DateTimeSection = ({ dateTime, showCountdown, style, textStyle, formatDDay, type, combinedStyle }) => {
    const date = dayjs(dateTime)
 
    const CalendarGrid = () => {
@@ -27,8 +27,8 @@ const DateTimeSection = ({ dateTime, showCountdown, style, textStyle, formatDDay
       // 요일 헤더
       weekDays.forEach((day) => {
          cells.push(
-            <PreviewWeekDay key={`weekday-${day}`} style={{ color: textStyle.color }}>
-               <Typography sx={{ fontSize: '0.7rem' }}>{day}</Typography>
+            <PreviewWeekDay key={`weekday-${day}`} style={{ color: combinedStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>
+               <Typography sx={{ fontSize: '0.7rem', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>{day}</Typography>
             </PreviewWeekDay>
          )
       })
@@ -43,7 +43,7 @@ const DateTimeSection = ({ dateTime, showCountdown, style, textStyle, formatDDay
 
          cells.push(
             <PreviewDateCell key={currentDate.format('YYYY-MM-DD')} $isselected={isselected} $iscurrentmonth={iscurrentmonth} $issunday={issunday} $issaturday={issaturday}>
-               <Typography sx={{ fontSize: '0.7rem' }}>{currentDate.date()}</Typography>
+               <Typography sx={{ fontSize: '0.7rem', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>{currentDate.date()}</Typography>
             </PreviewDateCell>
          )
          currentDate = currentDate.add(1, 'day')
@@ -54,16 +54,16 @@ const DateTimeSection = ({ dateTime, showCountdown, style, textStyle, formatDDay
 
    return (
       <Section style={style}>
-         <Typography sx={{ textAlign: 'center', color: style.color, fontWeight: 'bold', mb: 2 }}>날짜/시간</Typography>
+         <Typography sx={{ textAlign: 'center', color: combinedStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit', fontWeight: 'bold', mb: 2 }}>날짜/시간</Typography>
          <CalendarPreview>
             <PreviewCalendarHeader>
-               <Typography sx={{ fontSize: '0.9rem', fontWeight: 500, color: style.color, mb: 0.5 }}>{date.format('YYYY.MM')}</Typography>
-               <Typography sx={{ fontSize: '0.7rem', color: 'rgba(0,0,0,0.6)' }}>{date.format('dddd A hh:mm')}</Typography>
+               <Typography sx={{ fontSize: '0.9rem', fontWeight: 500, color: combinedStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit', mb: 0.5 }}>{date.format('YYYY.MM')}</Typography>
+               <Typography sx={{ fontSize: '0.7rem', color: 'rgba(0,0,0,0.6)', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>{date.format('dddd A hh:mm')}</Typography>
             </PreviewCalendarHeader>
 
             <CalendarGrid />
 
-            {showCountdown && <Box sx={{ mt: 2, textAlign: 'center', color: textStyle.color, fontWeight: 500, fontSize: '0.6rem' }}>{formatDDay(dateTime, type)}</Box>}
+            {showCountdown && <Box sx={{ mt: 2, textAlign: 'center', color: textStyle.color, fontFamily: combinedStyle?.fontFamily || 'inherit', fontWeight: 500, fontSize: '0.6rem' }}>{formatDDay(dateTime, type)}</Box>}
          </CalendarPreview>
       </Section>
    )
