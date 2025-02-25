@@ -233,8 +233,6 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
       [formData]
    )
 
-   console.log('mergedFormData', mergedFormData)
-
    // SettingSection 완료 핸들러
    const handleSettingComplete = useCallback(() => {
       // 직접 상태를 변경

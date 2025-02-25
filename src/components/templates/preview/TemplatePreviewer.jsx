@@ -5,6 +5,7 @@ import { styled } from '@mui/material/styles'
 import CloseIcon from '@mui/icons-material/Close'
 import PreviewPanel from '../editor/preview/PreviewPanel'
 import PreviewLoading from '../editor/preview/PreviewLoading'
+import { templateApi } from '../../../api/templateApi'
 
 const PreviewContainer = styled(Box)(({ theme }) => ({
    position: 'relative',
@@ -49,12 +50,35 @@ const TemplatePreviewer = () => {
       const fetchTemplateData = async () => {
          try {
             setIsLoading(true)
-            // TODO: API 연동 시 실제 엔드포인트로 변경
-            const response = await fetch(`/templates/${templateId}`)
-            if (!response.ok) throw new Error('템플릿을 불러오는데 실패했습니다.')
+            const data = await templateApi.getTemplate(templateId)
 
-            const data = await response.json()
-            setTemplateData(data)
+            // 백엔드 데이터 구조를 프론트엔드 구조로 변환
+            const templateData = {
+               type: data.templateSet.intro.type,
+               title: data.templateSet.intro.title,
+               greeting: data.templateSet.greeting.content,
+               dateTime: data.templateSet.calendar.dateTime,
+               showCountdown: data.templateSet.calendar.showCountdown,
+               location: {
+                  name: data.templateSet.map.name,
+                  address: data.templateSet.map.address,
+                  detail: data.templateSet.map.detail,
+                  guide: data.templateSet.map.guide,
+                  showMap: data.templateSet.map.showMap,
+                  coordinates: data.templateSet.map.coordinates,
+               },
+               images: data.templateSet.gallery.images,
+               galleryLayout: data.templateSet.gallery.layout,
+               accounts: data.templateSet.bankAccount.accounts,
+               showAccounts: data.templateSet.bankAccount.showAccounts,
+               backgroundColor: data.templateSet.other.backgroundColor,
+               primaryColor: data.templateSet.other.primaryColor,
+               secondaryColor: data.templateSet.other.secondaryColor,
+               fontFamily: data.templateSet.other.fontFamily,
+               animation: data.templateSet.other.animation,
+            }
+
+            setTemplateData(templateData)
          } catch (err) {
             setError(err.message)
          } finally {
