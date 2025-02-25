@@ -17,6 +17,7 @@ const TitleSection = ({ title, style, combinedStyle }) => {
                color: combinedStyle.color,
                fontFamily: combinedStyle.fontFamily,
                fontSize: '1.1rem',
+               textAlign: 'center',
                fontWeight: 'bold',
                mb: 2,
             }}

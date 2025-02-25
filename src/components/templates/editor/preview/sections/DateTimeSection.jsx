@@ -27,7 +27,14 @@ const DateTimeSection = ({ dateTime, showCountdown, style, textStyle, formatDDay
       // 요일 헤더
       weekDays.forEach((day) => {
          cells.push(
-            <PreviewWeekDay key={`weekday-${day}`} style={{ color: combinedStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>
+            <PreviewWeekDay
+               key={`weekday-${day}`}
+               sx={{
+                  color: combinedStyle?.color || 'inherit',
+                  fontFamily: combinedStyle?.fontFamily || 'inherit',
+                  fontSize: '0.9rem',
+               }}
+            >
                <Typography sx={{ fontSize: '0.7rem', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>{day}</Typography>
             </PreviewWeekDay>
          )

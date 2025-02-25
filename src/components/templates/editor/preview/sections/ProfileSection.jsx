@@ -17,6 +17,8 @@ const ProfileContainer = styled(Section)(({ theme }) => ({
    '& .profile-info': {
       fontSize: '0.9rem',
       color: 'rgba(0,0,0,0.6)',
+      whiteSpace: 'nowrap',
+      textAlign: 'center',
    },
    '& .heart-icon': {
       color: '#E57373',

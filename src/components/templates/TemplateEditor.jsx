@@ -553,17 +553,29 @@ const TemplateEditor = () => {
                   '& .MuiDrawer-paper': {
                      width: '100%',
                      maxWidth: 500,
-                     '@media (max-width: 1280px)': {
-                        maxWidth: 400,
-                     },
-                     '@media (max-width: 1024px)': {
-                        maxWidth: 300,
-                     },
                      height: '100%',
                   },
                }}
             >
                {isPreviewLoading ? <PreviewLoading /> : <PreviewPanel {...drawerPreviewProps} />}
+               <Button
+                  onClick={() => setIsPreviewOpen(false)}
+                  sx={{
+                     position: 'absolute',
+                     top: 8,
+                     right: 8,
+                     minWidth: '20px',
+                     height: '40px',
+                     background: 'rgba(0, 0, 0, 0.4)',
+                     color: '#fff',
+                     borderRadius: '50%',
+                     '&:hover': {
+                        background: 'rgba(0, 0, 0, 0.7)',
+                     },
+                  }}
+               >
+                  ✕
+               </Button>
             </Drawer>
 
             {/* 공통 SpeedDial */}

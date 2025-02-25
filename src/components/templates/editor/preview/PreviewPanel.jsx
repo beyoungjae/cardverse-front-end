@@ -28,8 +28,8 @@ const PreviewContent = styled(motion.div)(({ theme, backgroundColor }) => ({
    width: '100%',
    height: '100%',
    overflowY: 'auto',
-   WebkitOverflowScrolling: 'touch', // iOS에서 부드러운 스크롤 적용
    padding: '24px',
+   WebkitOverflowScrolling: 'touch', // iOS에서 부드러운 스크롤 적용
    backgroundColor: backgroundColor || '#FFFFFF',
    position: 'relative',
    '&::-webkit-scrollbar': {
@@ -532,12 +532,6 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
          height: '100%',
          overflow: 'auto',
          position: 'relative',
-         // isDrawer 값에 따른 스타일 적용
-         ...(isDrawer
-            ? {
-                 padding: '20px',
-              }
-            : {}),
       },
    }
 
@@ -656,7 +650,6 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '20px',
-                        padding: '20px',
                      }}
                   >
                      {sectionOrder.map((sectionId, index) => (
