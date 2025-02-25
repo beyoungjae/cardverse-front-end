@@ -44,7 +44,7 @@ const LogoContainer = styled(Box)(({ theme }) => ({
 
 const Logoimg = styled('img')(({ theme }) => ({
    margin: '0 auto',
-   height: '40px',
+   height: '50px',
    cursor: 'pointer',
    '&:hover': {
       transform: 'translateY(-2px)',
@@ -54,7 +54,7 @@ const Logoimg = styled('img')(({ theme }) => ({
       transform: 'scale(0.9)',
    },
    [theme.breakpoints.down('md')]: {
-      height: '30px',
+      height: '40px',
    },
 }))
 
