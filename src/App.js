@@ -102,7 +102,6 @@ function App() {
 
                <Route path="/post/new" element={<CreatePostPage />} />
                {/* 관리자 페이지 */}
-               {/* <Route path="/admin/*" element={<AdminPage />} /> */}
                <Route path="/admin" element={<Navigate to="/admin/analytics" replace />} />
                <Route path="/admin/:id/*" element={<AdminPage />} />
             </Routes>
