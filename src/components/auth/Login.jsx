@@ -10,6 +10,9 @@ import { styled } from '@mui/system'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 
+import { loginUserThunk } from '../../features/authSlice'
+import { useDispatch, useSelector } from 'react-redux'
+
 const Container = styled(Box)(({ theme }) => ({
    padding: '60px 64px',
    width: '100%',
@@ -205,6 +208,8 @@ const Login = () => {
    const [showPassword, setShowPassword] = useState(false)
    const [showModal, setShowModal] = useState(false)
    const navigate = useNavigate()
+   const dispatch = useDispatch()
+   const { loading, error } = useSelector((state) => state.auth)
 
    useEffect(() => {
       if (window.Kakao) {
@@ -245,10 +250,25 @@ const Login = () => {
          },
       })
    }, [navigate])
-   const handleLogin = (e) => {
-      e.preventDefault()
-      alert('로그인 성공!')
-   }
+
+   const handleLogin = useCallback(
+      async (e) => {
+         try {
+            e.preventDefault()
+            if (email.trim() && password.trim()) {
+               const result = await dispatch(loginUserThunk({ email, password })).unwrap()
+               if (result.id) {
+                  navigate('/')
+               }
+            } else {
+               alert('이메일과 비밀번호를 입력해주세요.')
+            }
+         } catch (error) {
+            console.error('로그인 에러:', error)
+         }
+      },
+      [dispatch, email, password, navigate],
+   )
 
    return (
       <Container>
@@ -303,14 +323,13 @@ const Login = () => {
                </FormContainer>
             </Form>
             <StyledTypography className="kakao-comment" sx={{ marginBottom: '16px', color: '#cccccc' }}>
-               ───────────── or ─────────────
+               ─────────── or ───────────
             </StyledTypography>
             <Button
                // 브레이크 포인트
 
                className="kakao-login-btn"
-               onClick={handleKakaoLogin}
-            >
+               onClick={handleKakaoLogin}>
                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="kakao" style={{ width: '20px', height: '20px' }} />
                카카오로 간편 로그인
             </Button>

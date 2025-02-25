@@ -1,4 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { checkAuthStatusThunk } from './features/authSlice'
 
 // style 세팅
 import CssBaseline from '@mui/material/CssBaseline'
@@ -71,6 +73,13 @@ const GlobalStyle = createGlobalStyle`
 
 function App() {
    const location = useLocation()
+   const dispatch = useDispatch()
+   const { isAuthenticated, user } = useSelector((state) => state.auth)
+
+   useEffect(() => {
+      dispatch(checkAuthStatusThunk())
+   }, [dispatch])
+
    const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname.startsWith('/admin')
 
    return (
@@ -78,7 +87,7 @@ function App() {
          <GlobalStyle />
          <CssBaseline />
 
-         {!hideLayout && <Navbar />}
+         {!hideLayout && <Navbar isAuthenticated={isAuthenticated} user={user} />}
 
          <MainContent $hideLayout={hideLayout}>
             <Routes>
