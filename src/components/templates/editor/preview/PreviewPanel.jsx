@@ -619,12 +619,12 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                      }}
                   >
                      <img
-                        src="/images/templates/card5.png"
+                        src="/images/templates/sample00001.png"
                         alt="Invitation"
                         style={{
                            width: '100%',
                            height: '100%',
-                           objectFit: 'cover',
+                           objectFit: 'contain',
                         }}
                      />
                   </motion.div>

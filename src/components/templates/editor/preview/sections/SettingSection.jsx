@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Box } from '@mui/material'
+import { Box, Typography, Button } from '@mui/material'
 
 const SettingSection = ({ onComplete }) => {
    const { watch } = useFormContext()
@@ -19,18 +19,27 @@ const SettingSection = ({ onComplete }) => {
          enter: { opacity: 0 },
          center: {
             opacity: 1,
-            transition: { duration: 0.8 },
+            scale: [0.9, 1],
+            transition: { duration: 0.8, ease: 'easeInOut' },
          },
-         exit: { opacity: 0 },
+         exit: {
+            opacity: 0,
+            scale: [1, 1.1],
+            transition: { duration: 0.8, ease: 'easeOut' },
+         },
       },
       slide: {
          enter: { x: '100%', opacity: 0 },
          center: {
-            x: 0,
+            x: ['3%', 0],
             opacity: 1,
-            transition: { type: 'spring', stiffness: 300, damping: 30 },
+            transition: { duration: 0.8, ease: 'easeInOut' },
          },
-         exit: { x: '-100%', opacity: 0 },
+         exit: {
+            x: [0, '-100%'],
+            opacity: 0,
+            transition: { duration: 0.8, ease: 'easeInOut' },
+         },
       },
    }
 
@@ -84,7 +93,7 @@ const SettingSection = ({ onComplete }) => {
                      position: 'absolute',
                      width: '100%',
                      height: '100%',
-                     objectFit: 'cover',
+                     objectFit: 'contain',
                   }}
                />
             )}

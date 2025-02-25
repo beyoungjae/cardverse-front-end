@@ -462,9 +462,9 @@ const TemplateDetail = () => {
    // 임시 데이터 (추후 API 연동 필요)
    const templateData = {
       id: templateId,
-      mainImage: '/images/templates/card1.svg',
+      mainImage: '/images/templates/sample00001.png',
       price: '23,000',
-      detailImages: ['/images/templates/card2.svg', '/images/templates/card3.png', '/images/templates/card4.png'],
+      detailImages: ['/images/templates/sample00002.png', '/images/templates/sample00003.png', '/images/templates/sample00004.png'],
    }
 
    const [activeIndex, setActiveIndex] = useState(0)
