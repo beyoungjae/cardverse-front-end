@@ -409,10 +409,7 @@ const TemplateList = () => {
          </BannerContainer>
 
          <Container maxWidth="lg" sx={{ py: 8 }}>
-            <TotalText>
-               T O T A L <br />
-               {currentTemplates.length}
-            </TotalText>
+            <TotalText>T O T A L</TotalText>
 
             <TabContainer>
                <div className="swiper-button-prev" onClick={handlePrevClick} style={{ cursor: 'pointer' }}></div>
