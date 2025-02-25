@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { checkAuthStatusThunk } from './features/authSlice'
 
@@ -75,10 +75,48 @@ function App() {
    const location = useLocation()
    const dispatch = useDispatch()
    const { isAuthenticated, user } = useSelector((state) => state.auth)
+   const [sdkLoaded, setSdkLoaded] = useState(false)
 
    useEffect(() => {
       dispatch(checkAuthStatusThunk())
    }, [dispatch])
+
+   // useEffect(() => {
+   //    if (!window.Kakao.isInitialized()) {
+   //       window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY)
+   //       console.log('Kakao SDK 초기화 완료')
+   //    }
+   // }, [])
+
+   // useEffect(() => {
+   //    if (!window.Kakao.isInitialized()) {
+   //       window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY, {
+   //          throughTalk: false, // 카카오톡 간편로그인 사용 여부
+   //       })
+   //       console.log('Kakao SDK 초기화 완료')
+   //    }
+   // }, [])
+
+   // useEffect(() => {
+   //    // 이미 로드되었다면 스킵
+   //    if (sdkLoaded) return
+   //    //       <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.4.0/kakao.min.js" integrity="sha384-mXVrIX2T/Kszp6Z0aEWaA8Nm7J6/ZeWXbL8UpGRjKwWe56Srd/iyNmWMBhcItAjH" crossorigin="anonymous"></script>
+   //    const script = document.createElement('script')
+   //    script.src = 'https://developers.kakao.com/sdk/js/kakao.js'
+   //    script.async = true
+   //    script.onload = () => {
+   //       if (window.Kakao && !window.Kakao.isInitialized()) {
+   //          window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY)
+   //          console.log('카카오 SDK 초기화 성공')
+   //       }
+   //       setSdkLoaded(true)
+   //    }
+   //    document.head.appendChild(script)
+
+   //    return () => {
+   //       document.head.removeChild(script)
+   //    }
+   // }, [sdkLoaded])
 
    const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname.startsWith('/admin')
 

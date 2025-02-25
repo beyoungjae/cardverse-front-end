@@ -12,6 +12,9 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff'
 
 import { loginUserThunk } from '../../features/authSlice'
 import { useDispatch, useSelector } from 'react-redux'
+// import { handleKakaoLogin } from '../../api/oauthApi'
+import { initiateKakaoLogin } from '../../features/oauthSlice'
+import KakaoLoginBtn from '../button/KakaoLoginBtn'
 
 const Container = styled(Box)(({ theme }) => ({
    padding: '60px 64px',
@@ -209,47 +212,91 @@ const Login = () => {
    const [showModal, setShowModal] = useState(false)
    const navigate = useNavigate()
    const dispatch = useDispatch()
-   const { loading, error } = useSelector((state) => state.auth)
 
-   useEffect(() => {
-      if (window.Kakao) {
-         window.Kakao.init('YOUR_KAKAO_JAVASCRIPT_KEY')
-         console.log('✅ Kakao SDK initialized')
-      } else {
-         console.error('❌ Kakao SDK is not loaded')
-      }
-   }, [])
+   // const handleKakaoLogin = useCallback(() => {
+   //    window.Kakao.Auth.authorize({
+   //       redirectUri: `${process.env.REACT_APP_API_URL}/oauth/kakao`,
+   //       // clientId: process.env.REACT_APP_KAKAO_REST_KEY,
+   //       // scope: 'profile_nickname profile_image account_email',
+   //    })
+   // }, [])
 
-   const handleKakaoLogin = useCallback(() => {
-      const Kakao = window.Kakao
+   const handleKakaoLogin = () => {
+      dispatch(initiateKakaoLogin())
+   }
 
-      if (!Kakao) {
-         console.error('❌ Kakao is not loaded')
-         return
-      }
+   // const handleKakaoLogin = () => {
+   //    window.Kakao.Auth.loginForm({
+   //       success: async function (authObj) {
+   //          const response = await commonApi.post('/oauth/kakao/callback', {
+   //             accessToken: authObj.access_token,
+   //          })
+   //       },
+   //       fail: function (err) {
+   //          console.error('카카오 로그인 실패:', err)
+   //       },
+   //    })
+   // }
 
-      Kakao.Auth.login({
-         success: (response) => {
-            console.log('✅ 카카오 로그인 성공!')
-            console.log('🔹 access_token:', response.access_token)
+   // useEffect(() => {
+   //    if (window.Kakao) {
+   //       window.Kakao.init('YOUR_KAKAO_JAVASCRIPT_KEY')
+   //       console.log('✅ Kakao SDK initialized')
+   //    } else {
+   //       console.error('❌ Kakao SDK is not loaded')
+   //    }
+   // }, [])
 
-            Kakao.API.request({
-               url: '/v2/user/me',
-               success: (userResponse) => {
-                  console.log('🔹 카카오 사용자 정보:', userResponse)
-                  alert(`카카오 로그인 성공!\n닉네임: ${userResponse.kakao_account.profile.nickname}`)
-                  navigate('/home')
-               },
-               fail: (error) => {
-                  console.error('❌ 사용자 정보 요청 실패:', error)
-               },
-            })
-         },
-         fail: (error) => {
-            console.error('❌ 카카오 로그인 실패:', error)
-         },
-      })
-   }, [navigate])
+   // const handleKakaoLogin = useCallback(() => {
+   //    kakaoLogin()
+   // }, [])
+
+   // const KakaoLogin = () => {
+   //    useEffect(() => {
+   //       if (!window.Kakao.isInitialized()) {
+   //          window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY)
+   //       }
+   //    }, [])
+
+   //    const handleKakaoLogin = useCallback(() => {
+   //       window.Kakao.Auth.authorize({
+   //          redirectUri: `${process.env.REACT_APP_BASE_URL}/auth/kakao/callback`,
+   //       })
+   //    }, []) // 의존성 배열이 비어있음 (redirectUri가 상수이므로)
+
+   //    return <button onClick={handleKakaoLogin}>카카오 로그인</button>
+   // }
+
+   // const handleKakaoLogin = useCallback(() => {
+   //    const Kakao = window.Kakao
+
+   //    if (!Kakao) {
+   //       console.error('❌ Kakao is not loaded')
+   //       return
+   //    }
+
+   //    Kakao.Auth.login({
+   //       success: (response) => {
+   //          console.log('✅ 카카오 로그인 성공!')
+   //          console.log('🔹 access_token:', response.access_token)
+
+   //          Kakao.API.request({
+   //             url: '/v2/user/me',
+   //             success: (userResponse) => {
+   //                console.log('🔹 카카오 사용자 정보:', userResponse)
+   //                alert(`카카오 로그인 성공!\n닉네임: ${userResponse.kakao_account.profile.nickname}`)
+   //                navigate('/home')
+   //             },
+   //             fail: (error) => {
+   //                console.error('❌ 사용자 정보 요청 실패:', error)
+   //             },
+   //          })
+   //       },
+   //       fail: (error) => {
+   //          console.error('❌ 카카오 로그인 실패:', error)
+   //       },
+   //    })
+   // }, [navigate])
 
    const handleLogin = useCallback(
       async (e) => {
@@ -325,14 +372,15 @@ const Login = () => {
             <StyledTypography className="kakao-comment" sx={{ marginBottom: '16px', color: '#cccccc' }}>
                ─────────── or ───────────
             </StyledTypography>
-            <Button
+            <KakaoLoginBtn />
+            {/* <Button
                // 브레이크 포인트
 
                className="kakao-login-btn"
                onClick={handleKakaoLogin}>
                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="kakao" style={{ width: '20px', height: '20px' }} />
                카카오로 간편 로그인
-            </Button>
+            </Button> */}
             {/* {showModal && <ForgotPasswordModal onClose={() => setShowModal(false)} />} */}
             {showModal && <ModalWrapper onClose={() => setShowModal(false)} />}
          </LoginWrapper>

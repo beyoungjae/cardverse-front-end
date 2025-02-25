@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box } from '@mui/material'
 import { Login } from '../components/auth'
 import { styled } from '@mui/system'
@@ -70,6 +70,35 @@ const Container = styled(Box)(({ theme }) => ({
 }))
 
 const LoginPage = () => {
+   const [sdkLoaded, setSdkLoaded] = useState(false)
+
+   // useEffect(() => {
+   //    if (!window.Kakao.isInitialized()) {
+   //       window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY)
+   //    }
+   // }, [])
+
+   // useEffect(() => {
+   //    // 이미 로드되었다면 스킵
+   //    if (sdkLoaded) return
+   //    //       <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.4.0/kakao.min.js" integrity="sha384-mXVrIX2T/Kszp6Z0aEWaA8Nm7J6/ZeWXbL8UpGRjKwWe56Srd/iyNmWMBhcItAjH" crossorigin="anonymous"></script>
+   //    const script = document.createElement('script')
+   //    script.src = 'https://developers.kakao.com/sdk/js/kakao.js'
+   //    script.async = true
+   //    script.onload = () => {
+   //       if (window.Kakao && !window.Kakao.isInitialized()) {
+   //          window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY)
+   //          console.log('카카오 SDK 초기화 성공')
+   //       }
+   //       setSdkLoaded(true)
+   //    }
+   //    document.head.appendChild(script)
+
+   //    return () => {
+   //       document.head.removeChild(script)
+   //    }
+   // }, [sdkLoaded])
+
    return (
       <Container>
          <LogoContainer>

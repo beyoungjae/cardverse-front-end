@@ -338,7 +338,7 @@ const Navbar = ({ isAuthenticated, user }) => {
                </LogoContainer>
                {isAuthenticated ? (
                   <NavLinks>
-                     <Link to="/admin">관리자</Link>
+                     {user.role === 'admin' && <Link to="/admin">관리자</Link>}
                      <Link to="/support">고객센터</Link>
                      <Link to="/my">마이페이지</Link>
                      {/* <Link to="/logout">로그아웃</Link> */}
@@ -352,7 +352,6 @@ const Navbar = ({ isAuthenticated, user }) => {
                   </NavLinks>
                ) : (
                   <NavLinks>
-                     <Link to="/admin">관리자</Link>
                      <Link to="/support">고객센터</Link>
                      <Link to="/my">마이페이지</Link>
                      <Link to="/signup">회원가입</Link>

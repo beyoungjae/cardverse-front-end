@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { signupUser, loginUser, logoutUser, checkAuthStatus } from '../api/authApi'
+import { kakaoLoginThunk } from './oauthSlice'
 import handleApiError from '../utils/errorHandler'
 
 // rejectWithValue: 서버에서 보낸 에러 메세지
@@ -115,6 +116,22 @@ const authSlice = createSlice({
             state.error = action.payload
             state.isAuthenticated = false
             state.user = null
+         })
+
+      // 카카오 로그인
+      builder
+         .addCase(kakaoLoginThunk.pending, (state) => {
+            state.loading = true
+            state.error = null
+         })
+         .addCase(kakaoLoginThunk.fulfilled, (state, action) => {
+            state.loading = false
+            state.isAuthenticated = true
+            state.user = action.payload.user
+         })
+         .addCase(kakaoLoginThunk.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload
          })
    },
 })
