@@ -15,6 +15,15 @@ const HeroSection = styled(Box)(({ theme }) => ({
    overflow: 'hidden',
    backgroundColor: theme.palette.background.default,
    userSelect: 'none',
+   [theme.breakpoints.down('lg')]: {
+      height: '80vh',
+   },
+   [theme.breakpoints.down('md')]: {
+      height: '60vh',
+   },
+   [theme.breakpoints.down('sm')]: {
+      height: '40vh',
+   },
 }))
 
 // 히어로 배경 이미지
@@ -46,11 +55,14 @@ const HeroTitle = styled(Typography)(({ theme }) => ({
    marginBottom: '2rem',
    color: theme.palette.text.primary,
    fontWeight: 600,
-   [theme.bps.md]: {
+   [theme.breakpoints.down('lg')]: {
       fontSize: '3.5rem',
    },
-   [theme.bps.sm]: {
+   [theme.breakpoints.down('md')]: {
       fontSize: '2.5rem',
+   },
+   [theme.breakpoints.down('sm')]: {
+      fontSize: '2rem',
    },
 }))
 
@@ -73,10 +85,10 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
    textAlign: 'center',
    marginBottom: '3rem',
    color: theme.palette.text.primary,
-   [theme.bps.md]: {
+   [theme.breakpoints.down('md')]: {
       fontSize: '2rem',
    },
-   [theme.bps.sm]: {
+   [theme.breakpoints.down('sm')]: {
       fontSize: '1.5rem',
    },
 }))
@@ -89,10 +101,10 @@ const MissionGrid = styled(Box)(({ theme }) => ({
    maxWidth: '1200px',
    margin: '0 auto',
    padding: '0 20px',
-   [theme.bps.md]: {
+   [theme.breakpoints.down('md')]: {
       gridTemplateColumns: 'repeat(2, 1fr)',
    },
-   [theme.bps.sm]: {
+   [theme.breakpoints.down('sm')]: {
       gridTemplateColumns: '1fr',
    },
 }))
@@ -135,7 +147,7 @@ const ValuesGrid = styled(Box)(({ theme }) => ({
    maxWidth: '1200px',
    margin: '0 auto',
    padding: '0 20px',
-   [theme.bps.md]: {
+   [theme.breakpoints.down('md')]: {
       gridTemplateColumns: '1fr',
       gap: '2rem',
    },

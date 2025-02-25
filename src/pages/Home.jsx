@@ -15,17 +15,19 @@ import 'swiper/css/pagination'
 // 배너 컨테이너
 const BannerContainer = styled(Box)(({ theme }) => ({
    width: '100%',
-   height: '900px',
+   height: '100vh',
+   maxHeight: '1000px',
    position: 'relative',
    overflow: 'hidden',
+   userSelect: 'none',
    [theme.breakpoints.down('lg')]: {
-      height: '550px',
+      maxHeight: '800px',
    },
    [theme.breakpoints.down('md')]: {
-      height: '450px',
+      maxHeight: '600px',
    },
    [theme.breakpoints.down('sm')]: {
-      height: '250px',
+      maxHeight: '400px',
    },
 }))
 
@@ -34,63 +36,73 @@ const Bannerimg = styled('img')(({ theme }) => ({
    width: '100%',
    height: '100%',
    objectFit: 'cover',
-   [theme.breakpoints.down('sm')]: {
-      objectPosition: 'center center',
-   },
+   objectPosition: 'center',
+   transition: 'transform 0.3s ease',
+   pointerEvents: 'none',
 }))
 
 // 그라데이션 오버레이
-const Overlay = styled(Box)(({ theme }) => ({
+const Overlay = styled(Box)(() => ({
    position: 'absolute',
    top: 0,
-   left: 0,
    width: '100%',
    height: '100%',
-   background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%)',
+   background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.5) 100%)',
+   transition: 'opacity 0.3s ease',
 }))
 
-// 배너 컨테이너
+// 배너 컨텐츠
 const BannerContent = styled(Box)(({ theme }) => ({
    position: 'absolute',
-   bottom: '50px',
-   left: '50px',
+   bottom: '10%',
+   left: '10%',
    zIndex: 1,
+   transition: 'all 0.3s ease',
    [theme.breakpoints.down('md')]: {
-      bottom: '30px',
-      left: '30px',
+      bottom: '8%',
+      left: '8%',
    },
    [theme.breakpoints.down('sm')]: {
-      bottom: '20px',
-      left: '20px',
+      bottom: '6%',
+      left: '6%',
    },
 }))
 
 // 배너 타이틀
 const BannerTitle = styled('img')(({ theme }) => ({
-   maxWidth: '550px',
-   marginBottom: '1rem',
+   width: '100%',
+   maxWidth: '600px',
+   height: 'auto',
+   marginBottom: '2rem',
+   filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
    [theme.breakpoints.down('lg')]: {
-      maxWidth: '450px',
+      maxWidth: '500px',
+      marginBottom: '1.5rem',
    },
    [theme.breakpoints.down('md')]: {
-      maxWidth: '350px',
+      maxWidth: '400px',
+      marginBottom: '1rem',
    },
    [theme.breakpoints.down('sm')]: {
-      maxWidth: '200px',
+      maxWidth: '280px',
+      marginBottom: '0.8rem',
    },
 }))
 
 // 배너 서브타이틀
 const BannerSubtitle = styled('img')(({ theme }) => ({
-   maxWidth: '550px',
+   width: '100%',
+   maxWidth: '500px',
+   height: 'auto',
+   filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
    [theme.breakpoints.down('lg')]: {
-      maxWidth: '450px',
+      maxWidth: '400px',
    },
    [theme.breakpoints.down('md')]: {
-      maxWidth: '350px',
+      maxWidth: '320px',
    },
    [theme.breakpoints.down('sm')]: {
-      maxWidth: '200px',
+      maxWidth: '240px',
    },
 }))
 
@@ -128,9 +140,9 @@ const SliderSubtitle = styled(Typography)(({ theme }) => ({
    },
 }))
 
-// 슬라이더 컨테이너
+// 반응형 슬라이더 섹션
 const SliderSection = styled(Box)(({ theme }) => ({
-   padding: '11rem 0',
+   padding: '8rem 0',
    backgroundColor: theme.palette.background.default,
    position: 'relative',
    '&::before': {
@@ -140,8 +152,14 @@ const SliderSection = styled(Box)(({ theme }) => ({
       left: 0,
       right: 0,
       bottom: 0,
-      background: 'linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0) 100%)',
+      background: 'linear-gradient(180deg, rgba(0,0,0,0.03) 0%, rgba(0,0,0,0) 100%)',
       pointerEvents: 'none',
+   },
+   [theme.breakpoints.down('md')]: {
+      padding: '6rem 0',
+   },
+   [theme.breakpoints.down('sm')]: {
+      padding: '4rem 0',
    },
 }))
 
@@ -170,15 +188,49 @@ const StyledSlide = styled(Box)(({ theme }) => ({
    },
 }))
 
-// 슬라이더 이미지
+// 슬라이더 컨테이너 스타일
+const StyledSwiper = styled(Swiper)(({ theme }) => ({
+   '.swiper-slide': {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+      opacity: 0.5,
+      transform: 'scale(0.85)',
+      cursor: 'pointer',
+      [theme.breakpoints.down('lg')]: {
+         transform: 'scale(0.8)',
+      },
+      [theme.breakpoints.down('sm')]: {
+         transform: 'scale(0.75)',
+      },
+      '&.swiper-slide-active': {
+         opacity: 1,
+         transform: 'scale(1)',
+         '& img': {
+            boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+         },
+      },
+      '&.swiper-slide-prev, &.swiper-slide-next': {
+         opacity: 0.7,
+         transform: 'scale(0.9)',
+      },
+   },
+}))
+
+// 슬라이드 이미지 스타일
 const SlideImage = styled('img')(({ theme }) => ({
    width: '100%',
    height: '600px',
    objectFit: 'cover',
-   borderRadius: '20px',
-   boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-   transition: 'all 0.3s ease-in-out',
+   borderRadius: '24px',
+   boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
    cursor: 'pointer',
+   '&:hover': {
+      transform: 'scale(1.03)',
+      boxShadow: '0 15px 50px rgba(0,0,0,0.3)',
+   },
    [theme.breakpoints.down('lg')]: {
       height: '500px',
    },
@@ -190,29 +242,59 @@ const SlideImage = styled('img')(({ theme }) => ({
    },
 }))
 
-// 슬라이더 컨테이너
-const StyledSwiper = styled(Swiper)(({ theme }) => ({
-   '.swiper-slide': {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      transition: 'all 0.5s ease',
-      opacity: 0.4,
-      transform: 'scale(0.8)',
-      cursor: 'pointer',
+// 슬라이드 이미지와 오버레이를 함께 감싸는 래퍼
+const SlideWrapper = styled(Box)(({ theme }) => ({
+   position: 'relative',
+}))
 
-      '&.swiper-slide-active': {
-         opacity: 1,
-         transform: 'scale(1.1)',
-         '& img': {
-            boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
-         },
-      },
-      '&.swiper-slide-prev, &.swiper-slide-next': {
-         opacity: 0.7,
-         transform: 'scale(0.8)',
-      },
+// 오버레이 컨테이너 – 이미지 위에 투명한 배경과 함께 중앙에 위치
+const OverlayContainer = styled(Box)(({ theme }) => ({
+   position: 'absolute',
+   top: 0,
+   left: 0,
+   width: '100%',
+   height: '600px',
+   display: 'flex',
+   flexDirection: 'column',
+   justifyContent: 'center',
+   alignItems: 'center',
+   borderRadius: '24px',
+   backgroundColor: 'rgba(0, 0, 0, 0.25)',
+   '&:hover': {
+      boxShadow: '0 15px 50px rgba(0,0,0,0.3)',
+      transition: 'all 0.2s ease',
    },
+   [theme.breakpoints.down('lg')]: {
+      height: '500px',
+   },
+   [theme.breakpoints.down('md')]: {
+      height: '400px',
+   },
+   [theme.breakpoints.down('sm')]: {
+      height: '350px',
+   },
+}))
+
+// 오버레이 텍스트 – "샘플 이미지" 문구
+const OverlayText = styled(Typography)(({ theme }) => ({
+   fontSize: '1.8rem',
+   fontWeight: 600,
+   color: '#fff',
+   textShadow: '2px 2px 4px rgba(0,0,0,0.6)',
+   marginBottom: theme.spacing(2),
+}))
+
+// 오버레이 버튼 – 고급스러운 버튼 디자인 (클릭 기능 X)
+const OverlayButton = styled(Box)(({ theme }) => ({
+   padding: '10px 20px',
+   background: theme.palette.primary.main,
+   color: '#fff',
+   borderRadius: '8px',
+   fontWeight: 600,
+   textTransform: 'uppercase',
+   boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+   cursor: 'pointer',
 }))
 
 // 점 세개 효과
@@ -242,53 +324,53 @@ const Spotpoint = styled(Box)(({ theme }) => ({
 const cards = [
    {
       id: 1,
-      image: `${process.env.PUBLIC_URL}/images/templates/card1.svg`,
-      title: '웨딩 카드 1',
+      image: `${process.env.PUBLIC_URL}/images/templates/sample00001.png`,
+      title: '카드 1',
    },
    {
       id: 2,
-      image: `${process.env.PUBLIC_URL}/images/templates/card2.svg`,
-      title: '웨딩 카드 2',
+      image: `${process.env.PUBLIC_URL}/images/templates/sample00002.png`,
+      title: '카드 2',
    },
    {
       id: 3,
-      image: `${process.env.PUBLIC_URL}/images/templates/card3.png`,
-      title: '웨딩 카드 3',
+      image: `${process.env.PUBLIC_URL}/images/templates/sample00003.png`,
+      title: '카드 3',
    },
    {
       id: 4,
-      image: `${process.env.PUBLIC_URL}/images/templates/card4.png`,
-      title: '웨딩 카드 4',
+      image: `${process.env.PUBLIC_URL}/images/templates/sample00004.png`,
+      title: '카드 4',
    },
    {
       id: 5,
-      image: `${process.env.PUBLIC_URL}/images/templates/card5.png`,
-      title: '웨딩 카드 5',
+      image: `${process.env.PUBLIC_URL}/images/templates/sample00005.png`,
+      title: '카드 5',
    },
    {
       id: 6,
-      image: `${process.env.PUBLIC_URL}/images/templates/card6.png`,
-      title: '웨딩 카드 6',
+      image: `${process.env.PUBLIC_URL}/images/templates/sample00006.png`,
+      title: '카드 6',
    },
    {
       id: 7,
-      image: `${process.env.PUBLIC_URL}/images/templates/card7.png`,
-      title: '웨딩 카드 7',
+      image: `${process.env.PUBLIC_URL}/images/templates/sample00007.png`,
+      title: '카드 7',
    },
    {
       id: 8,
-      image: `${process.env.PUBLIC_URL}/images/templates/card8.png`,
-      title: '웨딩 카드 8',
+      image: `${process.env.PUBLIC_URL}/images/templates/sample00008.png`,
+      title: '카드 8',
    },
    {
       id: 9,
-      image: `${process.env.PUBLIC_URL}/images/templates/card9.png`,
-      title: '웨딩 카드 9',
+      image: `${process.env.PUBLIC_URL}/images/templates/sample00009.png`,
+      title: '카드 9',
    },
    {
       id: 10,
-      image: `${process.env.PUBLIC_URL}/images/templates/card10.png`,
-      title: '웨딩 카드 10',
+      image: `${process.env.PUBLIC_URL}/images/templates/sample00010.png`,
+      title: '카드 10',
    },
 ]
 
@@ -478,34 +560,34 @@ const ReadMore = styled(Link)(({ theme }) => ({
    },
 }))
 
-// 갤러리 아이템 데이터 (나중에 변경 가능)
+// 갤러리 아이템 데이터
 const galleryItems = [
    {
       id: 1,
       title: '청첩장 갤러리',
-      image: '/images/home/1.png',
-      description: '간편하고 세련된 모바일 청첩장 솔루션 한 번으로 특별한 날을 초대하세요. 디지털로 전달되는 모바일 청첩장으로, 소중한 순간을 더 많은 사람들과 쉽게 나누고, 기억에 남을 초대장을 만들어 보세요.',
+      image: '/images/home/weddinggallery.png',
+      description: '사랑의 이야기를 디지털에 담아내는 특별한 청첩장입니다. 세련된 디자인과 손쉬운 전달로, 결혼식의 설렘과 기쁨을 더 많은 이들과 나눌 수 있습니다. 당신만의 독특한 스타일로 완성되는 모바일 청첩장으로, 새로운 시작을 알려보세요.',
       path: '/template/wedding',
    },
    {
       id: 2,
       title: '연하장 갤러리',
-      image: '/images/home/2.png',
-      description: '간편하고 세련된 모바일 청첩장 솔루션 한 번으로 특별한 날을 초대하세요. 디지털로 전달되는 모바일 청첩장으로, 소중한 순간을 더 많은 사람들과 쉽게 나누고, 기억에 남을 초대장을 만들어 보세요.',
+      image: '/images/home/newyeargallery.png',
+      description: '새해의 따뜻한 마음을 전하는 디지털 연하장입니다. 다양한 디자인과 개성 있는 템플릿으로, 새해 인사를 특별하게 전달하세요. 간편한 제작과 전송으로, 소중한 이들에게 정성 가득한 새해 축복을 나눌 수 있습니다.',
       path: '/template/newyear',
    },
    {
       id: 3,
       title: '고희연 갤러리',
-      image: '/images/home/3.png',
-      description: '간편하고 세련된 모바일 청첩장 솔루션 한 번으로 특별한 날을 초대하세요. 디지털로 전달되는 모바일 청첩장으로, 소중한 순간을 더 많은 사람들과 쉽게 나누고, 기억에 남을 초대장을 만들어 보세요.',
+      image: '/images/home/gohyeongallery.png',
+      description: '일흔 번째 봄을 맞이하는 특별한 순간을 위한 초대장입니다. 품격 있는 디자인과 정성스러운 구성으로, 감사와 축하의 마음을 전하세요. 소중한 분의 인생을 기념하는 뜻깊은 자리에 가족과 친지를 모십니다.',
       path: '/template/gohyeon',
    },
    {
       id: 4,
       title: '초빙장 갤러리',
-      image: '/images/home/4.png',
-      description: '간편하고 세련된 모바일 청첩장 솔루션 한 번으로 특별한 날을 초대하세요. 디지털로 전달되는 모바일 청첩장으로, 소중한 순간을 더 많은 사람들과 쉽게 나누고, 기억에 남을 초대장을 만들어 보세요.',
+      image: '/images/home/invitationgallery.png',
+      description: '비즈니스부터 문화행사까지, 모든 순간을 위한 프로페셔널한 초대장입니다. 목적에 맞는 맞춤형 디자인과 간편한 참석 관리로, 성공적인 행사를 준비하세요. 세련된 디지털 초빙장으로 당신의 특별한 순간에 품격을 더합니다.',
       path: '/template/invitation',
    },
 ]
@@ -600,7 +682,13 @@ const Home = () => {
                {cards.map((card, index) => (
                   <SwiperSlide key={card.id} onClick={() => handleSlideClick(index)}>
                      <StyledSlide>
-                        <SlideImage src={card.image} alt={card.title} />
+                        <SlideWrapper>
+                           <SlideImage src={card.image} alt={card.title} />
+                           <OverlayContainer>
+                              <OverlayText>샘플 템플릿</OverlayText>
+                              <OverlayButton>Open</OverlayButton>
+                           </OverlayContainer>
+                        </SlideWrapper>
                      </StyledSlide>
                   </SwiperSlide>
                ))}
