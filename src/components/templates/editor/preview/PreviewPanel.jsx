@@ -208,7 +208,7 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
          detail: '',
          guide: '',
          showMap: false,
-         url: '',
+         coordinates: { lat: 37.5665, lng: 126.978 },
       },
       images: [],
       accounts: [],
@@ -228,6 +228,8 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
       }),
       [formData]
    )
+
+   console.log('mergedFormData', mergedFormData)
 
    // SettingSection 완료 핸들러
    const handleSettingComplete = useCallback(() => {
@@ -551,7 +553,7 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                   {renderSection('profile', mergedFormData.showProfiles && mergedFormData.profiles?.length > 0 && <ProfileSection profiles={mergedFormData.profiles} style={profileStyle} combinedStyle={combinedStyle} textStyle={textStyle} />)}
                   {renderSection('greeting', mergedFormData.greeting && <GreetingSection greeting={mergedFormData.greeting} style={sectionStyle} combinedStyle={combinedStyle} textStyle={textStyle} />)}
                   {renderSection('datetime', mergedFormData.dateTime && <DateTimeSection dateTime={mergedFormData.dateTime} showCountdown={mergedFormData.showCountdown} style={sectionStyle} typeStyle={typeStyle} formatDDay={formatDDay} type={mergedFormData.type} textStyle={textStyle} />)}
-                  {renderSection('location', mergedFormData.location && Object.values(mergedFormData.location).some((value) => value) && <LocationSection formData={mergedFormData} style={sectionStyle} textStyle={typeStyle} isDrawer={isDrawer} />)}
+                  {renderSection('location', mergedFormData.location && Object.values(mergedFormData.location).some((value) => value) && <LocationSection formData={mergedFormData} style={sectionStyle} textStyle={typeStyle} combinedStyle={combinedStyle} isDrawer={isDrawer} />)}
                   {renderSection('account', mergedFormData.showAccounts && mergedFormData.accounts?.length > 0 && <AccountSection accounts={mergedFormData.accounts} style={accountStyle} typeStyle={typeStyle} type={mergedFormData.type} getAccountLabel={getAccountLabel} textStyle={textStyle} />)}
                   {renderSection(
                      'gallery',
@@ -654,11 +656,11 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                                  {sectionId === 'profile' && mergedFormData.showProfiles && mergedFormData.profiles?.length > 0 && <ProfileSection profiles={mergedFormData.profiles} style={profileStyle} combinedStyle={combinedStyle} textStyle={textStyle} />}
                                  {sectionId === 'greeting' && mergedFormData.greeting && <GreetingSection greeting={mergedFormData.greeting} style={sectionStyle} combinedStyle={combinedStyle} textStyle={textStyle} />}
                                  {sectionId === 'datetime' && mergedFormData.dateTime && (
-                                    <DateTimeSection dateTime={mergedFormData.dateTime} showCountdown={mergedFormData.showCountdown} style={sectionStyle} typeStyle={typeStyle} formatDDay={formatDDay} type={mergedFormData.type} textStyle={textStyle} />
+                                    <DateTimeSection dateTime={mergedFormData.dateTime} showCountdown={mergedFormData.showCountdown} style={sectionStyle} typeStyle={typeStyle} formatDDay={formatDDay} type={mergedFormData.type} textStyle={textStyle} combinedStyle={combinedStyle} />
                                  )}
-                                 {sectionId === 'location' && mergedFormData.location && Object.values(mergedFormData.location).some((value) => value) && <LocationSection formData={mergedFormData} style={sectionStyle} textStyle={typeStyle} isDrawer={isDrawer} />}
+                                 {sectionId === 'location' && mergedFormData.location && Object.values(mergedFormData.location).some((value) => value) && <LocationSection formData={mergedFormData} style={sectionStyle} textStyle={typeStyle} combinedStyle={combinedStyle} isDrawer={isDrawer} />}
                                  {sectionId === 'account' && mergedFormData.showAccounts && mergedFormData.accounts?.length > 0 && (
-                                    <AccountSection accounts={mergedFormData.accounts} style={accountStyle} typeStyle={typeStyle} type={mergedFormData.type} getAccountLabel={getAccountLabel} textStyle={textStyle} />
+                                    <AccountSection accounts={mergedFormData.accounts} style={accountStyle} typeStyle={typeStyle} type={mergedFormData.type} getAccountLabel={getAccountLabel} textStyle={textStyle} combinedStyle={combinedStyle} />
                                  )}
                                  {sectionId === 'gallery' && mergedFormData.images?.length > 0 && (
                                     <GallerySection

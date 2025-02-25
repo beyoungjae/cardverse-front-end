@@ -306,7 +306,7 @@ const TemplateEditor = () => {
             detail: '',
             guide: '',
             showMap: false,
-            url: '',
+            coordinates: { lat: 37.5665, lng: 126.978 },
          },
          // 갤러리
          images: [],
@@ -442,11 +442,30 @@ const TemplateEditor = () => {
    // SpeedDial 액션
    const speedDialActions = useMemo(
       () => [
-         { icon: <SaveIcon />, name: '저장하기', action: handleSubmit(onSubmit) },
+         {
+            icon: <SaveIcon />,
+            name: '저장하기',
+            action: async () => {
+               try {
+                  setIsPreviewLoading(true)
+                  const data = getValues()
+                  // 실제 API 연동 시 이 부분을 수정
+                  const response = await updateTemplate(data)
+                  const templateId = response?.id || 'temp-id' // 임시 ID 사용
+
+                  showNotification('템플릿이 저장되었습니다.')
+                  // 저장 후 미리보기 페이지로 이동
+                  navigate(`preview/${templateId}`)
+               } catch (error) {
+                  showNotification('저장에 실패했습니다.', 'error')
+               } finally {
+                  setIsPreviewLoading(false)
+               }
+            },
+         },
          { icon: <PreviewIcon />, name: '미리보기', action: () => setIsPreviewOpen(true) },
-         // 필요한 경우 추가 액션들을 여기에 추가
       ],
-      [handleSubmit, onSubmit]
+      [getValues, updateTemplate, navigate, showNotification]
    )
 
    // ThemeSection에 전달할 props

@@ -7,8 +7,11 @@ import { COLORS } from '../../styles/commonStyles'
 
 const KAKAO_SDK_URL = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REACT_APP_KAKAO_JS_KEY}&autoload=false`
 
-const LocationSection = ({ formData, style, textStyle, isDrawer }) => {
+const LocationSection = ({ formData, style, textStyle, combinedStyle, isDrawer }) => {
    const { name, address, detail, guide, showMap, coordinates } = formData.location || {}
+
+   console.log('textStyle:', textStyle)
+   console.log('combinedStyle:', combinedStyle)
 
    // 드로어와 일반 미리보기를 구분하는 고유 ID 생성
    const mapId = `preview-kakao-map-${isDrawer ? 'drawer' : 'main'}`
