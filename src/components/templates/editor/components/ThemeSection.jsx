@@ -319,7 +319,6 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                      <li>초대장의 전체적인 분위기를 결정하는 색상과 폰트를 설정할 수 있습니다.</li>
                      <li>미리 준비된 프리셋을 선택하여 빠르게 테마를 적용할 수 있습니다.</li>
                      <li>실행취소/다시실행으로 테마 변경 이력을 관리할 수 있습니다.</li>
-                     <li>애니메이션 효과를 선택하여 초대장에 생동감을 더할 수 있습니다.</li>
                   </ul>
                </HelpText>
             )}
@@ -413,7 +412,7 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                ))}
             </Grid>
 
-            <Typography variant="subtitle1" sx={{ mb: 2, color: COLORS.text.primary, fontWeight: 500 }}>
+            {/* <Typography variant="subtitle1" sx={{ mb: 2, color: COLORS.text.primary, fontWeight: 500 }}>
                <AutoFixHighIcon sx={{ mr: 1, verticalAlign: 'middle', color: COLORS.accent.main }} />
                애니메이션
             </Typography>
@@ -423,7 +422,6 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                ))}
             </Box>
 
-            {/* 애니메이션 적용 대상 선택 */}
             {theme.animation && (
                <Box
                   sx={{
@@ -457,7 +455,8 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                      ))}
                   </Box>
                </Box>
-            )}
+            )} 
+            */}
 
             <ThemePreview>
                <Typography variant="h6" sx={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}>

@@ -28,7 +28,7 @@ const MainContent = muiStyled('div')(({ theme, $hideLayout }) => ({
    },
 }))
 
-// 전역 스타일
+// 전역 스타일 스크롤바
 const GlobalStyle = createGlobalStyle`
   body {
     line-height: 1.5;
