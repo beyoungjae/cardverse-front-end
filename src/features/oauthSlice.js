@@ -1,21 +1,21 @@
-import { createAsyncThunk } from '@reduxjs/toolkit'
-import { handleKakaoCallback, handleKakaoLogin } from '../api/oauthApi'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { kakaoLoginUser } from '../api/oauthApi'
 import handleApiError from '../utils/errorHandler'
 
-// 카카오 로그인 시작
-export const initiateKakaoLogin = createAsyncThunk('oauth/initiateLogin', async (_, { rejectWithValue }) => {
+export const kakaoLoginUserThunk = createAsyncThunk('oauth/kakaoLoginUser', async (code, { rejectWithValue }) => {
    try {
-      await handleKakaoLogin()
-   } catch (error) {
-      return rejectWithValue(handleApiError(error, '카카오 로그인 시작'))
-   }
-})
-
-export const kakaoLoginThunk = createAsyncThunk('oauth/kakaoLogin', async (_, { dispatch, rejectWithValue }) => {
-   try {
-      const response = await handleKakaoCallback()
+      const response = await kakaoLoginUser(code)
       return response.data
    } catch (error) {
       return rejectWithValue(handleApiError(error, '카카오 로그인'))
    }
 })
+
+const oauthSlice = createSlice({
+   name: 'oauth',
+   initialState: {},
+   reducers: {},
+   extraReducers: (builder) => {},
+})
+
+export default oauthSlice.reducer

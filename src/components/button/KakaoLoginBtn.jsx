@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react'
 import { styled } from '@mui/system'
+import { KAKAO_REST_API } from '../../api/oauthApi'
+import { useDispatch } from 'react-redux'
+import { kakaoLoginUserThunk } from '../../features/oauthSlice'
+import { useNavigate } from 'react-router-dom'
 
 const KakaoStyleBtn = styled('button')(({ theme }) => ({
    backgroundColor: '#B699BB',
@@ -47,66 +51,47 @@ const KakaoStyleBtn = styled('button')(({ theme }) => ({
 }))
 
 const KakaoLoginBtn = () => {
-   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false)
+   const dispatch = useDispatch()
+   const navigate = useNavigate()
+   // useEffect(() => {
+   //    if (!window.Kakao.isInitialized()) {
+   //       window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY)
+   //    }
+   // })
 
    useEffect(() => {
-      const kakaoKey = process.env.REACT_APP_KAKAO_JS_KEY
-      console.log('🔍 카카오 API 키:', kakaoKey) // 환경 변수 체크
+      const search = new URLSearchParams(window.location.search) //http://localhost:3000/login?code=데이터
+      const code = search.get('code')
+      console.log(code)
 
-      if (!kakaoKey) {
-         console.error('❌ 카카오 API 키가 설정되지 않았습니다!')
-         return
+      // 카카오로 리다이렉트 될 경우 code가 존재
+      if (code) {
+         dispatch(kakaoLoginUserThunk({ code }))
+            .unwrap()
+            .then(() => {
+               navigate('/')
+            })
+            .catch((error) => {
+               console.error('로그인 실패:', error)
+               alert('로그인에 실패하셨습니다.')
+            })
       }
+   }, [dispatch, navigate])
 
-      // 카카오 SDK 로드 함수
-      const loadKakaoSDK = (attempt = 0) => {
-         if (attempt > 10) {
-            console.error('⏳ 카카오 SDK 로드 실패 (최대 재시도 횟수 초과)')
-            return
-         }
-
-         if (typeof window !== 'undefined' && window.Kakao) {
-            if (!window.Kakao.isInitialized()) {
-               window.Kakao.init(kakaoKey)
-               console.log('✅ 카카오 SDK 초기화 완료:', window.Kakao.isInitialized())
-            }
-            setIsKakaoLoaded(true)
-         } else {
-            console.log(`⏳ 카카오 SDK 로딩 중... (재시도 ${attempt + 1})`)
-            setTimeout(() => loadKakaoSDK(attempt + 1), 500)
-         }
-      }
-
-      // SDK가 존재하면 즉시 실행, 아니면 로드 체크 시작
-      if (window.Kakao) {
-         loadKakaoSDK()
-      } else {
-         // SDK가 동적 로드될 경우, `onload` 이벤트를 사용해서 체크
-         const script = document.querySelector("script[src*='kakao_js_sdk']")
-         if (script) {
-            script.onload = () => loadKakaoSDK()
-         } else {
-            console.error('❌ 카카오 SDK가 <script>로 포함되지 않았습니다.')
-         }
-      }
-   }, [])
-
-   const handleLogin = () => {
-      if (!isKakaoLoaded) {
-         console.error('❌ 카카오 SDK가 아직 로드되지 않았습니다.')
-         return
-      }
-
-      window.Kakao.Auth.login({
-         success: (authObj) => {
-            console.log('✅ 로그인 성공:', authObj)
-         },
-         fail: (err) => {
-            console.error('❌ 로그인 실패:', err)
-         },
-      })
+   const handleKakaoLogin = () => {
+      window.location.href = KAKAO_REST_API
    }
 
+   // Kakao 로그인 성공 시 method
+   const KakaoLoginSuccess = async (data) => {
+      // const access_token = data.access_token
+      // const body = { access_token: access_token }
+      // const cookie = new Cookies()
+      console.log('로그인성공', data)
+      // const login_request = await API.kakoLoginRequset(body)
+      // cookie.set('token', login_request.data.token, { path: '/' })
+      // naviage('/')
+   }
    const getUserInfo = (token) => {
       window.Kakao.API.request({
          url: '/v2/user/me',
@@ -120,7 +105,7 @@ const KakaoLoginBtn = () => {
    }
 
    return (
-      <KakaoStyleBtn className="kakao-login-btn" onClick={handleLogin}>
+      <KakaoStyleBtn className="kakao-login-btn" onClick={handleKakaoLogin}>
          <img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="kakao" style={{ width: '20px', height: '20px' }} />
          카카오 로그인
       </KakaoStyleBtn>

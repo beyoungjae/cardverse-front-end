@@ -1,47 +1,20 @@
-// api/oauthApi.js
+import { OAUTH_CONFIG } from '../config/config'
 import commonApi from './commonApi'
 
-// 카카오 로그인
-// export const kakaoLogin = () => {
-//    window.location.href = `${process.env.REACT_APP_API_URL}/oauth/kakao`
-// }
-export const handleKakaoLogin = () => {
-   if (!window.Kakao) {
-      console.error('Kakao SDK not loaded')
-      return
-   }
+const oauthParam = new URLSearchParams({
+   client_id: OAUTH_CONFIG.CLIENT_ID,
+   redirect_uri: OAUTH_CONFIG.REDIRECT_URI,
+   response_type: OAUTH_CONFIG.RESPONSE_TYPE,
+})
 
-   window.Kakao.Auth.loginForm({
-      success: async function (authObj) {
-         try {
-            console.log('카카오 로그인 성공', authObj)
-            // 백엔드로 직접 인증 정보 전송consol
-            const response = await commonApi.post('/oauth/kakao', {
-               accessToken: authObj.access_token,
-            })
+export const KAKAO_REST_API = `https://kauth.kakao.com/oauth/authorize?${oauthParam.toString()}`
 
-            // 로그인 성공 처리
-            if (response.data.success) {
-               // Redux store 업데이트나 리다이렉트 처리
-               window.location.href = '/' // 또는 원하는 페이지로
-            }
-         } catch (error) {
-            console.error('카카오 로그인 처리 실패:', error)
-         }
-      },
-      fail: function (err) {
-         console.error('카카오 로그인 실패:', err)
-      },
-   })
-}
-
-// 카카오 로그인 콜백 처리
-export const handleKakaoCallback = async () => {
+export const kakaoLoginUser = async (code) => {
    try {
-      const response = await commonApi.get('/oauth/kakao/callback')
+      const response = await commonApi.post('/oauth/kakao/login', code)
       return response
    } catch (error) {
-      console.error('카카오 로그인 처리 오류:', error)
+      console.error(`API Request 오류: ${error.message}`)
       throw error
    }
 }
