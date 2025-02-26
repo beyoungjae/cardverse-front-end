@@ -13,7 +13,7 @@ const Top4CardContainer = styled(Box)(({ theme }) => ({
 const StyledCardBox = styled(Box)({
    display: 'grid',
    justifyContent: 'center',
-   gridTemplateRows: '20px auto 60px', // top(10px), content(auto), bottom(60px)
+   gridTemplateRows: '20px auto 60px', //그리드 컨테이너의 각 행의 높이를 설정
 })
 
 // 카드 그리드
@@ -22,10 +22,10 @@ const CardGrid = styled(Box)(({ theme }) => ({
    gridTemplateColumns: 'repeat(4, 1fr)',
    padding: '30px 0 50px 0',
    gap: '2vw', // 화면 크기에 따라 갭 자동 변경(뷰포트 너비를 기준으로 gap자동 조정)
-   [theme.breakpoints.down('md')]: {
+   [theme.bps.md]: {
       gridTemplateColumns: 'repeat(2, 1fr)',
    },
-   [theme.breakpoints.down('sm')]: {
+   [theme.bps.sm]: {
       gridTemplateColumns: '1fr',
    },
 }))
@@ -36,12 +36,15 @@ const Card = styled(MuiCard)(({ theme }) => ({
    height: '125px',
    borderRadius: theme.shape.borderRadius.medium,
    border: '1px solid #AFAFAF',
-   borderRadius: '20px',
    boxShadow: 'none',
-   [theme.breakpoints.down('md')]: {
+   display: 'flex',
+   flexDirection: 'column',
+   justifyContent: 'center',
+   alignItems: 'center',
+   [theme.bps.md]: {
       width: '250px',
    },
-   [theme.breakpoints.down('sm')]: {
+   [theme.bps.sm]: {
       width: '290px',
    },
 }))
@@ -82,7 +85,7 @@ const Top4Card = () => {
       <Top4CardContainer>
          <StyledCardBox>
             <Box>
-               <ViewLink component={Link} to="/">
+               <ViewLink component={Link} to="/faq">
                   전체보기 <KeyboardArrowRightIcon />
                </ViewLink>
             </Box>
@@ -98,7 +101,7 @@ const Top4Card = () => {
             <Box>
                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                   <Typography sx={{ marginRight: '8px', fontSize: '0.9rem' }}>더 자세한 질문은</Typography>
-                  <Link to="/">
+                  <Link to="/qna">
                      <CustomerButton>1:1문의하기</CustomerButton>
                   </Link>
                </Box>

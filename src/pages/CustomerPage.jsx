@@ -1,7 +1,5 @@
 import { Box, Typography, FormControl, OutlinedInput, InputAdornment, Tab } from '@mui/material'
-import TabContext from '@mui/lab/TabContext'
-import TabList from '@mui/lab/TabList'
-import TabPanel from '@mui/lab/TabPanel'
+import { TabContext, TabList, TabPanel } from '@mui/lab'
 
 import { styled } from '@mui/material/styles'
 import SearchIcon from '@mui/icons-material/Search'
@@ -106,7 +104,7 @@ const CustomTab = styled(Tab)(({ theme }) => ({
    },
 }))
 
-//바텀 이미지
+//바텀 컬러
 const BottomImg = styled('div')(({ theme }) => ({
    width: '100%',
    height: '100px',
@@ -401,7 +399,7 @@ const CustomerPage = () => {
             {/* 공지사항, Q&A 탭 */}
             <Box sx={{ width: '100%', typography: 'body1', marginTop: '100px' }}>
                <TabContext value={value}>
-                  <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                  <Box sx={{ borderBottom: 1, borderColor: '#585858' }}>
                      <TabList onChange={handleChange} aria-label="lab API tabs example">
                         <CustomTab label="NOTICE" value="notice" />
                         <CustomTab label="Q&A" value="qna" />
