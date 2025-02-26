@@ -8,6 +8,8 @@ import PaymentIcon from '@mui/icons-material/Payment'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CreditCard from '@mui/icons-material/CreditCard'
 import AccountBalance from '@mui/icons-material/AccountBalance'
+import { purchaseApi } from '../../../api/purchaseApi'
+import { useSelector } from 'react-redux'
 
 // 컨테이너 스타일링
 const PurchaseContainer = styled(Container)(({ theme }) => ({
@@ -157,6 +159,7 @@ const steps = ['상품 확인', '결제 정보', '결제 완료']
 const PurchaseTemplate = () => {
    const location = useLocation()
    const navigate = useNavigate()
+   const { user } = useSelector((state) => state.auth)
    const [activeStep, setActiveStep] = useState(0)
    const [paymentInfo, setPaymentInfo] = useState({
       cardNumber: '',
@@ -221,29 +224,33 @@ const PurchaseTemplate = () => {
 
    // 결제 처리 함수
    const handleNext = async () => {
+      if (!user) {
+         navigate('/login', { state: { from: location } })
+         return
+      }
+
       if (activeStep === 1) {
-         if (calculateTotal() === 0) {
-            setActiveStep((prev) => prev + 1)
-            return
-         }
-
-         if (paymentMethod === 'card') {
-            const isCardValid = paymentInfo.cardNumber.replace(/-/g, '').length === 16
-            const isExpiryValid = /^\d{2}\/\d{2}$/.test(paymentInfo.expiry)
-            const isCvvValid = /^\d{3}$/.test(paymentInfo.cvv)
-
-            if (!isCardValid || !isExpiryValid || !isCvvValid) {
-               alert('카드 정보를 올바르게 입력해주세요.')
-               return
-            }
-         }
-
          setIsProcessing(true)
          try {
-            await new Promise((resolve) => setTimeout(resolve, 2000))
-            setActiveStep((prev) => prev + 1)
+            const purchaseData = {
+               userId: user.id,
+               templateId: templateData.id,
+               paymentInfo: {
+                  method: paymentMethod,
+                  ...paymentInfo,
+               },
+               couponCode: appliedCoupon?.code,
+               totalAmount: calculateTotal(),
+            }
+
+            const result = await purchaseApi.processPurchase(purchaseData)
+            if (result.success) {
+               setActiveStep((prev) => prev + 1)
+            } else {
+               console.error('결제 처리 중 오류가 발생했습니다.', result.message)
+            }
          } catch (error) {
-            alert('결제 처리 중 오류가 발생했습니다.')
+            console.error('Payment processing error:', error)
          } finally {
             setIsProcessing(false)
          }

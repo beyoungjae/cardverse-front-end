@@ -28,7 +28,6 @@ const PreviewContent = styled(motion.div)(({ theme, backgroundColor }) => ({
    width: '100%',
    height: '100%',
    overflowY: 'auto',
-   padding: '24px',
    WebkitOverflowScrolling: 'touch', // iOS에서 부드러운 스크롤 적용
    backgroundColor: backgroundColor || '#FFFFFF',
    position: 'relative',
@@ -648,6 +647,7 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '20px',
+                        padding: '24px',
                      }}
                   >
                      {sectionOrder.map((sectionId, index) => (

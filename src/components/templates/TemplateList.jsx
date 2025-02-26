@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { styled } from '@mui/material/styles'
-import { Box, Typography, Container } from '@mui/material'
+import { Box, Typography, Container, Grid, Card, CardMedia, CardContent, IconButton, Tabs, Tab, Chip, Button } from '@mui/material'
 import { motion } from 'framer-motion'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
 import { useLocation, useParams, useNavigate } from 'react-router-dom'
+import EditIcon from '@mui/icons-material/Edit'
+import { templateApi } from '../../api/templateApi'
+import { useSelector } from 'react-redux'
 
 import 'swiper/css'
 import 'swiper/css/navigation'
@@ -194,76 +197,57 @@ const ListSection = styled(Box)(({ theme }) => ({
 // 템플릿 카드 및 이미지 영역
 const TemplateGrid = styled(Box)(({ theme }) => ({
    display: 'grid',
-   gridTemplateColumns: 'repeat(3, 1fr)',
-   gap: '2rem',
-   [theme.breakpoints.down('md')]: {
-      gridTemplateColumns: 'repeat(2, 1fr)',
-   },
-   [theme.breakpoints.down('sm')]: {
-      gridTemplateColumns: '1fr',
-   },
+   gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+   gap: theme.spacing(3),
+   marginBottom: theme.spacing(4),
 }))
 
 const TemplateCard = styled(motion.div)(({ theme }) => ({
    position: 'relative',
+   borderRadius: theme.spacing(2),
+   overflow: 'hidden',
    cursor: 'pointer',
-   padding: '1rem',
-   borderRadius: '12px',
-   overflow: 'hidden',
-   backgroundColor: '#fff',
    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-   transition: 'all 0.05s ease',
+   transition: 'transform 0.3s ease',
    '&:hover': {
-      transform: 'translateY(-8px) scale(1.02)',
-      boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
-   },
-   '&:hover img': {
-      transform: 'scale(1.1)',
+      transform: 'translateY(-8px)',
    },
 }))
 
-const ImageWrapper = styled(Box)(({ theme }) => ({
+const ImageWrapper = styled(Box)({
    position: 'relative',
-   width: '100%',
-   paddingTop: '100%',
-   overflow: 'hidden',
-}))
+   paddingTop: '133.33%', // 3:4 비율
+})
 
-const TemplateImage = styled('img')(({ theme }) => ({
+const TemplateImage = styled('img')({
    position: 'absolute',
    top: 0,
    left: 0,
    width: '100%',
    height: '100%',
-   objectFit: 'contain',
-   transition: 'transform 0.3s ease',
-}))
+   objectFit: 'cover',
+})
 
 const PriceInfo = styled(Typography)(({ theme }) => ({
-   marginTop: '0.5rem',
-   fontSize: '1rem',
-   fontWeight: 500,
-   textAlign: 'center',
-   color: theme.palette.text.primary,
+   position: 'absolute',
+   bottom: theme.spacing(2),
+   right: theme.spacing(2),
+   padding: theme.spacing(1, 2),
+   backgroundColor: 'rgba(255, 255, 255, 0.9)',
+   borderRadius: theme.spacing(1),
+   fontWeight: 600,
 }))
 
 // More 버튼
-const MoreButton = styled(Box)(({ theme }) => ({
-   display: 'flex',
-   flexDirection: 'column',
-   alignItems: 'center',
-   cursor: 'pointer',
-   marginTop: theme.spacing(3),
-   color: theme.palette.primary.main,
-   fontWeight: 600,
+const MoreButton = styled(Button)(({ theme }) => ({
+   display: 'block',
+   margin: '2rem auto',
+   padding: theme.spacing(1, 4),
    '& .arrow': {
-      animation: 'bounce 2s infinite',
-      fontSize: '1rem',
+      transition: 'transform 0.3s ease',
    },
-   '@keyframes bounce': {
-      '0%, 20%, 50%, 80%, 100%': { transform: 'translateY(0)' },
-      '40%': { transform: 'translateY(-10px)' },
-      '60%': { transform: 'translateY(-5px)' },
+   '&:hover .arrow': {
+      transform: 'translateY(4px)',
    },
 }))
 
@@ -299,10 +283,23 @@ const templates = {
    ],
 }
 
+const StyledCard = styled(Card)(({ theme }) => ({
+   height: '100%',
+   display: 'flex',
+   flexDirection: 'column',
+   cursor: 'pointer',
+   transition: 'transform 0.2s ease-in-out',
+   '&:hover': {
+      transform: 'translateY(-4px)',
+   },
+}))
+
 const TemplateList = () => {
    const location = useLocation()
    const { tab: urlTab } = useParams()
    const navigate = useNavigate()
+   const { isAuthenticated, user } = useSelector((state) => state.auth)
+   const isAdmin = user?.role === 'admin'
 
    // 탭 순서 배열
    const tabOrder = ['wedding', 'invitation', 'newyear', 'gohyeon']
@@ -315,6 +312,8 @@ const TemplateList = () => {
    const [showMore, setShowMore] = useState(false)
    const swiperRef = useRef(null)
    const animatingRef = useRef(false)
+   const [templates, setTemplates] = useState([])
+   const [loading, setLoading] = useState(true)
 
    useLayoutEffect(() => {
       const isMobile = window.innerWidth <= 768
@@ -328,12 +327,30 @@ const TemplateList = () => {
       }
    }, [urlTab])
 
-   // 탭 변경 handler
-   const handleTabChange = (newValue) => {
-      if (newValue !== desiredTab) {
-         setDesiredTab(newValue)
-         setShowMore(false)
+   useEffect(() => {
+      fetchTemplates()
+   }, [currentTab])
+
+   const fetchTemplates = async () => {
+      try {
+         setLoading(true)
+         const data = await templateApi.getTemplates()
+         // 현재 선택된 탭에 해당하는 템플릿만 필터링
+         const filteredTemplates = data.filter((template) => template.type === currentTab)
+         setTemplates(filteredTemplates)
+      } catch (error) {
+         console.error('템플릿 목록 조회 실패:', error)
+      } finally {
+         setLoading(false)
       }
+   }
+
+   // 탭 변경 handler
+   const handleTabChange = (event, newValue) => {
+      setCurrentTab(newValue)
+      navigate(`/template/${newValue}`, {
+         state: { currentTab: newValue },
+      })
    }
 
    // 좌우 버튼 handler
@@ -396,7 +413,15 @@ const TemplateList = () => {
    const displayedTemplates = showMore ? currentTemplates : currentTemplates.slice(0, 6)
 
    const handleTemplateClick = (templateId) => {
-      navigate(`/template/${currentTab}/${templateId}`, { state: { currentTab } })
+      navigate(`/template/${currentTab}/${templateId}`, {
+         state: { currentTab },
+      })
+   }
+
+   const handleCreateTemplate = () => {
+      navigate(`/template/${currentTab}/edit`, {
+         state: { currentTab },
+      })
    }
 
    return (
@@ -438,7 +463,7 @@ const TemplateList = () => {
                      <React.Fragment key={i}>
                         {tabOrder.map((tabName) => (
                            <SwiperSlide key={`${tabName}-${i}`}>
-                              <StyledTab $selected={currentTab === tabName} $isAdjacent={isAdjacentTab(tabName)} onClick={() => handleTabChange(tabName)}>
+                              <StyledTab $selected={currentTab === tabName} $isAdjacent={isAdjacentTab(tabName)} onClick={(event) => handleTabChange(event, tabName)}>
                                  {tabName === 'wedding' && '청첩장'}
                                  {tabName === 'newyear' && '연하장'}
                                  {tabName === 'gohyeon' && '고희연'}
@@ -457,9 +482,9 @@ const TemplateList = () => {
                   {displayedTemplates.map((template, index) => (
                      <TemplateCard key={template.id} onClick={() => handleTemplateClick(template.id)} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
                         <ImageWrapper>
-                           <TemplateImage src={template.image} alt={`Template ${template.id}`} />
+                           <TemplateImage src={template.thumbnail || '/images/default-template.png'} alt={template.title} />
                         </ImageWrapper>
-                        <PriceInfo onClick={(e) => e.stopPropagation()}>₩ {template.price}</PriceInfo>
+                        <PriceInfo>₩ {Number(template.price).toLocaleString()}</PriceInfo>
                      </TemplateCard>
                   ))}
                </TemplateGrid>
@@ -468,6 +493,14 @@ const TemplateList = () => {
                   <Typography className="arrow">{showMore ? 'Less' : 'More'}</Typography>
                </MoreButton>
             </ListSection>
+
+            {isAdmin && (
+               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                  <Button variant="contained" onClick={handleCreateTemplate} sx={{ minWidth: 200 }}>
+                     새 템플릿 만들기
+                  </Button>
+               </Box>
+            )}
          </Container>
       </>
    )
