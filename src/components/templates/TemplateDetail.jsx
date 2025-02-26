@@ -8,7 +8,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import CloseIcon from '@mui/icons-material/Close'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
-import { fetchTemplateDetail } from '../../features/templateSlice'
+import { fetchTemplateDetail, updateTemplate, deleteTemplate } from '../../features/templateSlice'
 
 // 애니메이션 keyframes
 const fadeIn = keyframes`
@@ -263,9 +263,9 @@ const DetailSection = muiStyled(Box)(({ theme }) => ({
          '& img': {
             width: '100%',
             height: '100%',
-            objectFit: 'cover',
+            objectFit: 'contain',
             opacity: 0,
-            transform: 'scale(0.95)',
+            transform: 'scale(1.2)',
             transition: 'opacity 0.5s ease-in-out, transform 0.5s ease-in-out',
             position: 'absolute',
             top: 0,
@@ -480,17 +480,30 @@ const TemplateDetail = () => {
       })
    }
 
+   // 사용자가 수정 페이지로 이동할 때 데이터를 같이 넘겨줌
+   // 어드민, 사용자 둘 다 템플릿 데이터를 받아서 해당 템플릿을 수정해야 하니까ㅇㅇ
    const handleEditorOpen = () => {
       if (!isAuthenticated) {
-         // 로그인 페이지로 리다이렉트
          navigate('/login', { state: { from: location } })
          return
       }
-      navigate(`/template/${currentTab}/edit/${templateId}`, {
-         state: { templateId, currentTab },
-      })
+      navigate(`/template/${currentTab}/edit/${templateId}`, { state: { templateId } })
    }
 
+   const handleDelete = () => {
+      if (!isAuthenticated && !isAdmin) {
+         navigate('/login', { state: { from: location } })
+         return
+      }
+      if (window.confirm('템플릿을 삭제하시겠습니까?')) {
+         dispatch(deleteTemplate(templateId))
+         navigate(`/template/${currentTab}`, {
+            state: { currentTab },
+         })
+      } else {
+         return
+      }
+   }
    const handlePurchase = () => {
       if (!isAuthenticated) {
          navigate('/login', { state: { from: location } })
@@ -503,7 +516,7 @@ const TemplateDetail = () => {
 
    useEffect(() => {
       const interval = setInterval(() => {
-         setActiveIndex((prev) => (prev + 1) % template.detailImages.length)
+         setActiveIndex((prev) => (prev + 1) % detailImages.length)
       }, 3000) // 3초마다 이미지 전환
 
       return () => clearInterval(interval)
@@ -519,11 +532,11 @@ const TemplateDetail = () => {
    }
 
    const handlePrevImage = () => {
-      setCurrentPreviewIndex((prev) => (prev === 0 ? template.detailImages.length - 1 : prev - 1))
+      setCurrentPreviewIndex((prev) => (prev === 0 ? detailImages.length - 1 : prev - 1))
    }
 
    const handleNextImage = () => {
-      setCurrentPreviewIndex((prev) => (prev + 1) % template.detailImages.length)
+      setCurrentPreviewIndex((prev) => (prev + 1) % detailImages.length)
    }
 
    if (status === 'loading') {
@@ -577,6 +590,16 @@ const TemplateDetail = () => {
                   <BuyButton onClick={handlePurchase}>구매하기</BuyButton>
                   <PreviewButton onClick={handlePreviewOpen}>미리보기</PreviewButton>
                </ButtonGroup>
+               {isAdmin && (
+                  <ButtonGroup>
+                     <Button variant="contained" onClick={handleEditorOpen}>
+                        템플릿 수정하기
+                     </Button>
+                     <Button variant="contained" onClick={handleDelete}>
+                        템플릿 삭제하기
+                     </Button>
+                  </ButtonGroup>
+               )}
             </PriceSection>
 
             <DetailSection>

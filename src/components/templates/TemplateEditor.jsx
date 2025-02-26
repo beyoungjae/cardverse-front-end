@@ -2,7 +2,8 @@ import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { Box, Button, Drawer, Snackbar, Alert, SpeedDial, SpeedDialIcon, SpeedDialAction, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 import { FormProvider, useForm } from 'react-hook-form'
 import SaveIcon from '@mui/icons-material/Save'
 import PreviewIcon from '@mui/icons-material/Preview'
@@ -10,7 +11,6 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { Person as PersonIcon } from '@mui/icons-material'
 import { AccountBalance as AccountBalanceIcon } from '@mui/icons-material'
 import { Publish as PublishIcon } from '@mui/icons-material'
-import { useSelector } from 'react-redux'
 import { Typography } from '@mui/material'
 
 import { Title as TitleIcon, Message as MessageIcon, Event as EventIcon, LocationOn as LocationOnIcon, PhotoLibrary as PhotoLibraryIcon, Palette as PaletteIcon, Settings as SettingsIcon } from '@mui/icons-material'
@@ -34,6 +34,7 @@ import { COLORS } from './editor/styles/commonStyles'
 
 // API
 import { templateApi } from '../../api/templateApi'
+import { fetchTemplateDetail } from '../../features/templateSlice'
 
 // ===================== styled components =====================
 
@@ -500,8 +501,12 @@ const AdminTemplateDialog = React.memo(
 )
 
 const TemplateEditor = () => {
-   const navigate = useNavigate()
    const { templateId } = useParams() // URL에서 templateId 가져오기
+   const location = useLocation()
+   const dispatch = useDispatch()
+   const navigate = useNavigate()
+
+   const { detail: template } = useSelector((state) => state.templates)
 
    // react-hook-form
    const methods = useForm({
@@ -549,6 +554,32 @@ const TemplateEditor = () => {
          animation: null,
       },
    })
+
+   // URL에서 templateId가 있거나, 상태로 받은 templateId가 있을 경우 데이터 불러오기
+   // useEffect(() => {
+   //    if (templateId && (!template || template.id !== Number(templateId))) {
+   //       dispatch(fetchTemplateDetail(templateId))
+   //    }
+   // }, [dispatch, templateId, template])
+
+   useEffect(() => {
+      if (templateId) {
+         dispatch(fetchTemplateDetail(templateId))
+      }
+   }, [dispatch, templateId])
+
+   useEffect(() => {
+      if (templateId && template) {
+         methods.reset({
+            title: template.title,
+            category: template.category,
+            price: template.price,
+            thumbnail: template.thumbnail,
+            detailImages: template.detailImages || [], // 없으면 빈 배열로
+            data: template.data,
+         })
+      }
+   }, [template, templateId, methods])
 
    // react-hook-form 훅 : 폼 상태 관리
    const {

@@ -19,6 +19,25 @@ export const fetchTemplateDetail = createAsyncThunk('templates/fetchTemplateDeta
    }
 })
 
+export const updateTemplate = createAsyncThunk('templates/updateTemplate', async ({ templateId, templateData }, { dispatch, rejectWithValue }) => {
+   try {
+      await templateApi.updateTemplate(templateId, templateData)
+      // 업데이트 후, 최신 데이터를 다시 불러옴
+      return dispatch(fetchTemplateDetail(templateId)).unwrap()
+   } catch (error) {
+      return rejectWithValue(error.response?.data || { message: '템플릿을 수정하는 데 실패했습니다.' })
+   }
+})
+
+export const deleteTemplate = createAsyncThunk('templates/deleteTemplate', async (templateId, { rejectWithValue }) => {
+   try {
+      const response = await templateApi.deleteTemplate(templateId)
+      return response
+   } catch (error) {
+      return rejectWithValue(error.response?.data || { message: '템플릿을 삭제하는 데 실패했습니다.' })
+   }
+})
+
 const templateSlice = createSlice({
    name: 'templates',
    initialState: {
@@ -52,6 +71,27 @@ const templateSlice = createSlice({
          .addCase(fetchTemplateDetail.rejected, (state, action) => {
             state.status = 'failed'
             state.error = action.payload || '데이터를 불러오는 데 실패했습니다.'
+         })
+         .addCase(updateTemplate.pending, (state) => {
+            state.status = 'loading'
+         })
+         .addCase(updateTemplate.fulfilled, (state, action) => {
+            state.status = 'succeeded'
+            state.detail = action.payload
+         })
+         .addCase(updateTemplate.rejected, (state, action) => {
+            state.status = 'failed'
+            state.error = action.payload || '템플릿을 수정하는 데 실패했습니다.'
+         })
+         .addCase(deleteTemplate.pending, (state) => {
+            state.status = 'loading'
+         })
+         .addCase(deleteTemplate.fulfilled, (state, action) => {
+            state.status = 'succeeded'
+         })
+         .addCase(deleteTemplate.rejected, (state, action) => {
+            state.status = 'failed'
+            state.error = action.payload || '템플릿을 삭제하는 데 실패했습니다.'
          })
    },
 })

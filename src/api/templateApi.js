@@ -18,8 +18,13 @@ export const templateApi = {
 
    // 템플릿 수정
    updateTemplate: async (templateId, templateData) => {
-      const response = await commonApi.put(`/templates/${templateId}`, templateData)
-      return response.data
+      try {
+         const response = await commonApi.put(`/templates/${templateId}`, templateData)
+         return response.data
+      } catch (error) {
+         console.error('템플릿 수정 오류:', error.response?.data || error.message)
+         throw error
+      }
    },
 
    // 템플릿 목록 조회

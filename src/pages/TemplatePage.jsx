@@ -15,6 +15,7 @@ const TemplatePage = () => {
             <Route index element={<TemplateList tab={tab} />} />
             <Route path="detail/:templateId" element={<TemplateDetail />} />
             <Route path="edit" element={<TemplateEditor />} />
+            <Route path="edit/:templateId" element={<TemplateEditor />} />
             <Route path="purchase/:templateId" element={<PurchaseTemplate />} />
             <Route path="preview/:templateId" element={<TemplatePreviewer />} />
          </Routes>
