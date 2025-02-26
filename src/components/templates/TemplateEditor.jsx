@@ -449,8 +449,8 @@ const AdminTemplateDialog = React.memo(
 
                   <Select fullWidth label="카테고리" name="category" value={formData.category} onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))} error={!!errors.category}>
                      <MenuItem value="wedding">청첩장</MenuItem>
-                     <MenuItem value="birthday">고희연</MenuItem>
-                     <MenuItem value="newYear">연하장</MenuItem>
+                     <MenuItem value="gohyeon">고희연</MenuItem>
+                     <MenuItem value="newyear">연하장</MenuItem>
                      <MenuItem value="invitation">초빙장</MenuItem>
                   </Select>
 

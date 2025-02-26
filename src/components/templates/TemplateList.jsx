@@ -5,9 +5,8 @@ import { motion } from 'framer-motion'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
 import { useLocation, useParams, useNavigate } from 'react-router-dom'
-import EditIcon from '@mui/icons-material/Edit'
-import { templateApi } from '../../api/templateApi'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import { fetchTemplates } from '../../features/templateSlice'
 
 import 'swiper/css'
 import 'swiper/css/navigation'
@@ -83,7 +82,7 @@ const TotalText = styled(Typography)(({ theme }) => ({
    },
 }))
 
-// 탭 영역 및 좌우 네비게이션 버튼
+// 탭 영역
 const TabContainer = styled(Box)(({ theme }) => ({
    position: 'relative',
    marginBottom: '4rem',
@@ -103,45 +102,6 @@ const TabContainer = styled(Box)(({ theme }) => ({
       [theme.breakpoints.down('sm')]: {
          maxWidth: '100%',
          padding: '1rem 0',
-      },
-   },
-   '.swiper-button-prev, .swiper-button-next': {
-      width: '45px',
-      height: '45px',
-      borderRadius: '50%',
-      backgroundColor: '#fff',
-      border: '2px solid #ececec',
-      boxShadow: '0 3px 8px rgba(0,0,0,0.2)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      transition: 'all 0.3s ease',
-      cursor: 'pointer',
-   },
-   '.swiper-button-prev::after': {
-      content: '"⟨"',
-      fontSize: '1.4rem',
-      color: '#444',
-      fontWeight: 'bold',
-   },
-   '.swiper-button-next::after': {
-      content: '"⟩"',
-      fontSize: '1.4rem',
-      color: '#444',
-      fontWeight: 'bold',
-   },
-   '.swiper-button-prev:hover, .swiper-button-next:hover': {
-      transform: 'scale(1.15)',
-      background: 'linear-gradient(135deg, #fff, #f0f0f0)',
-   },
-   [theme.breakpoints.down('md')]: {
-      '.swiper-button-prev, .swiper-button-next': {
-         display: 'none',
-      },
-   },
-   [theme.breakpoints.down('sm')]: {
-      '.swiper-button-prev, .swiper-button-next': {
-         display: 'none',
       },
    },
 }))
@@ -214,6 +174,20 @@ const TemplateCard = styled(motion.div)(({ theme }) => ({
    },
 }))
 
+const TemplateTitle = styled(Typography)(({ theme }) => ({
+   position: 'absolute',
+   bottom: theme.spacing(2),
+   left: theme.spacing(2),
+   textAlign: 'center',
+   fontSize: '1.2rem',
+   fontWeight: 600,
+   marginTop: theme.spacing(2),
+   color: theme.palette.primary.main,
+   backgroundColor: 'rgba(255, 255, 255, 0.9)',
+   padding: theme.spacing(1, 2),
+   borderRadius: theme.spacing(1),
+}))
+
 const ImageWrapper = styled(Box)({
    position: 'relative',
    paddingTop: '133.33%', // 3:4 비율
@@ -251,38 +225,6 @@ const MoreButton = styled(Button)(({ theme }) => ({
    },
 }))
 
-// 템플릿 데이터 가라데이터
-const templates = {
-   invitation: [
-      { id: 1, image: '/images/templates/sample00007.png', price: '23,000' },
-      { id: 2, image: '/images/templates/sample00008.png', price: '15,000' },
-      { id: 3, image: '/images/templates/sample00009.png', price: '5,000' },
-      { id: 4, image: '/images/templates/sample00010.png', price: '10,000' },
-      { id: 5, image: '/images/templates/sample00006.png', price: '30,000' },
-   ],
-   wedding: [
-      { id: 7, image: '/images/templates/sample00001.png', price: '25,000' },
-      { id: 8, image: '/images/templates/sample00002.png', price: '20,000' },
-      { id: 9, image: '/images/templates/sample00003.png', price: '35,000' },
-      { id: 10, image: '/images/templates/sample00004.png', price: '10,000' },
-      { id: 11, image: '/images/templates/sample00005.png', price: '30,000' },
-      { id: 12, image: '/images/templates/sample00006.png', price: '45,000' },
-      { id: 13, image: '/images/templates/sample00007.png', price: '25,000' },
-      { id: 14, image: '/images/templates/sample00008.png', price: '20,000' },
-      { id: 15, image: '/images/templates/sample00009.png', price: '35,000' },
-   ],
-   newyear: [
-      { id: 10, image: '/images/templates/sample00010.png', price: '15,000' },
-      { id: 11, image: '/images/templates/sample00006.png', price: '18,000' },
-      { id: 12, image: '/images/templates/sample00007.png', price: '22,000' },
-   ],
-   gohyeon: [
-      { id: 13, image: '/images/templates/sample00007.png', price: '15,000' },
-      { id: 14, image: '/images/templates/sample00006.png', price: '18,000' },
-      { id: 15, image: '/images/templates/sample00009.png', price: '22,000' },
-   ],
-}
-
 const StyledCard = styled(Card)(({ theme }) => ({
    height: '100%',
    display: 'flex',
@@ -298,6 +240,8 @@ const TemplateList = () => {
    const location = useLocation()
    const { tab: urlTab } = useParams()
    const navigate = useNavigate()
+   const dispatch = useDispatch()
+   const { data: templates, status, error } = useSelector((state) => state.templates)
    const { isAuthenticated, user } = useSelector((state) => state.auth)
    const isAdmin = user?.role === 'admin'
 
@@ -312,8 +256,6 @@ const TemplateList = () => {
    const [showMore, setShowMore] = useState(false)
    const swiperRef = useRef(null)
    const animatingRef = useRef(false)
-   const [templates, setTemplates] = useState([])
-   const [loading, setLoading] = useState(true)
 
    useLayoutEffect(() => {
       const isMobile = window.innerWidth <= 768
@@ -328,22 +270,8 @@ const TemplateList = () => {
    }, [urlTab])
 
    useEffect(() => {
-      fetchTemplates()
-   }, [currentTab])
-
-   const fetchTemplates = async () => {
-      try {
-         setLoading(true)
-         const data = await templateApi.getTemplates()
-         // 현재 선택된 탭에 해당하는 템플릿만 필터링
-         const filteredTemplates = data.filter((template) => template.type === currentTab)
-         setTemplates(filteredTemplates)
-      } catch (error) {
-         console.error('템플릿 목록 조회 실패:', error)
-      } finally {
-         setLoading(false)
-      }
-   }
+      dispatch(fetchTemplates(currentTab))
+   }, [dispatch, currentTab])
 
    // 탭 변경 handler
    const handleTabChange = (event, newValue) => {
@@ -351,18 +279,6 @@ const TemplateList = () => {
       navigate(`/template/${newValue}`, {
          state: { currentTab: newValue },
       })
-   }
-
-   // 좌우 버튼 handler
-   const handlePrevClick = () => {
-      const currentIndex = tabOrder.indexOf(currentTab)
-      const prevIndex = (currentIndex - 1 + L) % L
-      setDesiredTab(tabOrder[prevIndex])
-   }
-   const handleNextClick = () => {
-      const currentIndex = tabOrder.indexOf(currentTab)
-      const nextIndex = (currentIndex + 1) % L
-      setDesiredTab(tabOrder[nextIndex])
    }
 
    useEffect(() => {
@@ -409,11 +325,11 @@ const TemplateList = () => {
       return diff === 1 || diff === L - 1
    }
 
-   const currentTemplates = templates[currentTab] || []
+   const currentTemplates = templates?.filter((template) => template.category === currentTab) || []
    const displayedTemplates = showMore ? currentTemplates : currentTemplates.slice(0, 6)
 
    const handleTemplateClick = (templateId) => {
-      navigate(`/template/${currentTab}/${templateId}`, {
+      navigate(`/template/${currentTab}/detail/${templateId}`, {
          state: { currentTab },
       })
    }
@@ -423,6 +339,8 @@ const TemplateList = () => {
          state: { currentTab },
       })
    }
+
+   if (status === 'failed') return <p>에러 발생: {error}</p>
 
    return (
       <>
@@ -437,7 +355,6 @@ const TemplateList = () => {
             <TotalText>T O T A L</TotalText>
 
             <TabContainer>
-               <div className="swiper-button-prev" onClick={handlePrevClick} style={{ cursor: 'pointer' }}></div>
                <Swiper
                   ref={swiperRef}
                   modules={[Navigation]}
@@ -474,7 +391,6 @@ const TemplateList = () => {
                      </React.Fragment>
                   ))}
                </Swiper>
-               <div className="swiper-button-next" onClick={handleNextClick} style={{ cursor: 'pointer' }}></div>
             </TabContainer>
 
             <ListSection>
@@ -485,6 +401,7 @@ const TemplateList = () => {
                            <TemplateImage src={template.thumbnail || '/images/default-template.png'} alt={template.title} />
                         </ImageWrapper>
                         <PriceInfo>₩ {Number(template.price).toLocaleString()}</PriceInfo>
+                        <TemplateTitle>{template.title}</TemplateTitle>
                      </TemplateCard>
                   ))}
                </TemplateGrid>

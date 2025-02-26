@@ -1,7 +1,7 @@
 import commonApi from './commonApi'
 
 export const templateApi = {
-   // 템플릿 생성 (파일 업로드 지원)
+   // 템플릿 생성
    createTemplate: async (formData) => {
       try {
          const response = await commonApi.post('/templates', formData, {
@@ -36,6 +36,7 @@ export const templateApi = {
    getTemplate: async (templateId) => {
       try {
          const response = await commonApi.get(`/templates/${templateId}`)
+         console.log('템플릿 상세 조회 응답:', response.data)
          return response.data
       } catch (error) {
          throw error
