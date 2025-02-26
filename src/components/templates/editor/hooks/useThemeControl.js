@@ -39,28 +39,22 @@ const themePresets = {
 
 const useThemeControl = () => {
    const { template, updateStyle } = useTemplateStore()
-   const [theme, setTheme] = useState(template.style || defaultTheme)
+   const [theme, setTheme] = useState({
+      ...defaultTheme,
+      animation: 'fade',
+      animationTargets: ['title', 'greeting'],
+   })
    const [history, setHistory] = useState([template.style || defaultTheme])
    const [historyIndex, setHistoryIndex] = useState(0)
 
    // 테마 변경 핸들러 최적화
    const handleThemeChange = useCallback(
-      (type, value) => {
-         setTheme((prev) => {
-            const newTheme = { ...prev, [type]: value }
-
-            // 스토어 업데이트
-            updateStyle(newTheme)
-
-            // 로컬 스토리지 저장
-            try {
-               localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(newTheme))
-            } catch (error) {
-               console.error('Failed to save theme:', error)
-            }
-
-            return newTheme
-         })
+      (key, value) => {
+         setTheme((prev) => ({
+            ...prev,
+            [key]: value,
+         }))
+         updateStyle({ [key]: value })
       },
       [updateStyle]
    )
@@ -128,21 +122,26 @@ const useThemeControl = () => {
    const [loadedFonts, setLoadedFonts] = useState(new Set())
 
    // 폰트 동적 로드
-   const loadFont = useCallback(
-      async (fontFamily) => {
-         if (loadedFonts.has(fontFamily)) return
+   const loadFont = async (fontFamily) => {
+      try {
+         // 폰트 URL 인코딩
+         const encodedFont = encodeURIComponent(fontFamily.replace(/\s*,\s*serif$/, ''))
+         const fontUrl = `https://fonts.googleapis.com/css2?family=${encodedFont}&display=swap`
 
-         try {
-            const font = new FontFace(fontFamily, `url(https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')})`)
-            await font.load()
-            document.fonts.add(font)
-            setLoadedFonts((prev) => new Set([...prev, fontFamily]))
-         } catch (error) {
-            console.error('Failed to load font:', error)
-         }
-      },
-      [loadedFonts]
-   )
+         // 폰트 로드 전에 존재 여부 확인
+         const existingLink = document.querySelector(`link[href="${fontUrl}"]`)
+         if (existingLink) return
+
+         const link = document.createElement('link')
+         link.href = fontUrl
+         link.rel = 'stylesheet'
+         document.head.appendChild(link)
+
+         await document.fonts.load(`1em ${fontFamily}`)
+      } catch (error) {
+         console.warn(`Font loading warning: ${error.message}`)
+      }
+   }
 
    // 테마 변경 시 필요한 폰트 로드
    useEffect(() => {

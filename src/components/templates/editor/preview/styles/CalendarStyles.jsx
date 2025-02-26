@@ -26,11 +26,11 @@ export const PreviewWeekDay = styled(Box)(({ theme }) => ({
    color: 'rgba(0, 0, 0, 0.6)',
 }))
 
-export const PreviewDateCell = styled(Box)(({ theme, isSelected, isCurrentMonth, isSunday, isSaturday }) => ({
+export const PreviewDateCell = styled('div')(({ theme, $isselected, $iscurrentmonth, $issunday, $issaturday }) => ({
    padding: '8px',
    fontSize: '0.9rem',
    borderRadius: '8px',
-   backgroundColor: isSelected ? theme.palette.primary.main : 'transparent',
-   color: isSelected ? '#FFFFFF' : !isCurrentMonth ? 'rgba(0, 0, 0, 0.3)' : isSunday ? '#FF6B6B' : isSaturday ? '#4C6EF5' : 'rgba(0, 0, 0, 0.8)',
-   fontWeight: isSelected ? 600 : 400,
+   backgroundColor: $isselected ? theme.palette.primary.main : 'transparent',
+   color: $isselected ? '#FFFFFF' : !$iscurrentmonth ? 'rgba(0, 0, 0, 0.3)' : $issunday ? '#FF6B6B' : $issaturday ? '#4C6EF5' : 'rgba(0, 0, 0, 0.8)',
+   fontWeight: $isselected ? 600 : 400,
 }))

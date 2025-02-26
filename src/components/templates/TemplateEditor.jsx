@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react'
 import { Box, Button, Drawer, Snackbar, Alert, SpeedDial, SpeedDialIcon, SpeedDialAction } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { FormProvider, useForm } from 'react-hook-form'
 import SaveIcon from '@mui/icons-material/Save'
 import PreviewIcon from '@mui/icons-material/Preview'
@@ -10,19 +10,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { Person as PersonIcon } from '@mui/icons-material'
 import { AccountBalance as AccountBalanceIcon } from '@mui/icons-material'
 
-import {
-   ArrowBackIosNew as ArrowBackIosNewIcon,
-   PhoneIphone as PhoneIphoneIcon,
-   Tablet as TabletIcon,
-   DesktopWindows as DesktopWindowsIcon,
-   Title as TitleIcon,
-   Message as MessageIcon,
-   Event as EventIcon,
-   LocationOn as LocationOnIcon,
-   PhotoLibrary as PhotoLibraryIcon,
-   Palette as PaletteIcon,
-   Settings as SettingsIcon,
-} from '@mui/icons-material'
+import { Title as TitleIcon, Message as MessageIcon, Event as EventIcon, LocationOn as LocationOnIcon, PhotoLibrary as PhotoLibraryIcon, Palette as PaletteIcon, Settings as SettingsIcon } from '@mui/icons-material'
 
 // 에디터용 컴포넌트
 import TitleSection from './editor/components/TitleSection'
@@ -38,10 +26,11 @@ import PreviewPanel from './editor/preview/PreviewPanel'
 import PreviewLoading from './editor/preview/PreviewLoading'
 
 // 커스텀 훅
-import useTemplateStore from '../../store/templateStore'
 import useThemeControl from './editor/hooks/useThemeControl'
-import useImageGallery from './editor/hooks/useImageGallery'
 import { COLORS } from './editor/styles/commonStyles'
+
+// API
+import { templateApi } from '../../api/templateApi'
 
 // ===================== styled components =====================
 
@@ -182,7 +171,6 @@ const UniversalSpeedDial = styled(SpeedDial)(({ theme }) => ({
          backgroundColor: COLORS.accent.dark,
       },
    },
-   // 반응형 위치 조정
    [theme.breakpoints.up('md')]: {
       bottom: theme.spacing(4),
       right: theme.spacing(4),
@@ -224,29 +212,6 @@ const containerVariants = {
 }
 
 /**
- * 미리보기 애니메이션
- * - 모바일 미리보기 패널 애니메이션
- *
- * 미리보기 애니메이션은 모바일 미리보기 패널 애니메이션을 정의
- * 사용법 : <PreviewContainer variants={previewVariants} initial="initial" animate="animate">
- */
-const previewVariants = {
-   initial: {
-      opacity: 0, // 초기 상태
-      x: -50, // 애니메이션 시작 위치
-   },
-   animate: {
-      opacity: 1, // 애니메이션 종료 상태
-      x: 0, // 애니메이션 종료 위치
-      transition: {
-         type: 'spring', // 스프링 애니메이션 타입
-         stiffness: 300, // 스프링 애니메이션 강도
-         damping: 30, // 스프링 애니메이션 감쇠 비율
-      },
-   },
-}
-
-/**
  * 편집기 애니메이션
  * - 모바일 편집기 패널 애니메이션
  *
@@ -271,17 +236,18 @@ const editorVariants = {
 
 const TemplateEditor = () => {
    const navigate = useNavigate()
-
-   // Zustand store
-   const { template, isLoading, error, updateTemplate, saveTemplate } = useTemplateStore()
+   const { templateId } = useParams() // URL에서 templateId 가져오기
 
    // react-hook-form
    const methods = useForm({
       defaultValues: {
-         // 설정
          setting: {
-            animation: null,
-            imgs: [],
+            animation: 'fade',
+            images: [
+               { file: null, url: '/images/samples/wedding-sample1.png', name: 'wedding-sample1.png' },
+               { file: null, url: '/images/samples/wedding-sample2.png', name: 'wedding-sample2.png' },
+               { file: null, url: '/images/samples/wedding-sample3.png', name: 'wedding-sample3.png' },
+            ],
          },
          // 기본 정보
          profiles: [],
@@ -303,7 +269,7 @@ const TemplateEditor = () => {
             detail: '',
             guide: '',
             showMap: false,
-            url: '',
+            coordinates: { lat: 37.5665, lng: 126.978 },
          },
          // 갤러리
          images: [],
@@ -344,20 +310,24 @@ const TemplateEditor = () => {
    }
 
    const sections = useMemo(() => createSections(control, watch, themeProps), [control, watch, themeProps])
-   const [currentTab, setCurrentTab] = useState(0)
    const [isPreviewLoading, setIsPreviewLoading] = useState(false)
    const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' })
-   const [autoSaveStatus, setAutoSaveStatus] = useState('idle') // 'idle', 'saving', 'saved', 'error'
    const [isPreviewOpen, setIsPreviewOpen] = useState(false)
    const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false)
-   const [previewSize, setPreviewSize] = useState('mobile') // mobile, tablet, desktop
    const [activeSection, setActiveSection] = useState('profile')
+   const [previewState, setPreviewState] = useState({
+      showInvitation: false,
+      showSections: false,
+      sectionAnimationIndex: -1,
+   })
 
    // type 관련 상태와 핸들러
    const currentType = watch('type') || 'wedding'
    const handleTypeChange = useCallback(
       (newType) => {
-         methods.setValue('type', newType, { shouldValidate: true })
+         requestAnimationFrame(() => {
+            methods.setValue('type', newType, { shouldValidate: true })
+         })
       },
       [methods]
    )
@@ -371,72 +341,72 @@ const TemplateEditor = () => {
       [currentType, handleTypeChange]
    )
 
-   // 미디어쿼리나 상태에 따라 탭 변경
-   const handleTabChange = useCallback((event, newValue) => {
-      setIsPreviewLoading(true)
-      setCurrentTab(newValue)
-      setTimeout(() => setIsPreviewLoading(false), 500)
-   }, [])
-
-   // 뒤로가기 처리
-   const handleBack = useCallback(() => {
-      if (isDirty) {
-         if (window.confirm('저장하지 않은 변경사항이 있습니다. 정말 나가시겠습니까?')) {
-            navigate(-1)
-         }
-      } else {
-         navigate(-1)
-      }
-   }, [navigate, isDirty])
-
    // 알림 표시
    const showNotification = useCallback((message, severity = 'success') => {
       setNotification({ open: true, message, severity })
    }, [])
 
-   // 임시 저장
-   const handleTempSave = useCallback(async () => {
-      setIsPreviewLoading(true)
-      try {
-         const data = getValues()
-         await updateTemplate(data)
-         await saveTemplate()
-         setAutoSaveStatus('saved')
-         showNotification('임시저장되었습니다.')
-      } catch (error) {
-         setAutoSaveStatus('error')
-         showNotification('임시저장 실패', 'error')
-      } finally {
-         setIsPreviewLoading(false)
-      }
-   }, [getValues, updateTemplate, saveTemplate, showNotification])
-
-   // 폼 제출
-   const onSubmit = useCallback(
-      async (data) => {
-         try {
-            setIsPreviewLoading(true)
-            // 실제 API 연동 대신, 가짜 처리
-            await new Promise((resolve) => setTimeout(resolve, 1500))
-            showNotification('템플릿이 저장되었습니다.')
-            navigate(-1)
-         } catch (error) {
-            showNotification('저장에 실패했습니다.', 'error')
-         } finally {
-            setIsPreviewLoading(false)
-         }
-      },
-      [navigate, showNotification]
-   )
-
    // SpeedDial 액션
    const speedDialActions = useMemo(
       () => [
-         { icon: <SaveIcon />, name: '저장하기', action: handleSubmit(onSubmit) },
+         {
+            icon: <SaveIcon />,
+            name: '저장하기',
+            action: async () => {
+               try {
+                  setIsPreviewLoading(true)
+                  const data = getValues()
+                  const response = await templateApi.updateTemplate(templateId, {
+                     templateSet: {
+                        intro: {
+                           type: data.type,
+                           title: data.title,
+                        },
+                        greeting: {
+                           content: data.greeting,
+                        },
+                        calendar: {
+                           dateTime: data.dateTime,
+                           showCountdown: data.showCountdown,
+                        },
+                        map: {
+                           name: data.location.name,
+                           address: data.location.address,
+                           detail: data.location.detail,
+                           guide: data.location.guide,
+                           showMap: data.location.showMap,
+                           coordinates: data.location.coordinates,
+                        },
+                        gallery: {
+                           images: data.images,
+                           layout: data.galleryLayout,
+                        },
+                        bankAccount: {
+                           accounts: data.accounts,
+                           showAccounts: data.showAccounts,
+                        },
+                        other: {
+                           backgroundColor: data.backgroundColor,
+                           primaryColor: data.primaryColor,
+                           secondaryColor: data.secondaryColor,
+                           fontFamily: data.fontFamily,
+                           animation: data.animation,
+                        },
+                     },
+                  })
+
+                  showNotification('템플릿이 저장되었습니다.')
+                  navigate(`preview/${response.id}`)
+               } catch (error) {
+                  showNotification('저장에 실패했습니다.', 'error')
+               } finally {
+                  setIsPreviewLoading(false)
+               }
+            },
+         },
          { icon: <PreviewIcon />, name: '미리보기', action: () => setIsPreviewOpen(true) },
-         // 필요한 경우 추가 액션들을 여기에 추가
       ],
-      [handleSubmit, onSubmit]
+      [getValues, templateId, navigate, showNotification]
    )
 
    // ThemeSection에 전달할 props
@@ -445,40 +415,45 @@ const TemplateEditor = () => {
       onThemeChange: handleThemeChange,
    }
 
-   // PreviewPanel에 전달할 props
-   const previewProps = {
-      formData: methods.watch(),
-      theme: themeSettings,
-   }
+   const formData = watch()
 
-   const formData = watch() // 모든 form 필드 감시
+   const handlePreviewStateChange = useCallback((newState) => {
+      setPreviewState((prev) => ({
+         ...prev,
+         ...newState,
+      }))
+   }, [])
 
-   // 공유 상태
-   const [previewState, setPreviewState] = useState({
-      showInvitation: false,
-      showSections: false,
-      sectionAnimationIndex: -1,
-   })
+   const previewPanelProps = useMemo(
+      () => ({
+         formData,
+         theme: themeSettings,
+         previewState,
+         setPreviewState,
+         isDrawer: false,
+      }),
+      [formData, themeSettings, previewState]
+   )
 
-   // 프리뷰 패널 공통 props
-   const previewPanelProps = {
-      formData: watch(),
-      theme: themeSettings,
-      previewState,
-      setPreviewState,
-      isDrawer: false,
-   }
-
-   const drawerPreviewProps = {
-      ...previewPanelProps,
-      isDrawer: true,
-   }
+   const drawerPreviewProps = useMemo(
+      () => ({
+         ...previewPanelProps,
+         isDrawer: true,
+         onPreviewStateChange: (newState) => {
+            setPreviewState((prev) => ({
+               ...prev,
+               ...newState,
+            }))
+         },
+      }),
+      [previewPanelProps, previewState]
+   )
 
    return (
       <FormProvider {...methods}>
          <EditorContainer variants={containerVariants} initial="initial" animate="animate">
             <PreviewContainer>
-               <PreviewFrame>{isPreviewLoading ? <PreviewLoading /> : <PreviewPanel {...drawerPreviewProps} />}</PreviewFrame>
+               <PreviewFrame>{isPreviewLoading ? <PreviewLoading /> : <PreviewPanel {...previewPanelProps} onPreviewStateChange={handlePreviewStateChange} />}</PreviewFrame>
             </PreviewContainer>
 
             <EditorPanel variants={editorVariants}>
@@ -518,6 +493,24 @@ const TemplateEditor = () => {
                }}
             >
                {isPreviewLoading ? <PreviewLoading /> : <PreviewPanel {...drawerPreviewProps} />}
+               <Button
+                  onClick={() => setIsPreviewOpen(false)}
+                  sx={{
+                     position: 'absolute',
+                     top: 8,
+                     right: 8,
+                     minWidth: '20px',
+                     height: '40px',
+                     background: 'rgba(0, 0, 0, 0.4)',
+                     color: '#fff',
+                     borderRadius: '50%',
+                     '&:hover': {
+                        background: 'rgba(0, 0, 0, 0.7)',
+                     },
+                  }}
+               >
+                  ✕
+               </Button>
             </Drawer>
 
             {/* 공통 SpeedDial */}

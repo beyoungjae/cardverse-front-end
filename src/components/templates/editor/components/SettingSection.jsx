@@ -1,153 +1,135 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { useFormContext, Controller } from 'react-hook-form'
 import { motion } from 'framer-motion'
-import { Box, Button, Typography, Select, MenuItem, IconButton, LinearProgress } from '@mui/material'
+import { Box, Button, Typography, Select, MenuItem, IconButton, LinearProgress, Grid, Tooltip } from '@mui/material'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import DeleteIcon from '@mui/icons-material/Delete'
-import { COLORS, SectionContainer } from '../styles/commonStyles'
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import { SectionContainer, SectionTitle, TitleText, IconButtonWrapper, fadeInUp, COLORS } from '../styles/commonStyles'
+import useImageUpload from '../hooks/useImageUpload'
 
-// 사용할 애니메이션 타입들 예시
+// 사용할 애니메이션 옵션
 const animationOptions = [
    { value: 'fade', label: '페이드' },
    { value: 'slide', label: '슬라이드' },
    { value: 'none', label: '없음' },
 ]
 
-// 샘플 이미지 데이터
+// 샘플 이미지
 const sampleImages = [
-   {
-      file: null,
-      url: '/images/samples/wedding-sample1.png',
-      name: 'wedding-sample1.png',
-   },
-   {
-      file: null,
-      url: '/images/samples/wedding-sample2.png',
-      name: 'wedding-sample2.png',
-   },
-   {
-      file: null,
-      url: '/images/samples/wedding-sample3.png',
-      name: 'wedding-sample3.png',
-   },
+   { file: null, url: '/images/samples/wedding-sample1.png', name: 'wedding-sample1.png' },
+   { file: null, url: '/images/samples/wedding-sample2.png', name: 'wedding-sample2.png' },
+   { file: null, url: '/images/samples/wedding-sample3.png', name: 'wedding-sample3.png' },
 ]
-
-// 페이드인 애니메이션
-const fadeInVariants = {
-   initial: {
-      opacity: 0,
-      y: 20,
-   },
-   animate: {
-      opacity: 1,
-      y: 0,
-      transition: {
-         duration: 0.5,
-         ease: 'easeOut',
-      },
-   },
-   exit: {
-      opacity: 0,
-      y: -20,
-      transition: {
-         duration: 0.3,
-      },
-   },
-}
 
 const SettingSection = () => {
    const { control, watch, setValue } = useFormContext()
    const [uploadProgress, setUploadProgress] = useState(0)
-   const images = watch('introImages') || []
+   const setting = watch('setting') || { animation: 'fade', images: [] }
+   const images = setting.images || []
+   const animationType = setting.animation || 'fade'
+   const { uploadImage, deleteUploadedImage, uploadMultipleImages } = useImageUpload()
 
-   // 컴포넌트 마운트시 샘플 이미지 설정
    useEffect(() => {
-      if (images.length === 0) {
-         setValue('introImages', sampleImages, { shouldValidate: true })
+      if (!sessionStorage.getItem('userInitialized')) {
+         setValue(
+            'setting',
+            {
+               images: sampleImages,
+               animation: 'fade',
+            },
+            { shouldValidate: true }
+         )
+         sessionStorage.setItem('userInitialized', 'true')
       }
-   }, [])
+   }, [setValue])
 
-   // 파일 업로드 핸들러
    const handleFileChange = useCallback(
-      (e) => {
-         const files = Array.from(e.target.files).filter((file) => file.type.startsWith('image/'))
+      async (e) => {
+         const files = Array.from(e.target.files)
          if (files.length + images.length > 3) {
             alert('이미지는 최대 3장까지 업로드 가능합니다.')
             return
          }
 
-         // 진행도 표시 애니메이션
-         setUploadProgress(0)
-         const interval = setInterval(() => {
-            setUploadProgress((prev) => {
-               if (prev >= 100) {
-                  clearInterval(interval)
-                  setTimeout(() => setUploadProgress(0), 1000)
-                  return 100
-               }
-               return prev + 20
-            })
-         }, 200)
+         try {
+            setUploadProgress(0)
+            const uploadPromises = files.map((file) => uploadImage(file, 'setting'))
+            const uploadedImages = await Promise.all(uploadPromises)
+            setUploadProgress(100)
 
-         // 새 이미지 객체 생성
-         const newImages = files.map((file) => ({
-            file,
-            url: URL.createObjectURL(file),
-            name: file.name,
-         }))
-         setValue('introImages', [...images, ...newImages], { shouldValidate: true })
+            const validImages = uploadedImages.filter(Boolean)
+            if (validImages.length > 0) {
+               setValue('setting.images', [...images, ...validImages], { shouldValidate: true })
+            }
+         } catch (error) {
+            console.error('이미지 업로드 실패:', error)
+         }
       },
-      [images, setValue]
+      [images, setValue, uploadImage]
    )
 
-   // 이미지 삭제
+   const handleAnimationChange = useCallback(
+      (value) => {
+         setValue('setting.animation', value || 'fade', { shouldValidate: true })
+      },
+      [setValue]
+   )
+
    const handleDelete = useCallback(
       (index) => {
          const updated = [...images]
          updated.splice(index, 1)
-         setValue('introImages', updated, { shouldValidate: true })
+         setValue('setting.images', updated, { shouldValidate: true })
       },
       [images, setValue]
    )
 
-   // 샘플 이미지로 리셋
    const handleReset = useCallback(() => {
-      setValue('introImages', sampleImages, { shouldValidate: true })
+      setValue(
+         'setting',
+         {
+            images: sampleImages,
+            animation: 'fade',
+         },
+         { shouldValidate: true }
+      )
    }, [setValue])
 
    return (
-      <SectionContainer component={motion.div} variants={fadeInVariants} initial="initial" animate="animate" exit="exit" sx={{ p: 2, border: `1px solid ${COLORS.accent.main}30`, borderRadius: 2 }}>
-         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6">
-               <AutoFixHighIcon sx={{ mr: 1, verticalAlign: 'middle', color: COLORS.accent.main }} />
-               초기 이미지 & 애니메이션 설정
-            </Typography>
-            <Button
-               onClick={handleReset}
-               size="small"
-               sx={{
-                  color: COLORS.accent.main,
-                  '&:hover': {
-                     backgroundColor: `${COLORS.accent.main}15`,
-                  },
-               }}
-            >
-               샘플로 리셋
-            </Button>
-         </Box>
+      <SectionContainer component={motion.div} variants={fadeInUp} initial="initial" animate="animate" exit="exit" sx={{ p: 3 }}>
+         {/* 섹션 타이틀 */}
+         <SectionTitle>
+            <TitleText>
+               <AutoFixHighIcon className="icon" />
+               <Box className="title">초기 이미지 & 애니메이션 설정</Box>
+            </TitleText>
+            <IconButtonWrapper>
+               <Tooltip title="초기 이미지 초기화">
+                  <RestartAltIcon onClick={handleReset} />
+               </Tooltip>
+            </IconButtonWrapper>
+         </SectionTitle>
 
          {/* 애니메이션 타입 선택 */}
-         <Box sx={{ mb: 2 }}>
-            <Typography variant="body1" sx={{ mb: 1 }}>
-               애니메이션 타입
+         <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500, color: COLORS.text.primary }}>
+               애니메이션 타입 선택
             </Typography>
             <Controller
-               name="introAnimation"
+               name="setting.animation"
                control={control}
                defaultValue="fade"
                render={({ field }) => (
-                  <Select {...field} size="small" sx={{ minWidth: 120 }}>
+                  <Select
+                     {...field}
+                     onChange={(e) => {
+                        field.onChange(e)
+                     }}
+                     size="small"
+                     sx={{ minWidth: 140, backgroundColor: 'white', borderRadius: 1 }}
+                  >
                      {animationOptions.map((opt) => (
                         <MenuItem key={opt.value} value={opt.value}>
                            {opt.label}
@@ -160,87 +142,63 @@ const SettingSection = () => {
 
          {/* 이미지 업로드 */}
          <Box>
-            <Typography variant="body1" sx={{ mb: 1 }}>
-               최대 3장 이미지 업로드
+            <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500, color: COLORS.text.primary }}>
+               이미지 업로드 (최대 3장)
             </Typography>
-            <Typography variant="caption" sx={{ mb: 1 }}>
-               업로드 후 오른쪽 하단에 + 버튼 누르고 미리보기 화면 확인 가능!
-            </Typography>
-            <br />
             <label htmlFor="intro-image-upload">
                <input id="intro-image-upload" type="file" accept="image/*" multiple onChange={handleFileChange} style={{ display: 'none' }} />
-               <Button
-                  component="span"
-                  startIcon={<AddPhotoAlternateIcon />}
-                  sx={{
-                     color: COLORS.accent.main,
-                     mb: 1,
-                     '&:hover': {
-                        backgroundColor: `${COLORS.accent.main}15`,
-                     },
-                  }}
-               >
+               <Button component="span" startIcon={<AddPhotoAlternateIcon />} sx={{ color: COLORS.accent.main }}>
                   이미지 선택
                </Button>
             </label>
 
-            {uploadProgress > 0 && (
-               <LinearProgress
-                  variant="determinate"
-                  value={uploadProgress}
-                  sx={{
-                     mt: 1,
-                     mb: 1,
-                     height: 6,
-                     borderRadius: 3,
-                     backgroundColor: `${COLORS.accent.main}15`,
-                     '& .MuiLinearProgress-bar': {
-                        backgroundColor: COLORS.accent.main,
-                     },
-                  }}
-               />
-            )}
+            {uploadProgress > 0 && <LinearProgress variant="determinate" value={uploadProgress} sx={{ mt: 1, height: 6, borderRadius: 3 }} />}
 
             {/* 업로드된 이미지 미리보기 */}
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 1 }}>
+            <Grid container spacing={2} sx={{ mt: 2 }}>
                {images.map((img, idx) => (
-                  <Box
-                     key={idx}
-                     sx={{
-                        position: 'relative',
-                        width: 80,
-                        height: 80,
-                        borderRadius: 1,
-                        overflow: 'hidden',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-                     }}
-                  >
-                     <img
-                        src={img.url}
-                        alt={img.name}
-                        style={{
+                  <Grid item key={idx} xs={4}>
+                     <Box
+                        sx={{
+                           position: 'relative',
                            width: '100%',
                            height: '100%',
-                           objectFit: 'cover',
-                        }}
-                     />
-                     <IconButton
-                        onClick={() => handleDelete(idx)}
-                        size="small"
-                        sx={{
-                           position: 'absolute',
-                           top: 2,
-                           right: 2,
-                           color: 'white',
-                           bgcolor: 'rgba(0,0,0,0.5)',
-                           '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
+                           borderRadius: 2,
+                           overflow: 'hidden',
+                           boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                           display: 'flex',
+                           alignItems: 'center',
+                           justifyContent: 'center',
+                           backgroundColor: '#F8F8F8',
                         }}
                      >
-                        <DeleteIcon fontSize="small" />
-                     </IconButton>
-                  </Box>
+                        <img
+                           src={img.url}
+                           alt={img.name}
+                           style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                           }}
+                        />
+                        <IconButton
+                           onClick={() => handleDelete(idx)}
+                           size="small"
+                           sx={{
+                              position: 'absolute',
+                              top: 4,
+                              right: 4,
+                              color: 'white',
+                              bgcolor: 'rgba(0,0,0,0.5)',
+                              '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
+                           }}
+                        >
+                           <DeleteIcon fontSize="small" />
+                        </IconButton>
+                     </Box>
+                  </Grid>
                ))}
-            </Box>
+            </Grid>
          </Box>
       </SectionContainer>
    )

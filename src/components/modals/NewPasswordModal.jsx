@@ -27,7 +27,7 @@ const StyledForm = styled('form')(({ theme }) => ({
    },
 }))
 
-const NewPasswordModal = ({ onClose }) => {
+const NewPasswordModal = ({ onGoBack }) => {
    const [currentPassword, setCurrentPassword] = useState('')
    const [newPassword, setNewPassword] = useState('')
    const [confirmPassword, setConfirmPassword] = useState('')
@@ -143,8 +143,8 @@ const NewPasswordModal = ({ onClose }) => {
 
          {/* 버튼 그룹 */}
          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
-            <Button variant="contained" color="grey" onClick={onClose}>
-               닫기
+            <Button variant="contained" color="grey" onClick={onGoBack}>
+               뒤로가기
             </Button>
             <Button variant="contained" color="error" onClick={handlePasswordChange}>
                변경하기

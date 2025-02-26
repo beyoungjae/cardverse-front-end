@@ -8,7 +8,6 @@ import FavoriteIcon from '@mui/icons-material/Favorite'
 import CelebrationIcon from '@mui/icons-material/Celebration'
 import CakeIcon from '@mui/icons-material/Cake'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
-import { COLORS } from '../styles/commonStyles'
 
 import AnimatedSection from './sections/AnimatedSection'
 
@@ -25,21 +24,12 @@ import SettingSection from './sections/SettingSection'
 // dayjs 한글 설정
 dayjs.locale('ko')
 
-const PreviewContainer = styled(Box)(({ theme, isDrawer }) => ({
-   width: isDrawer ? '100%' : '375px', // 폰 미리보기: 고정 폭 적용 (예: 375px)
-   height: isDrawer ? '100vh' : '667px', // 폰 미리보기: 고정 높이 (예: 667px)
-   backgroundColor: '#FFFFFF',
-   borderRadius: '16px',
-   position: 'relative',
-   overflow: 'hidden',
-}))
-
 const PreviewContent = styled(motion.div)(({ theme, backgroundColor }) => ({
    width: '100%',
    height: '100%',
    overflowY: 'auto',
-   WebkitOverflowScrolling: 'touch', // iOS에서 부드러운 스크롤 적용
    padding: '24px',
+   WebkitOverflowScrolling: 'touch', // iOS에서 부드러운 스크롤 적용
    backgroundColor: backgroundColor || '#FFFFFF',
    position: 'relative',
    '&::-webkit-scrollbar': {
@@ -54,53 +44,9 @@ const PreviewContent = styled(motion.div)(({ theme, backgroundColor }) => ({
    },
 }))
 
-const PreviewCalendarHeader = styled(Box)(({ theme }) => ({
-   textAlign: 'center',
-   marginBottom: '16px',
-   position: 'relative',
-   zIndex: 1,
-}))
-
-const PreviewCalendarGrid = styled(Box)(({ theme }) => ({
-   display: 'grid',
-   gridTemplateColumns: 'repeat(7, 1fr)',
-   gap: '4px',
-   textAlign: 'center',
-   position: 'relative',
-   zIndex: 1,
-}))
-
-const PreviewWeekDay = styled(Typography)(({ theme }) => ({
-   fontSize: '0.8rem',
-   color: COLORS.text.secondary,
-   padding: '4px 0',
-}))
-
-const PreviewDateCell = styled(Box)(({ isSelected, isCurrentMonth, isSunday, isSaturday }) => ({
-   padding: '4px',
-   fontSize: '0.9rem',
-   color: isSunday ? '#FF6B6B' : isSaturday ? '#4169E1' : !isCurrentMonth ? COLORS.text.hint : COLORS.text.primary,
-   fontWeight: isSelected ? 600 : 400,
-   position: 'relative',
-   ...(isSelected && {
-      '&::after': {
-         content: '""',
-         position: 'absolute',
-         top: '50%',
-         left: '50%',
-         transform: 'translate(-50%, -50%)',
-         width: '24px',
-         height: '24px',
-         borderRadius: '50%',
-         backgroundColor: COLORS.accent.main,
-         opacity: 0.15,
-         zIndex: -1,
-      },
-   }),
-}))
-
 const InvitationType = {
    wedding: {
+      galleryTitle: '웨딩 갤러리',
       icon: <FavoriteIcon />,
       color: '#B699BB',
       gradient: 'linear-gradient(135deg, #FFF0F5 0%, #FFE4E1 100%)',
@@ -133,6 +79,7 @@ const InvitationType = {
       },
    },
    newYear: {
+      galleryTitle: '지난 해 추억을 담은 갤러리',
       icon: <CelebrationIcon />,
       color: '#FFD700',
       gradient: 'linear-gradient(135deg, #FFFAF0 0%, #FFF8DC 100%)',
@@ -165,6 +112,7 @@ const InvitationType = {
       },
    },
    birthday: {
+      galleryTitle: '고희연 갤러리',
       icon: <CakeIcon />,
       color: '#9370DB',
       gradient: 'linear-gradient(135deg, #F0E6FF 0%, #E6E6FA 100%)',
@@ -197,6 +145,7 @@ const InvitationType = {
       },
    },
    invitation: {
+      galleryTitle: '갤러리',
       icon: <EmojiEventsIcon />,
       color: '#4169E1',
       gradient: 'linear-gradient(135deg, #F0F8FF 0%, #E6F3FF 100%)',
@@ -237,7 +186,7 @@ const invitationTypes = [
    { id: 'invitation', label: '초빙장', icon: <EmojiEventsIcon />, format: '특별한 행사가 (D-Day)일 남았습니다.' },
 ]
 
-const PreviewPanel = React.memo(({ formData, theme, isDrawer }) => {
+const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
    const [loadedImages, setLoadedImages] = useState(new Set())
    const [selectedType, setSelectedType] = useState('wedding')
    const [selectedImageIndex, setSelectedImageIndex] = useState(null)
@@ -246,8 +195,6 @@ const PreviewPanel = React.memo(({ formData, theme, isDrawer }) => {
    const [sectionAnimationIndex, setSectionAnimationIndex] = useState(-1)
 
    const sectionOrder = useMemo(() => ['title', 'profile', 'greeting', 'datetime', 'location', 'account', 'gallery'], [])
-
-   console.log('formData:', formData) // 디버깅을 위한 로그 추가
 
    // formData 기본값 설정
    const defaultFormData = {
@@ -265,7 +212,7 @@ const PreviewPanel = React.memo(({ formData, theme, isDrawer }) => {
          detail: '',
          guide: '',
          showMap: false,
-         url: '',
+         coordinates: { lat: 37.5665, lng: 126.978 },
       },
       images: [],
       accounts: [],
@@ -288,26 +235,58 @@ const PreviewPanel = React.memo(({ formData, theme, isDrawer }) => {
 
    // SettingSection 완료 핸들러
    const handleSettingComplete = useCallback(() => {
+      // 직접 상태를 변경
       setShowInvitation(true)
-   }, [])
+      setShowSections(false)
+      setSectionAnimationIndex(-1)
+
+      // 부모 컴포넌트에도 상태 변경을 알림
+      onPreviewStateChange({
+         showInvitation: true,
+         showSections: false,
+         sectionAnimationIndex: -1,
+      })
+   }, [onPreviewStateChange])
 
    const startSectionAnimations = useCallback(() => {
       let currentIndex = 0
+
       const animateNextSection = () => {
          if (currentIndex < sectionOrder.length) {
+            // 로컬 상태와 부모 상태 모두 업데이트
             setSectionAnimationIndex(currentIndex)
+            onPreviewStateChange({
+               showInvitation: false,
+               showSections: true,
+               sectionAnimationIndex: currentIndex,
+            })
+
             currentIndex++
-            setTimeout(animateNextSection, 300)
+            setTimeout(animateNextSection, 800)
          }
       }
+
       animateNextSection()
-   }, [sectionOrder])
+   }, [onPreviewStateChange, sectionOrder])
 
    const handleInvitationClick = useCallback(() => {
+      // 로컬 상태 변경
       setShowInvitation(false)
       setShowSections(true)
-      startSectionAnimations()
-   }, [startSectionAnimations])
+      setSectionAnimationIndex(-1)
+
+      // 부모 컴포넌트 상태 변경
+      onPreviewStateChange({
+         showInvitation: false,
+         showSections: true,
+         sectionAnimationIndex: -1,
+      })
+
+      // 약간의 지연 후 섹션 애니메이션 시작
+      setTimeout(() => {
+         startSectionAnimations()
+      }, 300)
+   }, [onPreviewStateChange, startSectionAnimations])
 
    useEffect(() => {
       // formData.type이 있으면 해당 값을 사용, 없으면 프로필의 type 확인
@@ -365,13 +344,13 @@ const PreviewPanel = React.memo(({ formData, theme, isDrawer }) => {
       () => ({
          backgroundColor: `${theme?.backgroundColor}dd` || '#ffffffdd',
          color: theme?.primaryColor || '#000000',
-         '& .profile-avatar': {
+         '& .profileAvatar': {
             bgcolor: `${theme?.primaryColor}15` || '#00000015',
          },
-         '& .profile-name': {
+         '& .profileName': {
             color: theme?.primaryColor || '#000000',
          },
-         '& .profile-info': {
+         '& .profileInfo': {
             color: theme?.secondaryColor || '#666666',
          },
       }),
@@ -382,13 +361,13 @@ const PreviewPanel = React.memo(({ formData, theme, isDrawer }) => {
    const accountStyle = useMemo(
       () => ({
          backgroundColor: `${theme?.backgroundColor}dd` || '#ffffffdd',
-         '& .account-label': {
+         '& .accountLabel': {
             color: theme?.secondaryColor || '#666666',
          },
-         '& .account-number': {
+         '& .accountNumber': {
             color: theme?.primaryColor || '#000000',
          },
-         '& .account-holder': {
+         '& .accountHolder': {
             color: theme?.secondaryColor || '#666666',
          },
       }),
@@ -400,7 +379,7 @@ const PreviewPanel = React.memo(({ formData, theme, isDrawer }) => {
       () => ({
          backgroundColor: `${theme?.backgroundColor}dd` || '#ffffffdd',
          borderColor: `${theme?.primaryColor}15` || '#00000015',
-         '& .gallery-title': {
+         '& .galleryTitle': {
             color: theme?.primaryColor || '#000000',
          },
       }),
@@ -474,22 +453,33 @@ const PreviewPanel = React.memo(({ formData, theme, isDrawer }) => {
       }
    }
 
-   // 애니메이션 variants 정의
+   // 애니메이션 variants
    const animationVariants = useMemo(
       () => ({
          fade: {
             initial: { opacity: 0 },
-            animate: { opacity: 1 },
+            animate: {
+               opacity: 1,
+               transition: { duration: 0.5 },
+            },
             exit: { opacity: 0 },
          },
          slide: {
             initial: { x: -20, opacity: 0 },
-            animate: { x: 0, opacity: 1 },
+            animate: {
+               x: 0,
+               opacity: 1,
+               transition: { duration: 0.5 },
+            },
             exit: { x: 20, opacity: 0 },
          },
          zoom: {
             initial: { scale: 0.8, opacity: 0 },
-            animate: { scale: 1, opacity: 1 },
+            animate: {
+               scale: 1,
+               opacity: 1,
+               transition: { duration: 0.5 },
+            },
             exit: { scale: 1.2, opacity: 0 },
          },
          bounce: {
@@ -505,14 +495,20 @@ const PreviewPanel = React.memo(({ formData, theme, isDrawer }) => {
       []
    )
 
-   // 애니메이션이 적용될 요소인지 확인하는 함수
-   const shouldAnimate = useCallback((elementId) => {
-      // 항상 true 반환하거나, 특정 조건 추가
-      return true
-   }, [])
+   const containerVariants = {
+      initial: {},
+      animate: {
+         transition: {
+            staggerChildren: 0.3,
+         },
+      },
+   }
 
    // 현재 선택된 애니메이션 variant
-   const currentAnimation = useMemo(() => animationVariants[theme?.animation || 'fade'], [animationVariants, theme?.animation])
+   const currentAnimation = useMemo(() => {
+      const animationType = theme?.animation || mergedFormData.setting?.animation || 'fade'
+      return animationVariants[animationType]
+   }, [animationVariants, theme?.animation, mergedFormData.setting?.animation])
 
    const shouldShowSection = useCallback(
       (sectionId) => {
@@ -523,13 +519,70 @@ const PreviewPanel = React.memo(({ formData, theme, isDrawer }) => {
 
    // AnimatedSection 컴포넌트에 새로운 props 전달
    const renderSection = (sectionId, content) => (
-      <AnimatedSection shouldAnimate={true} animation={currentAnimation} show={true}>
+      <AnimatedSection key={sectionId} variants={currentAnimation}>
          {content}
       </AnimatedSection>
    )
 
+   // isDrawer prop을 분리하고 나머지 props만 전달
+   const containerProps = {
+      sx: {
+         height: '100%',
+         overflow: 'auto',
+         position: 'relative',
+      },
+   }
+
+   // 조건부 렌더링 로직
+   if (!isDrawer) {
+      return (
+         <Box {...containerProps}>
+            <PreviewContent
+               className="PreviewContent"
+               style={{
+                  background: combinedStyle.gradient,
+                  fontFamily: combinedStyle.fontFamily,
+               }}
+            >
+               <motion.div variants={containerVariants} initial="initial" animate="animate">
+                  {renderSection('title', mergedFormData.title && <TitleSection title={mergedFormData.title} style={sectionStyle} combinedStyle={combinedStyle} />)}
+                  {renderSection('profile', mergedFormData.showProfiles && mergedFormData.profiles?.length > 0 && <ProfileSection profiles={mergedFormData.profiles} style={profileStyle} combinedStyle={combinedStyle} textStyle={textStyle} />)}
+                  {renderSection('greeting', mergedFormData.greeting && <GreetingSection greeting={mergedFormData.greeting} style={sectionStyle} combinedStyle={combinedStyle} textStyle={textStyle} />)}
+                  {renderSection(
+                     'datetime',
+                     mergedFormData.dateTime && <DateTimeSection dateTime={mergedFormData.dateTime} showCountdown={mergedFormData.showCountdown} style={sectionStyle} typeStyle={typeStyle} formatDDay={formatDDay} type={mergedFormData.type} textStyle={textStyle} combinedStyle={combinedStyle} />
+                  )}
+                  {renderSection('location', mergedFormData.location && Object.values(mergedFormData.location).some((value) => value) && <LocationSection formData={mergedFormData} style={sectionStyle} textStyle={textStyle} combinedStyle={combinedStyle} isDrawer={isDrawer} />)}
+                  {renderSection(
+                     'account',
+                     mergedFormData.showAccounts && mergedFormData.accounts?.length > 0 && <AccountSection accounts={mergedFormData.accounts} style={accountStyle} typeStyle={typeStyle} type={mergedFormData.type} getAccountLabel={getAccountLabel} textStyle={textStyle} combinedStyle={combinedStyle} />
+                  )}
+                  {renderSection(
+                     'gallery',
+                     mergedFormData.images?.length > 0 && (
+                        <GallerySection
+                           images={mergedFormData.images}
+                           layout={mergedFormData.galleryLayout}
+                           style={galleryStyle}
+                           typeStyle={typeStyle}
+                           selectedImageIndex={selectedImageIndex}
+                           onImageClick={handleImageClick}
+                           onCloseModal={handleCloseModal}
+                           onPrevImage={handlePrevImage}
+                           onNextImage={handleNextImage}
+                           combinedStyle={combinedStyle}
+                        />
+                     )
+                  )}
+               </motion.div>
+            </PreviewContent>
+         </Box>
+      )
+   }
+
+   // 드로어 미리보기 패널
    return (
-      <PreviewContainer style={containerStyle} isDrawer={isDrawer}>
+      <Box {...containerProps}>
          <PreviewContent
             className="PreviewContent"
             style={{
@@ -537,55 +590,105 @@ const PreviewPanel = React.memo(({ formData, theme, isDrawer }) => {
                fontFamily: combinedStyle.fontFamily,
             }}
          >
-            <AnimatePresence mode="wait">
+            <AnimatePresence
+               mode="wait"
+               onExitComplete={() => {
+                  // console.log('Animation exit completed', {
+                  //    showInvitation,
+                  //    showSections,
+                  //    sectionAnimationIndex,
+                  // })
+               }}
+            >
                {!showInvitation && !showSections && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ width: '100%', height: '100%' }}>
+                  <motion.div key="setting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} style={{ width: '100%', height: '100%' }}>
                      <SettingSection onComplete={handleSettingComplete} />
                   </motion.div>
                )}
 
-               {/* 초대장 이미지 (추후에 템플릿 페이지에서 썸네일 이미지로 교체) */}
                {showInvitation && !showSections && (
-                  <motion.img src="/images/templates/card5.png" alt="Invitation" onClick={handleInvitationClick} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.5 }} style={{ width: '100%', cursor: 'pointer' }} />
+                  <motion.div
+                     key="invitation"
+                     onClick={handleInvitationClick}
+                     initial={{ opacity: 0 }}
+                     animate={{ opacity: 1 }}
+                     exit={{ opacity: 0 }}
+                     transition={{ duration: 0.3 }}
+                     style={{
+                        width: '100%',
+                        height: '100%',
+                        cursor: 'pointer',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                     }}
+                  >
+                     <img
+                        src="/images/templates/sample00001.png"
+                        alt="Invitation"
+                        style={{
+                           width: '100%',
+                           height: '100%',
+                           objectFit: 'contain',
+                        }}
+                     />
+                  </motion.div>
                )}
 
                {showSections && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-                     {renderSection('title', mergedFormData.title && <TitleSection title={mergedFormData.title} style={sectionStyle} combinedStyle={combinedStyle} />)}
-
-                     {renderSection('profile', mergedFormData.showProfiles && mergedFormData.profiles?.length > 0 && <ProfileSection profiles={mergedFormData.profiles} style={profileStyle} combinedStyle={combinedStyle} textStyle={textStyle} />)}
-
-                     {renderSection('greeting', mergedFormData.greeting && <GreetingSection greeting={mergedFormData.greeting} style={sectionStyle} combinedStyle={combinedStyle} textStyle={textStyle} />)}
-
-                     {renderSection('datetime', mergedFormData.dateTime && <DateTimeSection dateTime={mergedFormData.dateTime} showCountdown={mergedFormData.showCountdown} style={sectionStyle} typeStyle={typeStyle} formatDDay={formatDDay} type={mergedFormData.type} textStyle={textStyle} />)}
-
-                     {renderSection('location', mergedFormData.location && Object.values(mergedFormData.location).some((value) => value) && <LocationSection formData={mergedFormData} style={sectionStyle} textStyle={typeStyle} />)}
-
-                     {renderSection('account', mergedFormData.showAccounts && mergedFormData.accounts?.length > 0 && <AccountSection accounts={mergedFormData.accounts} style={accountStyle} typeStyle={typeStyle} type={mergedFormData.type} getAccountLabel={getAccountLabel} textStyle={textStyle} />)}
-
-                     {renderSection(
-                        'gallery',
-                        mergedFormData.images?.length > 0 && (
-                           <GallerySection
-                              images={mergedFormData.images}
-                              layout={mergedFormData.galleryLayout}
-                              style={galleryStyle}
-                              typeStyle={typeStyle}
-                              selectedImageIndex={selectedImageIndex}
-                              onImageClick={handleImageClick}
-                              onCloseModal={handleCloseModal}
-                              onPrevImage={handlePrevImage}
-                              onNextImage={handleNextImage}
-                           />
-                        )
-                     )}
+                  <motion.div
+                     key="sections"
+                     initial={{ opacity: 0 }}
+                     animate={{ opacity: 1 }}
+                     exit={{ opacity: 0 }}
+                     transition={{ duration: 0.3 }}
+                     style={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '20px',
+                     }}
+                  >
+                     {sectionOrder.map((sectionId, index) => (
+                        <AnimatePresence key={`${sectionId}-${index}`} mode="wait">
+                           {shouldShowSection(sectionId) && (
+                              <motion.div key={`${sectionId}-section-${index}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.5, delay: index * 0.2 }}>
+                                 {sectionId === 'title' && mergedFormData.title && <TitleSection key={`title-content-${index}`} title={mergedFormData.title} style={sectionStyle} combinedStyle={combinedStyle} />}
+                                 {sectionId === 'profile' && mergedFormData.showProfiles && mergedFormData.profiles?.length > 0 && <ProfileSection profiles={mergedFormData.profiles} style={profileStyle} combinedStyle={combinedStyle} textStyle={textStyle} />}
+                                 {sectionId === 'greeting' && mergedFormData.greeting && <GreetingSection greeting={mergedFormData.greeting} style={sectionStyle} combinedStyle={combinedStyle} textStyle={textStyle} />}
+                                 {sectionId === 'datetime' && mergedFormData.dateTime && (
+                                    <DateTimeSection dateTime={mergedFormData.dateTime} showCountdown={mergedFormData.showCountdown} style={sectionStyle} typeStyle={typeStyle} formatDDay={formatDDay} type={mergedFormData.type} textStyle={textStyle} combinedStyle={combinedStyle} />
+                                 )}
+                                 {sectionId === 'location' && mergedFormData.location && Object.values(mergedFormData.location).some((value) => value) && <LocationSection formData={mergedFormData} style={sectionStyle} textStyle={textStyle} combinedStyle={combinedStyle} isDrawer={isDrawer} />}
+                                 {sectionId === 'account' && mergedFormData.showAccounts && mergedFormData.accounts?.length > 0 && (
+                                    <AccountSection accounts={mergedFormData.accounts} style={accountStyle} typeStyle={typeStyle} type={mergedFormData.type} getAccountLabel={getAccountLabel} textStyle={textStyle} combinedStyle={combinedStyle} />
+                                 )}
+                                 {sectionId === 'gallery' && mergedFormData.images?.length > 0 && (
+                                    <GallerySection
+                                       images={mergedFormData.images}
+                                       layout={mergedFormData.galleryLayout}
+                                       style={galleryStyle}
+                                       typeStyle={typeStyle}
+                                       selectedImageIndex={selectedImageIndex}
+                                       onImageClick={handleImageClick}
+                                       onCloseModal={handleCloseModal}
+                                       onPrevImage={handlePrevImage}
+                                       onNextImage={handleNextImage}
+                                       combinedStyle={combinedStyle}
+                                    />
+                                 )}
+                              </motion.div>
+                           )}
+                        </AnimatePresence>
+                     ))}
                   </motion.div>
                )}
             </AnimatePresence>
          </PreviewContent>
-      </PreviewContainer>
+      </Box>
    )
-})
+}
 
 PreviewPanel.displayName = 'PreviewPanel'
 

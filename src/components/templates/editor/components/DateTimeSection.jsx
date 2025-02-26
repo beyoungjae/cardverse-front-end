@@ -92,32 +92,23 @@ const CalendarHeader = styled(Box)(({ theme }) => ({
    },
 }))
 
-const CalendarGrid = styled(Box)(({ theme }) => ({
-   display: 'grid',
-   gridTemplateColumns: 'repeat(7, 1fr)',
-   gap: '8px',
-   textAlign: 'center',
-}))
-
-const WeekDay = styled(Typography)(({ theme }) => ({
-   fontSize: '0.9rem',
-   color: COLORS.text.secondary,
-   padding: '8px 0',
-}))
-
-const DateCell = styled(Box)(({ theme, isSelected, isToday, isCurrentMonth, isSunday, isSaturday }) => ({
+const StyledDateCell = styled('div', {
+   shouldForwardProp: (prop) => !['$isselected', '$istoday', '$iscurrentmonth', '$issunday', '$issaturday'].includes(prop),
+})(({ theme, $isselected, $istoday, $iscurrentmonth, $issunday, $issaturday }) => ({
    padding: '8px',
    borderRadius: '8px',
    cursor: 'pointer',
    position: 'relative',
-   color: isSunday ? '#FF6B6B' : isSaturday ? '#4169E1' : !isCurrentMonth ? COLORS.text.hint : COLORS.text.primary,
-   backgroundColor: isSelected ? `${COLORS.accent.main}15` : 'transparent',
-   fontWeight: isToday || isSelected ? 600 : 400,
-   border: isToday ? `2px solid ${COLORS.accent.main}40` : 'none',
-   '&:hover': {
-      backgroundColor: `${COLORS.accent.main}10`,
-   },
-   ...(isSelected && {
+
+   // 예: 일요일(빨강), 토요일(파랑), 그 외는 기본
+   color: $issunday ? '#FF6B6B' : $issaturday ? '#4169E1' : !$iscurrentmonth ? COLORS.text.hint : COLORS.text.primary,
+
+   // 오늘이거나 선택된 날짜면 볼드
+   fontWeight: $istoday || $isselected ? 600 : 400,
+   border: $istoday ? `2px solid ${COLORS.accent.main}40` : 'none',
+
+   // 만약 선택된 날짜일 때만 동그라미 이펙트를 주고 싶다면:
+   ...($isselected && {
       '&::after': {
          content: '""',
          position: 'absolute',
@@ -134,34 +125,7 @@ const DateCell = styled(Box)(({ theme, isSelected, isToday, isCurrentMonth, isSu
    }),
 }))
 
-const PreviewDateCell = styled(Box)(({ theme, isSelected, isToday, isCurrentMonth, isSunday, isSaturday }) => ({
-   padding: '8px',
-   borderRadius: '8px',
-   cursor: 'pointer',
-   position: 'relative',
-   color: isSunday ? '#FF6B6B' : isSaturday ? '#4169E1' : !isCurrentMonth ? COLORS.text.hint : COLORS.text.primary,
-   backgroundColor: isSelected ? `${COLORS.accent.main}15` : 'transparent',
-   fontWeight: isToday || isSelected ? 600 : 400,
-   border: isToday ? `2px solid ${COLORS.accent.main}40` : 'none',
-   '&:hover': {
-      backgroundColor: `${COLORS.accent.main}10`,
-   },
-   ...(isSelected && {
-      '&::after': {
-         content: '""',
-         position: 'absolute',
-         top: '50%',
-         left: '50%',
-         transform: 'translate(-50%, -50%)',
-         width: '32px',
-         height: '32px',
-         borderRadius: '50%',
-         backgroundColor: COLORS.accent.main,
-         opacity: 0.15,
-         zIndex: 0,
-      },
-   }),
-}))
+const PreviewDateCell = StyledDateCell
 
 const PreviewCalendarGrid = styled(Box)(({ theme }) => ({
    display: 'grid',
@@ -219,37 +183,37 @@ const DateTimeSection = () => {
          const startDate = startOfMonth.startOf('week')
          const endDate = endOfMonth.endOf('week')
 
-         const calendar = []
          const weekDays = ['일', '월', '화', '수', '목', '금', '토']
-
          let currentDate = startDate
          const rows = []
          let cells = []
+         let weekIndex = 0
 
          while (currentDate.isBefore(endDate) || currentDate.isSame(endDate, 'day')) {
             cells.push(
                <PreviewDateCell
                   key={currentDate.format('YYYY-MM-DD')}
-                  isSelected={currentDate.format('YYYY-MM-DD') === date.format('YYYY-MM-DD')}
-                  isToday={currentDate.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD')}
-                  isCurrentMonth={currentDate.month() === date.month()}
-                  isSunday={currentDate.day() === 0}
-                  isSaturday={currentDate.day() === 6}
+                  $isselected={currentDate.format('YYYY-MM-DD') === date.format('YYYY-MM-DD')}
+                  $istoday={currentDate.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD')}
+                  $iscurrentmonth={currentDate.month() === date.month()}
+                  $issunday={currentDate.day() === 0}
+                  $issaturday={currentDate.day() === 6}
                >
                   {currentDate.date()}
                </PreviewDateCell>
             )
 
             if (cells.length === 7) {
-               rows.push(<PreviewCalendarGrid key={currentDate.format('YYYY-MM')}>{cells}</PreviewCalendarGrid>)
+               rows.push(<PreviewCalendarGrid key={`${currentDate.format('YYYY-MM')}-week-${weekIndex}`}>{cells}</PreviewCalendarGrid>)
                cells = []
+               weekIndex++
             }
 
             currentDate = currentDate.add(1, 'day')
          }
 
          if (cells.length > 0) {
-            rows.push(<PreviewCalendarGrid key={currentDate.format('YYYY-MM')}>{cells}</PreviewCalendarGrid>)
+            rows.push(<PreviewCalendarGrid key={`${currentDate.format('YYYY-MM')}-week-${weekIndex}`}>{cells}</PreviewCalendarGrid>)
          }
 
          return (

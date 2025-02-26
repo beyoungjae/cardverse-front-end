@@ -60,9 +60,15 @@ const TitleSection = () => {
                <Box className="title">제목</Box>
             </TitleText>
             <IconButtonWrapper>
-               <AutoFixHighIcon onClick={() => setValue('title', currentType.placeholders[currentPlaceholder], { shouldValidate: true })} />
-               <HelpOutlineIcon onClick={handleHelpToggle} />
-               <RestartAltIcon onClick={handleReset} />
+               <Tooltip title="자동완성">
+                  <AutoFixHighIcon onClick={() => setValue('title', currentType.placeholders[currentPlaceholder], { shouldValidate: true })} />
+               </Tooltip>
+               <Tooltip title="도움말 보기">
+                  <HelpOutlineIcon onClick={handleHelpToggle} />
+               </Tooltip>
+               <Tooltip title="초기화">
+                  <RestartAltIcon onClick={handleReset} />
+               </Tooltip>
             </IconButtonWrapper>
          </SectionTitle>
 
@@ -119,21 +125,32 @@ const TitleSection = () => {
                      message: '최대 20자까지 입력 가능합니다',
                   },
                }}
-               render={({ field, fieldState: { error } }) => (
-                  <Box>
-                     <StyledTextField
-                        {...field}
-                        fullWidth
-                        placeholder={currentType.placeholders[currentPlaceholder]}
-                        error={!!error}
-                        helperText={error?.message}
-                        style={{
-                           borderColor: error ? COLORS.error : COLORS.border,
-                        }}
-                     />
-                     <CharacterCount isNearLimit={field.value?.length >= 20}>{field.value?.length || 0}/20</CharacterCount>
-                  </Box>
-               )}
+               render={({ field, fieldState: { error } }) => {
+                  const handleChange = (e) => {
+                     const text = e.target.value
+                     if (text.length <= 20) {
+                        field.onChange(text)
+                     } else {
+                        field.onChange(text.slice(0, 20))
+                     }
+                  }
+                  return (
+                     <Box>
+                        <StyledTextField
+                           {...field}
+                           fullWidth
+                           placeholder={currentType.placeholders[currentPlaceholder]}
+                           error={!!error}
+                           helperText={error?.message}
+                           style={{
+                              borderColor: error ? COLORS.error : COLORS.border,
+                           }}
+                           onChange={handleChange}
+                        />
+                        <CharacterCount>{field.value?.length || 0}/20</CharacterCount>
+                     </Box>
+                  )
+               }}
             />
          </Box>
 

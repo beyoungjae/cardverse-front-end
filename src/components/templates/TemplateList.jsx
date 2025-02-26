@@ -270,30 +270,32 @@ const MoreButton = styled(Box)(({ theme }) => ({
 // 템플릿 데이터 가라데이터
 const templates = {
    invitation: [
-      { id: 1, image: '/images/templates/card1.svg', price: '23,000' },
-      { id: 2, image: '/images/templates/card2.svg', price: '15,000' },
-      { id: 3, image: '/images/templates/card3.png', price: '5,000' },
-      { id: 4, image: '/images/templates/card4.png', price: '10,000' },
-      { id: 5, image: '/images/templates/card5.png', price: '30,000' },
-      { id: 6, image: '/images/templates/card6.png', price: '45,000' },
-      { id: 7, image: '/images/templates/card7.png', price: '25,000' },
-      { id: 8, image: '/images/templates/card8.png', price: '20,000' },
-      { id: 9, image: '/images/templates/card9.png', price: '35,000' },
+      { id: 1, image: '/images/templates/sample00007.png', price: '23,000' },
+      { id: 2, image: '/images/templates/sample00008.png', price: '15,000' },
+      { id: 3, image: '/images/templates/sample00009.png', price: '5,000' },
+      { id: 4, image: '/images/templates/sample00010.png', price: '10,000' },
+      { id: 5, image: '/images/templates/sample00006.png', price: '30,000' },
    ],
    wedding: [
-      { id: 7, image: '/images/templates/card7.png', price: '25,000' },
-      { id: 8, image: '/images/templates/card8.png', price: '20,000' },
-      { id: 9, image: '/images/templates/card9.png', price: '35,000' },
+      { id: 7, image: '/images/templates/sample00001.png', price: '25,000' },
+      { id: 8, image: '/images/templates/sample00002.png', price: '20,000' },
+      { id: 9, image: '/images/templates/sample00003.png', price: '35,000' },
+      { id: 10, image: '/images/templates/sample00004.png', price: '10,000' },
+      { id: 11, image: '/images/templates/sample00005.png', price: '30,000' },
+      { id: 12, image: '/images/templates/sample00006.png', price: '45,000' },
+      { id: 13, image: '/images/templates/sample00007.png', price: '25,000' },
+      { id: 14, image: '/images/templates/sample00008.png', price: '20,000' },
+      { id: 15, image: '/images/templates/sample00009.png', price: '35,000' },
    ],
    newyear: [
-      { id: 10, image: '/images/templates/card10.png', price: '15,000' },
-      { id: 11, image: '/images/templates/card1.svg', price: '18,000' },
-      { id: 12, image: '/images/templates/card2.svg', price: '22,000' },
+      { id: 10, image: '/images/templates/sample00010.png', price: '15,000' },
+      { id: 11, image: '/images/templates/sample00006.png', price: '18,000' },
+      { id: 12, image: '/images/templates/sample00007.png', price: '22,000' },
    ],
    gohyeon: [
-      { id: 13, image: '/images/templates/card4.png', price: '15,000' },
-      { id: 14, image: '/images/templates/card5.png', price: '18,000' },
-      { id: 15, image: '/images/templates/card6.png', price: '22,000' },
+      { id: 13, image: '/images/templates/sample00007.png', price: '15,000' },
+      { id: 14, image: '/images/templates/sample00006.png', price: '18,000' },
+      { id: 15, image: '/images/templates/sample00009.png', price: '22,000' },
    ],
 }
 
@@ -407,10 +409,7 @@ const TemplateList = () => {
          </BannerContainer>
 
          <Container maxWidth="lg" sx={{ py: 8 }}>
-            <TotalText>
-               T O T A L <br />
-               {currentTemplates.length}
-            </TotalText>
+            <TotalText>T O T A L</TotalText>
 
             <TabContainer>
                <div className="swiper-button-prev" onClick={handlePrevClick} style={{ cursor: 'pointer' }}></div>

@@ -453,12 +453,18 @@ const TemplateDetail = () => {
       })
    }
 
+   const handlePurchase = () => {
+      navigate(`/template/${currentTab}/purchase/${templateId}`, {
+         state: { templateData, currentTab },
+      })
+   }
+
    // 임시 데이터 (추후 API 연동 필요)
    const templateData = {
       id: templateId,
-      mainImage: '/images/templates/card1.svg',
+      mainImage: '/images/templates/sample00001.png',
       price: '23,000',
-      detailImages: ['/images/templates/card2.svg', '/images/templates/card3.png', '/images/templates/card4.png'],
+      detailImages: ['/images/templates/sample00002.png', '/images/templates/sample00003.png', '/images/templates/sample00004.png'],
    }
 
    const [activeIndex, setActiveIndex] = useState(0)
@@ -524,7 +530,7 @@ const TemplateDetail = () => {
                </BeforePurchasingButton>
                <Typography className="price-text">Price | {templateData.price}</Typography>
                <ButtonGroup>
-                  <BuyButton>구매하기</BuyButton>
+                  <BuyButton onClick={handlePurchase}>구매하기</BuyButton>
                   <PreviewButton onClick={handlePreviewOpen}>미리보기</PreviewButton>
                </ButtonGroup>
             </PriceSection>
@@ -580,7 +586,9 @@ const TemplateDetail = () => {
                   <ActionButton variant="try" onClick={handleEditorOpen}>
                      구매하기 전 잠깐 사용해보기
                   </ActionButton>
-                  <ActionButton variant="buy">구매하기</ActionButton>
+                  <ActionButton variant="buy" onClick={handlePurchase}>
+                     구매하기
+                  </ActionButton>
                </div>
             </div>
          </PreviewModal>

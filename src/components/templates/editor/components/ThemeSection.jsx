@@ -176,55 +176,56 @@ const ThemeSection = ({ theme, onThemeChange }) => {
    // 선택된 애니메이션 타겟들을 관리하는 상태
    const [selectedTargets, setSelectedTargets] = useState(new Set())
 
-   const handleTypeSelect = useCallback(
-      (type) => {
-         setSelectedType(type)
-         setValue('type', type, { shouldValidate: true })
-         const defaultTheme = {
-            wedding: {
-               primaryColor: '#FF69B4',
-               secondaryColor: '#FFA8A8',
-               backgroundColor: '#FFF5F5',
-               fontFamily: 'Noto Serif KR, serif',
-               animation: 'fade',
-            },
-            newYear: {
-               primaryColor: '#FFD700',
-               secondaryColor: '#FFD8A8',
-               backgroundColor: '#FFFAF0',
-               fontFamily: 'Pretendard, sans-serif',
-               animation: 'slide',
-            },
-            birthday: {
-               primaryColor: '#9370DB',
-               secondaryColor: '#E6E6FA',
-               backgroundColor: '#F0E6FF',
-               fontFamily: 'Noto Sans KR, sans-serif',
-               animation: 'zoom',
-            },
-            invitation: {
-               primaryColor: '#4169E1',
-               secondaryColor: '#B0E0E6',
-               backgroundColor: '#F0F8FF',
-               fontFamily: 'Pretendard, sans-serif',
-               animation: 'bounce',
-            },
-         }[type]
+   const [themeToApply, setThemeToApply] = useState(null)
 
-         Object.entries(defaultTheme).forEach(([key, value]) => {
-            setValue(key, value, { shouldValidate: true })
-         })
-         setSelectedPreset(null)
-      },
-      [setValue]
-   )
+   const handleTypeSelect = useCallback((type) => {
+      const defaultTheme = {
+         wedding: {
+            type: 'wedding',
+            primaryColor: '#FF69B4',
+            secondaryColor: '#FFA8A8',
+            backgroundColor: '#FFF5F5',
+            fontFamily: 'Noto Serif KR, serif',
+            animation: 'fade',
+         },
+         newYear: {
+            primaryColor: '#FFD700',
+            secondaryColor: '#FFD8A8',
+            backgroundColor: '#FFFAF0',
+            fontFamily: 'Pretendard, sans-serif',
+            animation: 'slide',
+         },
+         birthday: {
+            primaryColor: '#9370DB',
+            secondaryColor: '#E6E6FA',
+            backgroundColor: '#F0E6FF',
+            fontFamily: 'Noto Sans KR, sans-serif',
+            animation: 'zoom',
+         },
+         invitation: {
+            primaryColor: '#4169E1',
+            secondaryColor: '#B0E0E6',
+            backgroundColor: '#F0F8FF',
+            fontFamily: 'Pretendard, sans-serif',
+            animation: 'bounce',
+         },
+      }[type]
 
-   // 초기 테마 설정 동기화
+      setThemeToApply({ type, ...defaultTheme })
+   }, [])
+
    useEffect(() => {
-      if (theme.type && theme.type !== selectedType) {
-         handleTypeSelect(theme.type)
+      if (themeToApply) {
+         const timeoutId = setTimeout(() => {
+            Object.entries(themeToApply).forEach(([key, value]) => {
+               setValue(key, value, { shouldValidate: true })
+               onThemeChange(key, value)
+            })
+         }, 0)
+
+         return () => clearTimeout(timeoutId)
       }
-   }, [theme.type, selectedType, handleTypeSelect])
+   }, [themeToApply, setValue, onThemeChange])
 
    const handleColorChange = useCallback(
       (type, color) => {
@@ -252,9 +253,15 @@ const ThemeSection = ({ theme, onThemeChange }) => {
 
    const handleAnimationSelect = useCallback(
       (animation) => {
-         onThemeChange('animation', animation.value)
+         requestAnimationFrame(() => {
+            onThemeChange('animation', animation)
+            // 기본 타겟 설정
+            if (!theme.animationTargets || theme.animationTargets.length === 0) {
+               onThemeChange('animationTargets', ['title', 'greeting', 'datetime', 'location', 'gallery', 'account', 'profile'])
+            }
+         })
       },
-      [onThemeChange]
+      [onThemeChange, theme.animationTargets]
    )
 
    const resetTheme = useCallback(() => {
@@ -266,7 +273,7 @@ const ThemeSection = ({ theme, onThemeChange }) => {
       setSelectedPreset(null)
    }, [setValue])
 
-   // 애니메이션 타겟 토글 핸들러
+   // 애니메이션 타겟 토글 핸들러 수정
    const handleTargetToggle = useCallback(
       (targetId) => {
          setSelectedTargets((prev) => {
@@ -276,8 +283,8 @@ const ThemeSection = ({ theme, onThemeChange }) => {
             } else {
                newTargets.add(targetId)
             }
-            // 선택된 타겟들을 theme에 반영
-            onThemeChange('animationTargets', Array.from(newTargets))
+            const targetsArray = Array.from(newTargets)
+            onThemeChange('animationTargets', targetsArray)
             return newTargets
          })
       },
@@ -312,7 +319,6 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                      <li>초대장의 전체적인 분위기를 결정하는 색상과 폰트를 설정할 수 있습니다.</li>
                      <li>미리 준비된 프리셋을 선택하여 빠르게 테마를 적용할 수 있습니다.</li>
                      <li>실행취소/다시실행으로 테마 변경 이력을 관리할 수 있습니다.</li>
-                     <li>애니메이션 효과를 선택하여 초대장에 생동감을 더할 수 있습니다.</li>
                   </ul>
                </HelpText>
             )}
@@ -389,7 +395,9 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                         <Typography variant="subtitle2" sx={{ mb: 1, color: COLORS.text.secondary }}>
                            {font.name}
                         </Typography>
-                        <Typography sx={{ fontSize: '1.1rem' }}>안녕하세요, 반갑습니다</Typography>
+                        <Typography sx={{ fontSize: '1.1rem' }} style={{ fontFamily: font.value }}>
+                           안녕하세요, 반갑습니다
+                        </Typography>
                         <Chip
                            label={font.type}
                            size="small"
@@ -404,17 +412,16 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                ))}
             </Grid>
 
-            <Typography variant="subtitle1" sx={{ mb: 2, color: COLORS.text.primary, fontWeight: 500 }}>
+            {/* <Typography variant="subtitle1" sx={{ mb: 2, color: COLORS.text.primary, fontWeight: 500 }}>
                <AutoFixHighIcon sx={{ mr: 1, verticalAlign: 'middle', color: COLORS.accent.main }} />
                애니메이션
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
                {animationPresets.map((animation) => (
-                  <PresetChip key={animation.name} icon={animation.icon} label={animation.name} onClick={() => handleAnimationSelect(animation)} selected={theme.animation === animation.value} />
+                  <PresetChip key={animation.name} icon={<span>{animation.icon}</span>} label={animation.name} onClick={() => handleAnimationSelect(animation.value)} selected={theme.animation === animation.value} />
                ))}
             </Box>
 
-            {/* 애니메이션 적용 대상 선택 */}
             {theme.animation && (
                <Box
                   sx={{
@@ -448,7 +455,8 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                      ))}
                   </Box>
                </Box>
-            )}
+            )} 
+            */}
 
             <ThemePreview>
                <Typography variant="h6" sx={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}>

@@ -1,142 +1,101 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Box } from '@mui/material'
+import { Box, Typography, Button } from '@mui/material'
 
 const SettingSection = ({ onComplete }) => {
    const { watch } = useFormContext()
-   const introImages = watch('introImages') || []
-   const animationType = watch('introAnimation') || 'fade'
-   const [[currentIndex, direction], setCurrentIndex] = useState([0, 0])
-   const [showContent, setShowContent] = useState(false)
-   const [sectionComplete, setSectionComplete] = useState(false)
-   const [imagesLoaded, setImagesLoaded] = useState(new Set())
+   const setting = watch('setting') || {}
+   const introImages = setting.images || []
+   const animationType = setting.animation || 'fade'
+   const [currentIndex, setCurrentIndex] = useState(0)
+   const [currentImageLoaded, setCurrentImageLoaded] = useState(false)
+   const timerRef = useRef(null)
+   const completedRef = useRef(false)
+   const isLastImage = currentIndex === introImages.length - 1
 
-   // 애니메이션 variants 정의
    const variants = {
       fade: {
          enter: { opacity: 0 },
-         center: { opacity: 1 },
-         exit: { opacity: 0 },
+         center: {
+            opacity: 1,
+            scale: [0.9, 1],
+            transition: { duration: 0.8, ease: 'easeInOut' },
+         },
+         exit: {
+            opacity: 0,
+            scale: [1, 1.1],
+            transition: { duration: 0.8, ease: 'easeOut' },
+         },
       },
       slide: {
-         enter: (direction) => ({
-            y: direction > 0 ? '100%' : '-100%',
-            opacity: 0,
-         }),
+         enter: { x: '100%', opacity: 0 },
          center: {
-            y: 0,
+            x: ['3%', 0],
             opacity: 1,
+            transition: { duration: 0.8, ease: 'easeInOut' },
          },
-         exit: (direction) => ({
-            y: direction < 0 ? '100%' : '-100%',
+         exit: {
+            x: [0, '-100%'],
             opacity: 0,
-         }),
+            transition: { duration: 0.8, ease: 'easeInOut' },
+         },
       },
-   }
-
-   // 이미지 로드 완료 핸들러
-   const handleImageLoad = (index) => {
-      setImagesLoaded((prev) => new Set([...prev, index]))
    }
 
    useEffect(() => {
-      let timer
-      const startAnimation = () => {
-         // 모든 이미지가 로드되었는지 확인
-         if (imagesLoaded.size === introImages.length) {
-            if (!introImages.length) {
-               setShowContent(true)
-               setTimeout(() => {
-                  setSectionComplete(true)
-                  onComplete?.()
-               }, 1000)
-               return
+      if (completedRef.current) return
+
+      if (introImages.length === 0) {
+         completedRef.current = true
+         onComplete()
+         return
+      }
+
+      if (!currentImageLoaded) return
+
+      if (isLastImage) {
+         // 마지막 이미지: 2초 후 exit 애니메이션 후 onComplete 호출
+         const delay = 2000 + (animationType === 'slide' ? 800 : 500)
+         timerRef.current = setTimeout(() => {
+            if (!completedRef.current) {
+               completedRef.current = true
+               onComplete()
             }
-
-            timer = setInterval(() => {
-               setCurrentIndex((prev) => {
-                  const [index] = prev
-                  if (index < introImages.length - 1) {
-                     return [index + 1, 1]
-                  } else {
-                     clearInterval(timer)
-                     setShowContent(true)
-                     setTimeout(() => {
-                        setSectionComplete(true)
-                        onComplete?.()
-                     }, 2000)
-                     return prev
-                  }
-               })
-            }, 2000)
-         }
+         }, delay)
+      } else {
+         // 다음 이미지로 전환
+         timerRef.current = setTimeout(() => {
+            setCurrentIndex((prev) => prev + 1)
+            setCurrentImageLoaded(false)
+         }, 2000)
       }
 
-      startAnimation()
-      return () => {
-         if (timer) clearInterval(timer)
-      }
-   }, [introImages, onComplete, imagesLoaded])
+      return () => clearTimeout(timerRef.current)
+   }, [currentIndex, currentImageLoaded, introImages.length, onComplete, isLastImage, animationType])
 
-   if (sectionComplete) return null
+   if (introImages.length === 0) return null
 
    return (
-      <Box
-         sx={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            overflow: 'hidden',
-            backgroundColor: '#000',
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'center',
-         }}
-      >
-         {/* 이미지 프리로드 */}
-         <Box sx={{ display: 'none' }}>
-            {introImages.map((img, idx) => (
-               <img key={`preload-${idx}`} src={img.url} alt="" onLoad={() => handleImageLoad(idx)} />
-            ))}
-         </Box>
-
-         <AnimatePresence initial={false} custom={direction} mode="wait">
-            {!showContent && introImages[currentIndex] && imagesLoaded.has(currentIndex) && (
-               <Box
-                  component={motion.div}
+      <Box sx={{ position: 'relative', width: '100%', height: '100%', bgcolor: '#000' }}>
+         <AnimatePresence mode="wait">
+            {introImages[currentIndex] && (
+               <motion.img
                   key={currentIndex}
-                  custom={direction}
+                  src={introImages[currentIndex].url}
+                  alt={`Intro ${currentIndex + 1}`}
                   variants={variants[animationType] || variants.fade}
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  transition={{
-                     duration: 0.8,
-                     ease: [0.4, 0, 0.2, 1],
-                  }}
-                  sx={{
+                  onLoad={() => setCurrentImageLoaded(true)}
+                  style={{
                      position: 'absolute',
-                     top: 0,
-                     left: 0,
                      width: '100%',
-                     height: '50vh',
-                     display: 'flex',
-                     alignItems: 'center',
-                     justifyContent: 'center',
+                     height: '100%',
+                     objectFit: 'contain',
                   }}
-               >
-                  <img
-                     src={introImages[currentIndex].url}
-                     alt={introImages[currentIndex].name}
-                     style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        objectPosition: 'top center',
-                     }}
-                  />
-               </Box>
+               />
             )}
          </AnimatePresence>
       </Box>

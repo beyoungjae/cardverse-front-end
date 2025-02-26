@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useCallback } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { FaInstagram, FaFacebookF, FaYoutube } from 'react-icons/fa'
 import { AppBar, Toolbar, IconButton, Box, Drawer, List, ListItem, ListItemText, Collapse } from '@mui/material'
 import { styled } from '@mui/system'
@@ -7,6 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import MenuIcon from '@mui/icons-material/Menu'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+
+import { useDispatch } from 'react-redux'
+import { logoutUserThunk } from '../../features/authSlice'
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
    backgroundColor: theme.palette.background.paper,
@@ -44,7 +47,7 @@ const LogoContainer = styled(Box)(({ theme }) => ({
 
 const Logoimg = styled('img')(({ theme }) => ({
    margin: '0 auto',
-   height: '40px',
+   height: '50px',
    cursor: 'pointer',
    '&:hover': {
       transform: 'translateY(-2px)',
@@ -54,7 +57,7 @@ const Logoimg = styled('img')(({ theme }) => ({
       transform: 'scale(0.9)',
    },
    [theme.breakpoints.down('md')]: {
-      height: '30px',
+      height: '40px',
    },
 }))
 
@@ -208,7 +211,9 @@ const dropdownVariants = {
    },
 }
 
-const Navbar = () => {
+const Navbar = ({ isAuthenticated, user }) => {
+   const dispatch = useDispatch()
+   const navigate = useNavigate()
    const [activeMenu, setActiveMenu] = useState(null)
    const [mobileOpen, setMobileOpen] = useState(false)
    const [expandedMenus, setExpandedMenus] = useState({})
@@ -217,7 +222,6 @@ const Navbar = () => {
       HOME: [
          { name: '메인', path: '/' },
          { name: '소개', path: '/about' },
-         { name: '공지사항', path: '/notice' },
       ],
       TEMPLATE: [{ name: '템플릿 모아보기', path: '/template' }],
       EVENT: [
@@ -239,6 +243,17 @@ const Navbar = () => {
       }))
    }
 
+   const handleLogout = useCallback(() => {
+      dispatch(logoutUserThunk())
+         .unwrap()
+         .then(() => {
+            navigate('/')
+         })
+         .catch((error) => {
+            alert('로그아웃에 실패하였습니다.')
+         })
+   }, [dispatch, navigate])
+
    const drawer = (
       <List>
          {Object.entries(menuItems).map(([menu, items]) => (
@@ -247,8 +262,7 @@ const Navbar = () => {
                   onClick={() => handleMenuToggle(menu)}
                   sx={{
                      backgroundColor: expandedMenus[menu] ? 'rgba(0, 0, 0, 0.04)' : 'transparent',
-                  }}
-               >
+                  }}>
                   <ListItemText
                      primary={menu}
                      sx={{
@@ -276,12 +290,26 @@ const Navbar = () => {
          <DrawerItem component={Link} to="/my" onClick={handleDrawerToggle}>
             <ListItemText primary="마이페이지" />
          </DrawerItem>
-         <DrawerItem component={Link} to="/signup" onClick={handleDrawerToggle}>
+         {isAuthenticated ? (
+            <DrawerItem component={Link} to="/logout" onClick={handleLogout}>
+               <ListItemText primary="로그아웃" />
+            </DrawerItem>
+         ) : (
+            <>
+               <DrawerItem component={Link} to="/signup" onClick={handleDrawerToggle}>
+                  <ListItemText primary="회원가입" />
+               </DrawerItem>
+               <DrawerItem component={Link} to="/login" onClick={handleDrawerToggle}>
+                  <ListItemText primary="로그인" />
+               </DrawerItem>
+            </>
+         )}
+         {/* <DrawerItem component={Link} to="/signup" onClick={handleDrawerToggle}>
             <ListItemText primary="회원가입" />
          </DrawerItem>
          <DrawerItem component={Link} to="/login" onClick={handleDrawerToggle}>
             <ListItemText primary="로그인" />
-         </DrawerItem>
+         </DrawerItem> */}
       </List>
    )
 
@@ -308,13 +336,35 @@ const Navbar = () => {
                      <Logoimg src={`${process.env.PUBLIC_URL}/images/logo.png`} alt="로고" />
                   </Link>
                </LogoContainer>
-               <NavLinks>
+               {isAuthenticated ? (
+                  <NavLinks>
+                     {user.role === 'admin' && <Link to="/admin">관리자</Link>}
+                     <Link to="/support">고객센터</Link>
+                     <Link to="/my">마이페이지</Link>
+                     {/* <Link to="/logout">로그아웃</Link> */}
+                     <Link
+                        component="span"
+                        onClick={handleLogout}
+                        style={{ cursor: 'pointer' }} // 클릭 가능함을 표시
+                     >
+                        로그아웃
+                     </Link>
+                  </NavLinks>
+               ) : (
+                  <NavLinks>
+                     <Link to="/support">고객센터</Link>
+                     <Link to="/my">마이페이지</Link>
+                     <Link to="/signup">회원가입</Link>
+                     <Link to="/login">로그인</Link>
+                  </NavLinks>
+               )}
+               {/* <NavLinks>
                   <Link to="/admin">관리자</Link>
                   <Link to="/support">고객센터</Link>
                   <Link to="/my">마이페이지</Link>
                   <Link to="/signup">회원가입</Link>
                   <Link to="/login">로그인</Link>
-               </NavLinks>
+               </NavLinks> */}
             </Toolbar>
          </StyledAppBar>
          <BottomNav>
@@ -342,8 +392,7 @@ const Navbar = () => {
             onClose={handleDrawerToggle}
             ModalProps={{
                keepMounted: true,
-            }}
-         >
+            }}>
             {drawer}
          </StyledDrawer>
       </>

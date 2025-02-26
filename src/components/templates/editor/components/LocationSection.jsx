@@ -1,83 +1,38 @@
-import React, { useState, useCallback, useMemo } from 'react'
-import { Box, Chip, Typography, Tooltip, FormControlLabel, Checkbox } from '@mui/material'
+import React, { useState, useCallback, useEffect } from 'react'
+import { Box, Typography, Tooltip, FormControlLabel, Checkbox, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material'
 import { Controller, useFormContext } from 'react-hook-form'
 import { motion, AnimatePresence } from 'framer-motion'
-import { styled } from '@mui/material/styles'
+import DaumPostcode from 'react-daum-postcode'
 import { SectionContainer, SectionTitle, TitleText, StyledTextField, HelpText, IconButtonWrapper, fadeInUp, easeTransition, COLORS } from '../styles/commonStyles'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
-import SearchIcon from '@mui/icons-material/Search'
-import MapIcon from '@mui/icons-material/Map'
 import DirectionsIcon from '@mui/icons-material/Directions'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import CelebrationIcon from '@mui/icons-material/Celebration'
 import CakeIcon from '@mui/icons-material/Cake'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
-import { debounce } from 'lodash'
 
-const QuickLocationChips = styled(Box)(({ theme }) => ({
-   display: 'flex',
-   flexWrap: 'wrap',
-   gap: theme.spacing(1),
-   marginTop: theme.spacing(2),
-   marginBottom: theme.spacing(3),
-}))
-
-// 위치 검색 결과 캐싱
-const locationCache = new Map()
-const CACHE_EXPIRY = 1000 * 60 * 30 // 30분
-
-const useLocationCache = () => {
-   const getCachedResult = useCallback((query) => {
-      const cached = locationCache.get(query)
-      if (!cached) return null
-      if (Date.now() - cached.timestamp > CACHE_EXPIRY) {
-         locationCache.delete(query)
-         return null
-      }
-      return cached.data
-   }, [])
-
-   const setCachedResult = useCallback((query, data) => {
-      locationCache.set(query, {
-         data,
-         timestamp: Date.now(),
+// 카카오 REST API를 통한 주소
+const geocodeAddressKakao = async (address) => {
+   try {
+      const apiKey = process.env.REACT_APP_KAKAO_REST_KEY
+      const response = await fetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(address)}`, {
+         headers: {
+            Authorization: `KakaoAK ${apiKey}`,
+         },
       })
-   }, [])
-
-   return { getCachedResult, setCachedResult }
-}
-
-// 위치 검색 API 모의 구현
-const searchLocations = async (query) => {
-   return new Promise((resolve) => {
-      setTimeout(() => {
-         resolve([
-            {
-               id: 1,
-               name: '그랜드 호텔',
-               address: '서울시 강남구 테헤란로 123',
-               coordinates: { lat: 37.5665, lng: 126.978 },
-               type: '호텔',
-            },
-            {
-               id: 2,
-               name: '시그니처 웨딩홀',
-               address: '서울시 서초구 반포대로 456',
-               coordinates: { lat: 37.5028, lng: 127.0244 },
-               type: '웨딩홀',
-            },
-            {
-               id: 3,
-               name: '더 파티움',
-               address: '서울시 송파구 올림픽로 789',
-               coordinates: { lat: 37.5139, lng: 127.0589 },
-               type: '연회장',
-            },
-         ])
-      }, 500)
-   })
+      const data = await response.json()
+      if (data.documents && data.documents.length > 0) {
+         const { y, x } = data.documents[0]
+         return { lat: parseFloat(y), lng: parseFloat(x) }
+      } else {
+         throw new Error('검색 결과가 없습니다.')
+      }
+   } catch (error) {
+      console.error(error)
+      return null
+   }
 }
 
 const invitationTypes = [
@@ -127,113 +82,202 @@ const invitationTypes = [
    },
 ]
 
+const KAKAO_SDK_URL = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REACT_APP_KAKAO_JS_KEY}&autoload=false`
+
 const LocationSection = () => {
    const [showHelp, setShowHelp] = useState(false)
-   const [showQuickLocations, setShowQuickLocations] = useState(false)
-   const [searchState, setSearchState] = useState({
-      query: '',
-      results: [],
-      isLoading: false,
-      error: null,
-   })
-   const { getCachedResult, setCachedResult } = useLocationCache()
-   const { control, watch } = useFormContext()
+   const { control, watch, setValue } = useFormContext()
    const [selectedType, setSelectedType] = useState('wedding')
+   const [openAddressModal, setOpenAddressModal] = useState(false)
 
+   // formData의 location 기본값
+   const location = watch('location') || {
+      name: '',
+      address: '',
+      detail: '',
+      guide: '',
+      showMap: true,
+      coordinates: null,
+      url: '',
+   }
    const currentType = invitationTypes.find((type) => type.id === selectedType)
 
-   // location 객체를 통째로 watch
-   const location = watch('location')
+   const kakao = window.kakao
 
-   const handleSearch = useMemo(
-      () =>
-         debounce(async (query) => {
-            if (!query || query.length < 2) {
-               setSearchState((prev) => ({ ...prev, results: [], isLoading: false }))
-               return
+   // 주소가 변경되면 Kakao 지오코딩 API 호출하여 좌표 업데이트
+   useEffect(() => {
+      let cancel = false
+      const updateCoordinates = async () => {
+         if (!location.address) {
+            setValue('location.coordinates', null, { shouldValidate: true })
+            return
+         }
+         const coords = await geocodeAddressKakao(location.address)
+         if (!cancel && coords) {
+            setValue('location.coordinates', coords, { shouldValidate: true })
+         }
+      }
+      updateCoordinates()
+      return () => {
+         cancel = true
+      }
+   }, [location.address, setValue])
+
+   useEffect(() => {
+      // 좌표와 showMap이 없으면 실행 안 함
+      if (!location.coordinates || !location.showMap) return
+
+      // 1) 지도 스크립트 로드 함수
+      const loadKakaoMapScript = () => {
+         return new Promise((resolve, reject) => {
+            // 이미 로드된 경우 그냥 종료
+            if (window.kakao && window.kakao.maps) {
+               return resolve()
             }
 
-            const cached = getCachedResult(query)
-            if (cached) {
-               setSearchState((prev) => ({
-                  ...prev,
-                  results: cached,
-                  isLoading: false,
-               }))
-               return
+            // 혹시 남아있는 스크립트가 있으면 제거
+            const existingScript = document.querySelector('script[src*="dapi.kakao.com/v2/maps/sdk.js"]')
+            if (existingScript) {
+               existingScript.remove()
             }
 
-            setSearchState((prev) => ({ ...prev, isLoading: true }))
-            try {
-               const results = await searchLocations(query)
-               setCachedResult(query, results)
-               setSearchState((prev) => ({
-                  ...prev,
-                  results,
-                  isLoading: false,
-                  error: null,
-               }))
-            } catch (error) {
-               setSearchState((prev) => ({
-                  ...prev,
-                  results: [],
-                  isLoading: false,
-                  error: error.message,
-               }))
+            const script = document.createElement('script')
+            script.type = 'text/javascript'
+            script.src = KAKAO_SDK_URL
+            script.async = true
+            script.defer = true
+
+            script.onload = () => {
+               if (window.kakao && window.kakao.maps) {
+                  // SDK 내부 로드가 끝나면 resolve
+                  window.kakao.maps.load(() => {
+                     resolve()
+                  })
+               } else {
+                  reject(new Error('Kakao Maps SDK not available after load'))
+               }
             }
-         }, 300),
-      [getCachedResult, setCachedResult]
-   )
 
-   const handleQuickLocationSelect = useCallback(
-      (type) => {
-         handleSearch(type)
-         setSelectedType(type)
-         setShowQuickLocations(false)
-      },
-      [handleSearch]
-   )
+            script.onerror = (error) => {
+               console.error('❌ Failed to load Kakao Maps SDK:', error)
+               reject(error)
+            }
 
-   const handleMapPreview = useCallback((location) => {
-      if (!location?.coordinates) return
-      const { lat, lng } = location.coordinates
-      window.open(`https://maps.google.com/maps?q=${lat},${lng}`)
-   }, [])
+            document.head.appendChild(script)
+         })
+      }
+
+      // 2) 지도 초기화 함수
+      const initMap = () => {
+         const container = document.getElementById('kakao-map')
+         if (!container) {
+            throw new Error('지도 컨테이너를 찾을 수 없습니다.')
+         }
+
+         const options = {
+            center: new window.kakao.maps.LatLng(location.coordinates.lat, location.coordinates.lng),
+            level: 3,
+         }
+         const map = new window.kakao.maps.Map(container, options)
+         const marker = new window.kakao.maps.Marker({
+            position: options.center,
+         })
+         marker.setMap(map)
+
+         // 지도 리사이즈 대응
+         window.addEventListener('resize', () => {
+            map.relayout()
+         })
+
+         // 초기 레이아웃 조정
+         setTimeout(() => {
+            map.relayout()
+         }, 300)
+      }
+
+      // 3) 로드 + 초기화
+      const initialize = async () => {
+         try {
+            await loadKakaoMapScript()
+            initMap()
+         } catch (error) {
+            console.error('❌ 카카오맵 초기화 실패:', error)
+         }
+      }
+
+      initialize()
+
+      // 4) 컴포넌트 언마운트 시 청소
+      return () => {
+         const mapContainer = document.getElementById('kakao-map')
+         if (mapContainer) {
+            mapContainer.innerHTML = ''
+         }
+         window.removeEventListener('resize', () => {})
+      }
+   }, [location.coordinates, location.showMap])
+
+   /*    
+디버깅용 코드
+useEffect(() => {
+      console.log('카카오맵 상태 체크:', {
+         kakaoExists: !!window.kakao,
+         mapsExists: !!(window.kakao && window.kakao.maps),
+         coordinates: location.coordinates,
+         showMap: location.showMap,
+         container: !!document.getElementById('kakao-map'),
+         containerSize: document.getElementById('kakao-map')?.getBoundingClientRect(),
+         apiKey: process.env.REACT_APP_KAKAO_JS_KEY?.substring(0, 5) + '...',
+      })
+   }, [location.coordinates, location.showMap])
+*/
 
    const handleHelpToggle = useCallback(() => {
       setShowHelp((prev) => !prev)
    }, [])
 
    const handleReset = useCallback(() => {
-      control._reset({
-         location: {
+      setValue('location', {
+         name: '',
+         address: '',
+         detail: '',
+         guide: '',
+         showMap: true,
+         coordinates: null,
+         url: '',
+      })
+   }, [setValue])
+
+   const handleTypeSelect = useCallback(
+      (type) => {
+         setSelectedType(type)
+         setValue('location', {
             name: '',
             address: '',
             detail: '',
             guide: '',
             showMap: true,
             coordinates: null,
-         },
-      })
-   }, [control])
-
-   const handleTypeSelect = useCallback(
-      (type) => {
-         setSelectedType(type)
-         const placeholders = invitationTypes.find((t) => t.id === type).placeholders
-         control._reset({
-            location: {
-               name: '',
-               address: '',
-               detail: '',
-               guide: '',
-               showMap: true,
-               coordinates: null,
-            },
+            url: '',
          })
       },
-      [control]
+      [setValue]
    )
+
+   // Daum Postcode 검색 완료 시 호출되는 함수
+   const handleAddressComplete = (data) => {
+      // data 객체에서 원하는 주소 정보 추출 (예: data.address)
+      // 필요한 경우 data.buildingName 등도 활용할 수 있음
+      setValue('location', {
+         ...location,
+         address: data.address, // 선택된 주소
+         // coordinates는 useEffect에서 업데이트됨
+      })
+      setOpenAddressModal(false)
+   }
+
+   const openModal = () => setOpenAddressModal(true)
+   const closeModal = () => setOpenAddressModal(false)
 
    return (
       <SectionContainer component={motion.div} variants={fadeInUp} initial="initial" animate="animate" exit="exit" transition={easeTransition}>
@@ -243,9 +287,12 @@ const LocationSection = () => {
                <Box className="title">장소</Box>
             </TitleText>
             <IconButtonWrapper>
-               <SearchIcon onClick={() => setShowQuickLocations((prev) => !prev)} />
-               <HelpOutlineIcon onClick={handleHelpToggle} />
-               <RestartAltIcon onClick={handleReset} />
+               <Tooltip title="도움말 보기">
+                  <HelpOutlineIcon onClick={handleHelpToggle} />
+               </Tooltip>
+               <Tooltip title="초기화">
+                  <RestartAltIcon onClick={handleReset} />
+               </Tooltip>
             </IconButtonWrapper>
          </SectionTitle>
 
@@ -254,70 +301,53 @@ const LocationSection = () => {
                <HelpText>
                   <strong>장소 정보 입력 도움말</strong>
                   <ul>
-                     <li>초대장 유형에 맞는 장소 정보를 입력해주세요.</li>
-                     <li>예시 버튼을 클릭하여 샘플 정보를 사용할 수 있습니다.</li>
-                     <li>지도 버튼을 선택적으로 표시할 수 있습니다.</li>
-                     <li>교통편 안내는 상세하게 작성해주시면 좋습니다.</li>
+                     <li>초대장 유형에 맞는 장소 정보를 선택해주세요.</li>
+                     <li>주소는 다음 우편번호 검색을 통해 선택되며, 직접 입력은 불가합니다.</li>
+                     <li>주소를 선택하면 해당 위치의 지도 미리보기가 자동 업데이트됩니다.</li>
                   </ul>
                </HelpText>
             )}
          </AnimatePresence>
 
-         <AnimatePresence>
-            {showQuickLocations && (
-               <QuickLocationChips component={motion.div} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                  {invitationTypes.map((location, index) => (
-                     <Chip
-                        key={index}
-                        label={`${location.icon} ${location.label}`}
-                        onClick={() => handleQuickLocationSelect(location.id)}
-                        sx={{
-                           bgcolor: 'rgba(255, 255, 255, 0.8)',
-                           border: `1px solid ${COLORS.accent.main}15`,
-                           color: COLORS.text.primary,
-                           '&:hover': {
-                              bgcolor: 'white',
-                              boxShadow: `0 4px 12px ${COLORS.accent.main}15`,
-                           },
-                        }}
-                     />
-                  ))}
-               </QuickLocationChips>
-            )}
-         </AnimatePresence>
-
-         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3, mt: 2 }}>
-            {invitationTypes.map((type) => (
-               <Tooltip key={type.id} title={`${type.label} 장소 입력하기`}>
-                  <Chip
-                     icon={type.icon}
-                     label={type.label}
-                     onClick={() => handleTypeSelect(type.id)}
-                     sx={{
-                        backgroundColor: selectedType === type.id ? `${COLORS.accent.main}15` : 'rgba(255, 255, 255, 0.8)',
-                        color: selectedType === type.id ? COLORS.accent.main : COLORS.text.primary,
-                        border: `1px solid ${selectedType === type.id ? COLORS.accent.main : COLORS.accent.main}15`,
-                        '&:hover': {
-                           backgroundColor: selectedType === type.id ? `${COLORS.accent.main}25` : 'white',
-                           transform: 'translateY(-2px)',
-                           boxShadow: `0 4px 12px ${COLORS.accent.main}15`,
-                        },
-                        transition: 'all 0.3s ease',
-                     }}
-                  />
-               </Tooltip>
-            ))}
-         </Box>
-
+         {/* 기타 입력 필드 */}
          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Controller name="location.name" control={control} rules={{ required: '장소명을 입력해주세요' }} render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="장소명" placeholder={currentType.placeholders.name} error={!!error} helperText={error?.message} />} />
-
-            <Controller name="location.address" control={control} rules={{ required: '주소를 입력해주세요' }} render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="주소" placeholder={currentType.placeholders.address} error={!!error} helperText={error?.message} />} />
-
-            <Controller name="location.detail" control={control} render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="상세 위치" placeholder={currentType.placeholders.detail} error={!!error} helperText={error?.message} />} />
-
-            <Controller name="location.guide" control={control} render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="교통편 안내" placeholder={currentType.placeholders.guide} multiline rows={3} error={!!error} helperText={error?.message} />} />
-
+            <Controller
+               name="location.name"
+               control={control}
+               rules={{ required: '장소명을 입력해주세요' }}
+               render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="장소명" placeholder={currentType.placeholders.name} error={!!error} helperText={error?.message} fullWidth />}
+            />
+            {/* 읽기 전용 주소 표시 및 검색 버튼 */}
+            <Controller
+               name="location.address"
+               control={control}
+               defaultValue=""
+               rules={{ required: '주소를 선택해주세요' }}
+               render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="주소" placeholder="주소 검색을 통해 선택하세요" error={!!error} helperText={error?.message} InputProps={{ readOnly: true }} onClick={openModal} sx={{ flexGrow: 1 }} />}
+            />
+            <Button
+               variant="outlined"
+               onClick={openModal}
+               sx={{
+                  borderColor: COLORS.accent.main,
+                  color: COLORS.accent.main,
+                  fontWeight: 'bold',
+                  borderRadius: '8px',
+                  boxShadow: `0 2px 6px ${COLORS.accent.main}33`,
+                  transition: 'all 0.2s ease-in-out',
+                  whiteSpace: 'nowrap',
+                  minWidth: 'fit-content',
+                  '&:hover': {
+                     borderColor: COLORS.accent.dark,
+                     backgroundColor: `${COLORS.accent.main}10`,
+                     boxShadow: `0 4px 12px ${COLORS.accent.main}50`,
+                  },
+               }}
+            >
+               주소 검색
+            </Button>
+            <Controller name="location.detail" control={control} render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="상세 위치" placeholder={currentType.placeholders.detail} error={!!error} helperText={error?.message} fullWidth />} />
+            <Controller name="location.guide" control={control} render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="교통편 안내" placeholder={currentType.placeholders.guide} multiline rows={3} error={!!error} helperText={error?.message} fullWidth />} />
             <Controller
                name="location.showMap"
                control={control}
@@ -342,6 +372,35 @@ const LocationSection = () => {
             />
          </Box>
 
+         {/* 지도 미리보기 */}
+         {location.coordinates && location.showMap && (
+            <Box
+               sx={{
+                  mt: 3,
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  border: `1px solid ${COLORS.accent.main}15`,
+                  height: '300px',
+                  width: '100%',
+                  position: 'relative',
+                  visibility: 'visible',
+               }}
+            >
+               <div
+                  id="kakao-map"
+                  style={{
+                     width: '100%',
+                     height: '100%',
+                     position: 'absolute',
+                     top: 0,
+                     left: 0,
+                     visibility: 'visible',
+                  }}
+               />
+            </Box>
+         )}
+
+         {/* 미리보기 패널: formData에 포함된 location 정보 표시 */}
          {(location.name || location.address || location.detail || location.guide) && (
             <Box
                component={motion.div}
@@ -359,146 +418,47 @@ const LocationSection = () => {
                }}
             >
                <Box sx={{ position: 'relative', zIndex: 1 }}>
-                  <Box
-                     sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1.5,
-                        mb: 2,
-                     }}
-                  >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
                      {currentType.icon}
-                     <Typography
-                        sx={{
-                           color: COLORS.accent.main,
-                           fontWeight: 600,
-                           fontSize: '1.1rem',
-                        }}
-                     >
-                        {currentType.label}
-                     </Typography>
+                     <Typography sx={{ color: COLORS.accent.main, fontWeight: 600, fontSize: '1.1rem' }}>{currentType.label}</Typography>
                   </Box>
-
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                      {location.name && (
-                        <Typography
-                           sx={{
-                              color: COLORS.text.primary,
-                              fontSize: '1.2rem',
-                              fontWeight: 500,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                           }}
-                        >
+                        <Typography sx={{ color: COLORS.text.primary, fontSize: '1.2rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
                            <LocationOnIcon fontSize="small" sx={{ color: COLORS.accent.main }} />
                            {location.name}
                         </Typography>
                      )}
-
-                     {location.address && (
-                        <Typography
-                           sx={{
-                              color: COLORS.text.secondary,
-                              fontSize: '1rem',
-                              pl: 3.5,
-                           }}
-                        >
-                           {location.address}
-                        </Typography>
-                     )}
-
+                     {location.address && <Typography sx={{ color: COLORS.text.secondary, fontSize: '1rem', pl: 3.5 }}>{location.address}</Typography>}
                      {location.detail && (
-                        <Box
-                           sx={{
-                              p: 2,
-                              borderRadius: '8px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                              border: `1px solid ${COLORS.accent.main}15`,
-                           }}
-                        >
-                           <Typography
-                              sx={{
-                                 color: COLORS.text.secondary,
-                                 fontSize: '0.95rem',
-                                 whiteSpace: 'pre-line',
-                              }}
-                           >
-                              {location.detail}
-                           </Typography>
+                        <Box sx={{ p: 2, borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.7)', border: `1px solid ${COLORS.accent.main}15` }}>
+                           <Typography sx={{ color: COLORS.text.secondary, fontSize: '0.95rem', whiteSpace: 'pre-line' }}>{location.detail}</Typography>
                         </Box>
                      )}
-
                      {location.guide && (
-                        <Box
-                           sx={{
-                              p: 2,
-                              borderRadius: '8px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                              border: `1px solid ${COLORS.accent.main}15`,
-                           }}
-                        >
-                           <Box
-                              sx={{
-                                 display: 'flex',
-                                 alignItems: 'center',
-                                 gap: 1,
-                                 mb: 1,
-                                 color: COLORS.accent.main,
-                              }}
-                           >
+                        <Box sx={{ p: 2, borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.7)', border: `1px solid ${COLORS.accent.main}15` }}>
+                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, color: COLORS.accent.main }}>
                               <DirectionsIcon fontSize="small" />
-                              <Typography
-                                 sx={{
-                                    fontWeight: 500,
-                                    fontSize: '0.9rem',
-                                 }}
-                              >
-                                 교통편 안내
-                              </Typography>
+                              <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>교통편 안내</Typography>
                            </Box>
-                           <Typography
-                              sx={{
-                                 color: COLORS.text.secondary,
-                                 fontSize: '0.95rem',
-                                 whiteSpace: 'pre-line',
-                              }}
-                           >
-                              {location.guide}
-                           </Typography>
-                        </Box>
-                     )}
-                  </Box>
-
-                  <Box
-                     sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        gap: 2,
-                        mt: 3,
-                     }}
-                  >
-                     {location.showMap && (
-                        <Box
-                           sx={{
-                              p: 2,
-                              borderRadius: '8px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                              border: `1px solid ${COLORS.accent.main}15`,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                              color: COLORS.accent.main,
-                           }}
-                        >
-                           <MapIcon fontSize="small" />
-                           <Typography sx={{ fontSize: '0.9rem', fontWeight: 500 }}>지도 표시</Typography>
+                           <Typography sx={{ color: COLORS.text.secondary, fontSize: '0.95rem', whiteSpace: 'pre-line' }}>{location.guide}</Typography>
                         </Box>
                      )}
                   </Box>
                </Box>
             </Box>
          )}
+
+         {/* 주소 검색 모달 - Daum Postcode 컴포넌트 사용 */}
+         <Dialog open={openAddressModal} onClose={closeModal} fullWidth maxWidth="sm">
+            <DialogTitle>주소 검색</DialogTitle>
+            <DialogContent dividers>
+               <DaumPostcode onComplete={handleAddressComplete} style={{ width: '100%' }} />
+            </DialogContent>
+            <DialogActions>
+               <Button onClick={closeModal}>취소</Button>
+            </DialogActions>
+         </Dialog>
       </SectionContainer>
    )
 }
