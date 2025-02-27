@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
-import { Box, Typography, FormControl, OutlinedInput, InputAdornment, Tab } from '@mui/material'
+import { Box, Typography, Tab } from '@mui/material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 
 import { styled } from '@mui/material/styles'
-import SearchIcon from '@mui/icons-material/Search'
 import Board from '../components/customer/Board'
 
 // 자주묻는질문 컨테이너
@@ -37,26 +36,11 @@ const BannerTitle = styled(Typography)(({ theme }) => ({
    },
 }))
 
-// 검색창
-const SearchBox = styled(FormControl)(({ theme }) => ({
-   width: '581px',
-   backgroundColor: theme.palette.background.default,
-   margin: '-20px auto',
-   display: 'flex',
-   borderRadius: '5px',
-   [theme.bps.md]: {
-      width: '80%',
-   },
-   [theme.bps.sm]: {
-      width: '60%',
-   },
-}))
-
 // 자주묻는질문 컨테이너
 const CustomerContentContainer = styled(Box)(({ theme }) => ({
-   padding: '80px 50px',
+   padding: '60px 50px',
    backgroundColor: theme.palette.background.default,
-   minHeight: '100vh',
+   minHeight: '80vh',
    maxWidth: '1100px',
    margin: '0 auto',
    [theme.bps.md]: {
@@ -72,7 +56,7 @@ const CustomerContentContainer = styled(Box)(({ theme }) => ({
 
 //탭 타이틀
 const CustomTab = styled(Tab)(({ theme }) => ({
-   minWidth: '0 !important',
+   minWidth: '0 !important ',
    fontSize: '1.5rem',
    fontWeight: 'bold',
    color: '#A4A4A4',
@@ -340,16 +324,6 @@ const FaqPage = () => {
          <Bannerimg>
             <BannerTitle>FAQ</BannerTitle>
          </Bannerimg>
-         <SearchBox>
-            <OutlinedInput
-               placeholder="검색어를 입력하세요"
-               endAdornment={
-                  <InputAdornment position="end">
-                     <SearchIcon />
-                  </InputAdornment>
-               }
-            />
-         </SearchBox>
 
          <CustomerContentContainer>
             {/* 자주묻는질문 탭 */}

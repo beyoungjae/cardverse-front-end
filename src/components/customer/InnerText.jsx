@@ -8,7 +8,7 @@ const InnerContainer = styled(Box)(({ theme }) => ({
    backgroundColor: theme.palette.background.default,
 }))
 
-//내부 텍스트 컨테이너
+//내부 텍스트
 const TextContainer = styled(Box)(({ theme }) => ({
    display: 'flex',
    flexDirection: 'column',

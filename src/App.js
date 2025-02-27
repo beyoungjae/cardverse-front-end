@@ -11,7 +11,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 // 컴포넌트 import
 import Navbar from './components/shared/Navbar'
-import { Home, MyPage, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, AdminPage, CreatePostPage, AboutPage, QnaPage, FaqPage } from './pages'
+import { Home, MyPage, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, AdminPage, CreatePostPage, AboutPage, QnaPage, FaqPage, EventPage } from './pages'
 import Footer from './components/shared/Footer'
 import { Login } from './components/auth'
 import ReviewEditor from './components/review/ReviewEditor'
@@ -136,6 +136,7 @@ function App() {
                <Route path="/support" element={<CustomerPage />} />
                <Route path="/qna" element={<QnaPage />} />
                <Route path="/faq" element={<FaqPage />} />
+               <Route path="/event" element={<EventPage />} />
                <Route path="/template">
                   {/* /template 접근 시 기본 탭으로 리다이렉트 */}
                   <Route index element={<Navigate to="/template/wedding" replace />} />

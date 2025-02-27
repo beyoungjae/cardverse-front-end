@@ -78,7 +78,7 @@ const CustomerButton = styled(Button)(({ theme }) => ({
 }))
 
 // 더미 데이터
-const dummyCards = [{ title: 'Q. 로그인이 안될 경우 해결방법 ' }, { title: 'Q. 비밀번호 안될 경우 해결방법' }, { title: 'Q. 모바일청첩장 만드는방법' }, { title: 'Q. 모바일청첩장 사용기간' }]
+const dummyCards = [{ title: 'Q. 로그인  해결방법 ' }, { title: 'Q. 회원가입 해결방법' }, { title: 'Q. 모바일청첩장 이용방법' }, { title: 'Q. 모바일청첩장 사용기간' }]
 
 const Top4Card = () => {
    return (

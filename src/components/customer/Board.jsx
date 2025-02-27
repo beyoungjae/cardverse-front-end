@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Box, Typography, Pagination } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import { width } from '@mui/system'
 
 // 보드 컨테이너
 const BoardContainer = styled(Box)(({ theme }) => ({
