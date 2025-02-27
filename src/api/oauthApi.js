@@ -18,3 +18,13 @@ export const kakaoLoginUser = async (code) => {
       throw error
    }
 }
+
+export const checkOAuthStatus = async () => {
+   try {
+      const response = await commonApi.get('/oauth/status')
+      return response
+   } catch (error) {
+      console.error(`API Request 오류: ${error.message}`)
+      throw error
+   }
+}
