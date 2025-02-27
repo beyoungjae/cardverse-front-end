@@ -42,7 +42,7 @@ const invitationTypes = [
       ],
    },
    {
-      id: 'newYear',
+      id: 'newyear',
       label: '연하장',
       icon: <CelebrationIcon />,
       title: '보내는 분',
@@ -59,7 +59,7 @@ const invitationTypes = [
       ],
    },
    {
-      id: 'birthday',
+      id: 'gohyeyon',
       label: '고희연',
       icon: <CakeIcon />,
       title: '주인공',

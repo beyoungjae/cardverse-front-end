@@ -21,6 +21,10 @@ import AccountSection from './sections/AccountSection'
 import GallerySection from './sections/GallerySection'
 import SettingSection from './sections/SettingSection'
 
+import PreviewLoading from './PreviewLoading'
+
+import { useSelector } from 'react-redux'
+
 // dayjs 한글 설정
 dayjs.locale('ko')
 
@@ -77,7 +81,7 @@ const InvitationType = {
          },
       },
    },
-   newYear: {
+   newyear: {
       galleryTitle: '지난 해 추억을 담은 갤러리',
       icon: <CelebrationIcon />,
       color: '#FFD700',
@@ -110,7 +114,7 @@ const InvitationType = {
          },
       },
    },
-   birthday: {
+   gohyeyon: {
       galleryTitle: '고희연 갤러리',
       icon: <CakeIcon />,
       color: '#9370DB',
@@ -180,14 +184,15 @@ const InvitationType = {
 
 const invitationTypes = [
    { id: 'wedding', label: '청첩장', icon: <FavoriteIcon />, format: '(신랑), (신부)의 결혼식이 (D-Day)일 남았습니다.' },
-   { id: 'newYear', label: '연하장', icon: <CelebrationIcon />, format: '새해 첫날까지 (D-Day)일 남았습니다.' },
-   { id: 'birthday', label: '고희연', icon: <CakeIcon />, format: '(이름)님의 칠순잔치가 (D-Day)일 남았습니다.' },
+   { id: 'newyear', label: '연하장', icon: <CelebrationIcon />, format: '새해 첫날까지 (D-Day)일 남았습니다.' },
+   { id: 'gohyeyon', label: '고희연', icon: <CakeIcon />, format: '(이름)님의 칠순잔치가 (D-Day)일 남았습니다.' },
    { id: 'invitation', label: '초빙장', icon: <EmojiEventsIcon />, format: '특별한 행사가 (D-Day)일 남았습니다.' },
 ]
 
 const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
-   const [loadedImages, setLoadedImages] = useState(new Set())
-   const [selectedType, setSelectedType] = useState('wedding')
+   const { detail: template, status } = useSelector((state) => state.templates)
+
+   const [selectedType, setSelectedType] = useState(template?.data?.type || 'wedding')
    const [selectedImageIndex, setSelectedImageIndex] = useState(null)
    const [showInvitation, setShowInvitation] = useState(false)
    const [showSections, setShowSections] = useState(false)
@@ -200,7 +205,7 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
       setting: { animation: null, imgs: [] },
       profiles: [],
       showProfiles: false,
-      type: 'wedding',
+      type: template?.data?.type || 'wedding',
       title: '',
       greeting: '',
       dateTime: null,
@@ -216,11 +221,11 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
       images: [],
       accounts: [],
       showAccounts: false,
-      backgroundColor: '#ffffff',
-      primaryColor: '#000000',
-      secondaryColor: '#666666',
-      fontFamily: 'Malgun Gothic',
-      animation: null,
+      backgroundColor: template?.data?.backgroundColor || '#ffffff',
+      primaryColor: template?.data?.primaryColor || '#000000',
+      secondaryColor: template?.data?.secondaryColor || '#666666',
+      fontFamily: template?.data?.fontFamily || 'Malgun Gothic',
+      animation: template?.data?.animation || null,
    }
 
    // formData와 defaultFormData 병합
@@ -287,14 +292,20 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
       }, 300)
    }, [onPreviewStateChange, startSectionAnimations])
 
+   // useEffect(() => {
+   //    // formData.type이 있으면 해당 값을 사용, 없으면 프로필의 type 확인
+   //    if (mergedFormData.type) {
+   //       setSelectedType(mergedFormData.type)
+   //    } else if (mergedFormData.profiles?.[0]?.type) {
+   //       setSelectedType(mergedFormData.profiles[0].type)
+   //    }
+   // }, [mergedFormData.type, mergedFormData.profiles])
+
    useEffect(() => {
-      // formData.type이 있으면 해당 값을 사용, 없으면 프로필의 type 확인
-      if (mergedFormData.type) {
-         setSelectedType(mergedFormData.type)
-      } else if (mergedFormData.profiles?.[0]?.type) {
-         setSelectedType(mergedFormData.profiles[0].type)
+      if (template && template.data) {
+         setSelectedType(template?.data?.type)
       }
-   }, [mergedFormData.type, mergedFormData.profiles])
+   }, [template])
 
    // selectedType 대신 mergedFormData.type을 우선적으로 사용
    const type = mergedFormData.type || selectedType
@@ -389,8 +400,8 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
       const type = mergedFormData.type || 'wedding'
       const labels = {
          wedding: ['신랑측', '신부측'],
-         newYear: ['보내는 분'],
-         birthday: ['자녀대표'],
+         newyear: ['보내는 분'],
+         gohyeyon: ['자녀대표'],
          invitation: ['대표계좌'],
       }
       return labels[type][index] || labels[type][0]
@@ -409,11 +420,11 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
          // 동적으로 포맷 문자열 치환
          if (type === 'wedding') {
             format = format.replace('(신랑)', mergedFormData?.profiles?.[0]?.name || '').replace('(신부)', mergedFormData?.profiles?.[1]?.name || '')
-         } else if (type === 'birthday') {
+         } else if (type === 'gohyeyon') {
             format = format.replace('(이름)', mergedFormData?.profiles?.[0]?.name || '')
          } else if (type === 'invitation') {
             format = format.replace('(이름)', mergedFormData?.profiles?.[0]?.name || '')
-         } else if (type === 'newYear') {
+         } else if (type === 'newyear') {
             format = format.replace('(이름)', mergedFormData?.profiles?.[0]?.name || '')
          }
 
@@ -532,6 +543,16 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
       },
    }
 
+   // 로딩 상태 처리
+   if (status === 'loading') {
+      return <PreviewLoading />
+   }
+
+   // template이 없는 경우 처리
+   if (!template && status === 'succeeded') {
+      return <Box>템플릿을 찾을 수 없습니다.</Box>
+   }
+
    // 조건부 렌더링 로직
    if (!isDrawer) {
       return (
@@ -623,7 +644,7 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                      }}
                   >
                      <img
-                        src="/images/templates/sample00001.png"
+                        src={template?.thumbnail}
                         alt="Invitation"
                         style={{
                            width: '100%',

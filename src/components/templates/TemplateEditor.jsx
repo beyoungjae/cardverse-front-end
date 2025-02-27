@@ -501,12 +501,14 @@ const AdminTemplateDialog = React.memo(
 )
 
 const TemplateEditor = () => {
-   const { templateId } = useParams() // URL에서 templateId 가져오기
-   const location = useLocation()
    const dispatch = useDispatch()
+   const { templateId } = useParams()
+   const location = useLocation()
    const navigate = useNavigate()
 
    const { detail: template } = useSelector((state) => state.templates)
+
+   console.log('현재 가지고 온 템플릿 데이터:', template)
 
    // react-hook-form
    const methods = useForm({
@@ -514,16 +516,16 @@ const TemplateEditor = () => {
          setting: {
             animation: 'fade',
             images: [
-               { file: null, url: '/images/samples/wedding-sample1.png', name: 'wedding-sample1.png' },
-               { file: null, url: '/images/samples/wedding-sample2.png', name: 'wedding-sample2.png' },
-               { file: null, url: '/images/samples/wedding-sample3.png', name: 'wedding-sample3.png' },
+               { file: null, url: template?.detailImages[0], name: 'sample1.png' },
+               { file: null, url: template?.detailImages[1], name: 'sample2.png' },
+               { file: null, url: template?.detailImages[2], name: 'sample3.png' },
             ],
          },
          // 기본 정보
          profiles: [],
          showProfiles: false,
          // 초대장 타입
-         type: 'wedding',
+         type: template?.data?.type || 'wedding',
          // 제목
          title: '',
          // 인사말
@@ -547,11 +549,11 @@ const TemplateEditor = () => {
          accounts: [],
          showAccounts: false,
          // 테마
-         backgroundColor: '#ffffff',
-         primaryColor: '#000000',
-         secondaryColor: '#666666',
-         fontFamily: 'Malgun Gothic',
-         animation: null,
+         backgroundColor: template?.data?.backgroundColor || '#ffffff',
+         primaryColor: template?.data?.primaryColor || '#000000',
+         secondaryColor: template?.data?.secondaryColor || '#666666',
+         fontFamily: template?.data?.fontFamily || 'Malgun Gothic',
+         animation: template?.data?.animation || null,
       },
    })
 
@@ -571,8 +573,7 @@ const TemplateEditor = () => {
    useEffect(() => {
       if (templateId && template) {
          methods.reset({
-            title: template.title,
-            category: template.category,
+            type: template.category,
             price: template.price,
             thumbnail: template.thumbnail,
             detailImages: template.detailImages || [], // 없으면 빈 배열로
@@ -592,7 +593,15 @@ const TemplateEditor = () => {
    } = methods
 
    // 테마 훅
-   const { theme: themeSettings, handleThemeChange, resetTheme, undo, redo, canUndo, canRedo } = useThemeControl()
+   const { theme: themeSettings, handleThemeChange, resetTheme, undo, redo, canUndo, canRedo, applyPreset } = useThemeControl()
+
+   const THEME_STORAGE_KEY = 'theme_settings'
+
+   useEffect(() => {
+      if (!localStorage.getItem(THEME_STORAGE_KEY)) {
+         applyPreset && applyPreset('classic')
+      }
+   }, [applyPreset])
 
    // sections
    const themeProps = {

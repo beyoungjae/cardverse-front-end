@@ -6,10 +6,10 @@ const THEME_STORAGE_KEY = 'template_theme_draft'
 
 const defaultTheme = {
    backgroundColor: '#ffffff',
-   fontFamily: 'Malgun Gothic',
-   primaryColor: '#000000',
-   secondaryColor: '#666666',
-   animation: null,
+   fontFamily: 'Noto Sans KR',
+   primaryColor: '#2c3e50',
+   secondaryColor: '#7f8c8d',
+   animation: 'fade',
 }
 
 // 미리 정의된 테마 프리셋

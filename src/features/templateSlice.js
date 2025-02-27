@@ -47,7 +47,14 @@ const templateSlice = createSlice({
       status: 'idle', // 'loading', 'succeeded', 'failed'
       error: null,
    },
-   reducers: {},
+   reducers: {
+      // 템플릿 상태 초기화 리듀서
+      resetTemplateState: (state) => {
+         state.detail = null
+         state.status = 'idle'
+         state.error = null
+      },
+   },
    extraReducers: (builder) => {
       builder
          .addCase(fetchTemplates.pending, (state) => {
@@ -96,4 +103,5 @@ const templateSlice = createSlice({
    },
 })
 
+export const { resetTemplateState } = templateSlice.actions
 export default templateSlice.reducer

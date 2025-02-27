@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react'
+import { useForm } from 'react-hook-form'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { Container, Typography, Box, Button, Modal, IconButton, CircularProgress } from '@mui/material'
+import { Container, Typography, Box, Button, Modal, IconButton, CircularProgress, MenuItem, TextField, Select } from '@mui/material'
 import { styled as muiStyled, keyframes } from '@mui/material/styles'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
@@ -440,6 +441,107 @@ const PreviewModal = muiStyled(Modal)(({ theme }) => ({
    },
 }))
 
+// 템플릿 수정 모달 스타일
+const modalStyle = {
+   position: 'absolute',
+   top: '50%',
+   left: '50%',
+   transform: 'translate(-50%, -50%)',
+   width: '400px',
+   bgcolor: 'background.paper',
+   border: '2px solid #000',
+   boxShadow: 24,
+   p: 4,
+   display: 'flex',
+   flexDirection: 'column',
+   gap: '10px',
+}
+
+// 템플릿 수정 모달
+const TemplateEditModal = ({ open, onClose, template, showNotification, templateId }) => {
+   const dispatch = useDispatch()
+   const { register, handleSubmit, reset } = useForm({
+      defaultValues: {
+         title: template.title,
+         price: Number(template.price).toLocaleString('ko-KR'),
+         category: template.category,
+         // 이미지 파일은 input[type="file"]로 새로 선택해야 하므로 기본값은 비워둡니다.
+      },
+   })
+
+   // 템플릿 데이터가 변경되면 reset 호출
+   useEffect(() => {
+      if (template) {
+         reset({
+            title: template.title,
+            price: Number(template.price).toLocaleString('ko-KR'),
+            category: template.category,
+         })
+      }
+   }, [template, reset])
+
+   const onSubmit = async (data) => {
+      try {
+         const formData = new FormData()
+         formData.append('title', data.title)
+         formData.append('price', data.price)
+         formData.append('category', data.category)
+
+         // 썸네일 새 파일 선택 시 (파일 input은 controlled되지 않으므로, onChange로 따로 처리)
+         if (data.thumbnail && data.thumbnail[0]) {
+            formData.append('thumbnail', data.thumbnail[0])
+         }
+         // 상세 이미지 새 파일 선택 시
+         if (data.detailImages && data.detailImages.length > 0) {
+            Array.from(data.detailImages).forEach((file) => {
+               formData.append('detailImages', file)
+            })
+         }
+         // 필요시 기존 데이터와의 병합이나 추가 필드 처리 가능
+
+         await dispatch(updateTemplate({ templateId, templateData: formData })).unwrap()
+         showNotification('템플릿이 성공적으로 수정되었습니다.')
+         onClose()
+      } catch (error) {
+         showNotification(error.message || '템플릿 수정 중 오류가 발생했습니다.', 'error')
+      }
+   }
+
+   return (
+      <Modal open={open} onClose={onClose} aria-labelledby="template-edit-modal">
+         <Box sx={modalStyle}>
+            <IconButton onClick={onClose} sx={{ position: 'absolute', right: 10, top: 10 }}>
+               <CloseIcon />
+            </IconButton>
+            <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
+               템플릿 수정
+            </Typography>
+            <form onSubmit={handleSubmit(onSubmit)}>
+               <TextField fullWidth label="제목" {...register('title', { required: true })} margin="normal" />
+               <TextField fullWidth label="가격" {...register('price', { required: true })} margin="normal" />
+               <Select fullWidth {...register('category', { required: true })} defaultValue={template.category}>
+                  <MenuItem value="wedding">청첩장</MenuItem>
+                  <MenuItem value="newyear">연하장</MenuItem>
+                  <MenuItem value="gohyeon">고희연</MenuItem>
+                  <MenuItem value="invitation">초빙장</MenuItem>
+               </Select>
+               <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2">썸네일 이미지</Typography>
+                  <input type="file" accept="image/*" {...register('thumbnail')} />
+               </Box>
+               <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2">상세 이미지 (최대 3개)</Typography>
+                  <input type="file" accept="image/*" multiple {...register('detailImages')} />
+               </Box>
+               <Button type="submit" variant="contained" sx={{ mt: 3 }}>
+                  저장하기
+               </Button>
+            </form>
+         </Box>
+      </Modal>
+   )
+}
+
 const TemplateDetail = () => {
    const { templateId } = useParams()
    const location = useLocation()
@@ -453,6 +555,9 @@ const TemplateDetail = () => {
    const [activeIndex, setActiveIndex] = useState(0)
    const [isPreviewOpen, setIsPreviewOpen] = useState(false)
    const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0)
+
+   // 모달 오픈 상태 관리
+   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
    const detailImages = template?.detailImages || []
 
@@ -481,13 +586,21 @@ const TemplateDetail = () => {
    }
 
    // 사용자가 수정 페이지로 이동할 때 데이터를 같이 넘겨줌
-   // 어드민, 사용자 둘 다 템플릿 데이터를 받아서 해당 템플릿을 수정해야 하니까ㅇㅇ
    const handleEditorOpen = () => {
       if (!isAuthenticated) {
          navigate('/login', { state: { from: location } })
          return
       }
       navigate(`/template/${currentTab}/edit/${templateId}`, { state: { templateId } })
+   }
+
+   // 어드민은 타이틀/가격/타입/썸네일 이미지/상세이미지 (최대 3개) 이거를 교체할 수 있음
+   const handleAdminEditorOpen = () => {
+      if (!isAuthenticated && !isAdmin) {
+         navigate('/login', { state: { from: location } })
+         return
+      }
+      setIsEditModalOpen(true)
    }
 
    const handleDelete = () => {
@@ -592,7 +705,7 @@ const TemplateDetail = () => {
                </ButtonGroup>
                {isAdmin && (
                   <ButtonGroup>
-                     <Button variant="contained" onClick={handleEditorOpen}>
+                     <Button variant="contained" onClick={handleAdminEditorOpen}>
                         템플릿 수정하기
                      </Button>
                      <Button variant="contained" onClick={handleDelete}>
@@ -659,6 +772,20 @@ const TemplateDetail = () => {
                </div>
             </div>
          </PreviewModal>
+
+         {/* 템플릿 수정 모달 */}
+         {isEditModalOpen && template && (
+            <TemplateEditModal
+               open={isEditModalOpen}
+               onClose={() => setIsEditModalOpen(false)}
+               template={template}
+               templateId={templateId}
+               showNotification={(msg, type = 'success') => {
+                  // 알림 처리 함수 (Snackbar 등 호출)
+                  console.log(msg, type)
+               }}
+            />
+         )}
       </>
    )
 }

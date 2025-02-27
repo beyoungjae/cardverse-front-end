@@ -14,8 +14,8 @@ import { SectionContainer, SectionTitle, TitleText, StyledTextField, HelpText, I
 
 const invitationTypes = [
    { id: 'wedding', label: '청첩장', icon: <FavoriteIcon />, placeholders: ['우리의 특별한 순간에 초대합니다', '두 사람이 하나가 되는 날', '사랑으로 물들어가는 계절에', '새로운 시작을 함께 해주세요'] },
-   { id: 'newYear', label: '연하장', icon: <CelebrationIcon />, placeholders: ['희망찬 새해를 맞이하며', '함께 나누는 새해의 기쁨', '새로운 시작, 새로운 희망', '따뜻한 마음을 전합니다'] },
-   { id: 'birthday', label: '고희연', icon: <CakeIcon />, placeholders: ['인생의 아름다운 순간을 함께', '축복과 감사의 자리에 초대합니다', '70년의 세월을 감사하며', '귀한 발걸음을 청합니다'] },
+   { id: 'newyear', label: '연하장', icon: <CelebrationIcon />, placeholders: ['희망찬 새해를 맞이하며', '함께 나누는 새해의 기쁨', '새로운 시작, 새로운 희망', '따뜻한 마음을 전합니다'] },
+   { id: 'gohyeyon', label: '고희연', icon: <CakeIcon />, placeholders: ['인생의 아름다운 순간을 함께', '축복과 감사의 자리에 초대합니다', '70년의 세월을 감사하며', '귀한 발걸음을 청합니다'] },
    { id: 'invitation', label: '초빙장', icon: <EmojiEventsIcon />, placeholders: ['귀하를 모시고자 합니다', '특별한 자리에 초대합니다', '함께하는 영광을 나누고자 합니다', '소중한 시간을 함께 하고자 합니다'] },
 ]
 

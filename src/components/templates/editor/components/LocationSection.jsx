@@ -48,7 +48,7 @@ const invitationTypes = [
       },
    },
    {
-      id: 'newYear',
+      id: 'newyear',
       label: '연하장',
       icon: <CelebrationIcon />,
       placeholders: {
@@ -59,7 +59,7 @@ const invitationTypes = [
       },
    },
    {
-      id: 'birthday',
+      id: 'gohyeyon',
       label: '고희연',
       icon: <CakeIcon />,
       placeholders: {

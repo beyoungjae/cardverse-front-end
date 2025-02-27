@@ -29,7 +29,7 @@ const invitationTypes = [
       placeholderText: '신랑, 신부의 아름다운 순간을 담아보세요',
    },
    {
-      id: 'newYear',
+      id: 'newyear',
       label: '연하장',
       icon: <CelebrationIcon />,
       maxImages: 6,
@@ -38,7 +38,7 @@ const invitationTypes = [
       placeholderText: '새해를 맞이하는 특별한 순간을 담아보세요',
    },
    {
-      id: 'birthday',
+      id: 'gohyeyon',
       label: '고희연',
       icon: <CakeIcon />,
       maxImages: 8,

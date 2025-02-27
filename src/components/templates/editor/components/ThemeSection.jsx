@@ -125,56 +125,10 @@ const fontPresets = [
    { name: '나눔명조', value: 'NanumMyeongjo, serif', type: '명조' },
 ]
 
-const animationPresets = [
-   { name: '페이드', value: 'fade', icon: '🌟' },
-   { name: '슬라이드', value: 'slide', icon: '➡️' },
-   { name: '줌', value: 'zoom', icon: '🔍' },
-   { name: '바운스', value: 'bounce', icon: '💫' },
-]
-
-// 애니메이션 프리셋 정의
-const animationVariants = {
-   fade: {
-      initial: { opacity: 0 },
-      animate: { opacity: 1 },
-      exit: { opacity: 0 },
-   },
-   slide: {
-      initial: { x: -20, opacity: 0 },
-      animate: { x: 0, opacity: 1 },
-      exit: { x: 20, opacity: 0 },
-   },
-   zoom: {
-      initial: { scale: 0.8, opacity: 0 },
-      animate: { scale: 1, opacity: 1 },
-      exit: { scale: 1.2, opacity: 0 },
-   },
-   bounce: {
-      initial: { y: -20, opacity: 0 },
-      animate: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 15 } },
-      exit: { y: 20, opacity: 0 },
-   },
-}
-
-// 애니메이션 적용 가능한 요소들 정의
-const animationTargetOptions = [
-   { id: 'title', label: '제목', icon: '📝' },
-   { id: 'greeting', label: '인사말', icon: '💌' },
-   { id: 'profile', label: '프로필', icon: '👤' },
-   { id: 'datetime', label: '날짜/시간', icon: '📅' },
-   { id: 'location', label: '오시는 길', icon: '🗺' },
-   { id: 'gallery', label: '갤러리', icon: '🖼' },
-   { id: 'account', label: '계좌번호', icon: '💰' },
-]
-
 const ThemeSection = ({ theme, onThemeChange }) => {
    const [showHelp, setShowHelp] = useState(false)
    const [selectedPreset, setSelectedPreset] = useState(null)
-   const [selectedType, setSelectedType] = useState('wedding')
    const { setValue } = useFormContext()
-
-   // 선택된 애니메이션 타겟들을 관리하는 상태
-   const [selectedTargets, setSelectedTargets] = useState(new Set())
 
    const [themeToApply, setThemeToApply] = useState(null)
 
@@ -188,14 +142,14 @@ const ThemeSection = ({ theme, onThemeChange }) => {
             fontFamily: 'Noto Serif KR, serif',
             animation: 'fade',
          },
-         newYear: {
+         newyear: {
             primaryColor: '#FFD700',
             secondaryColor: '#FFD8A8',
             backgroundColor: '#FFFAF0',
             fontFamily: 'Pretendard, sans-serif',
             animation: 'slide',
          },
-         birthday: {
+         gohyeyon: {
             primaryColor: '#9370DB',
             secondaryColor: '#E6E6FA',
             backgroundColor: '#F0E6FF',
@@ -247,56 +201,10 @@ const ThemeSection = ({ theme, onThemeChange }) => {
          onThemeChange('primaryColor', preset.colors.primary)
          onThemeChange('secondaryColor', preset.colors.secondary)
          onThemeChange('backgroundColor', preset.colors.background)
+         onThemeChange('fontFamily', preset.colors.fontFamily)
       },
       [onThemeChange]
    )
-
-   const handleAnimationSelect = useCallback(
-      (animation) => {
-         requestAnimationFrame(() => {
-            onThemeChange('animation', animation)
-            // 기본 타겟 설정
-            if (!theme.animationTargets || theme.animationTargets.length === 0) {
-               onThemeChange('animationTargets', ['title', 'greeting', 'datetime', 'location', 'gallery', 'account', 'profile'])
-            }
-         })
-      },
-      [onThemeChange, theme.animationTargets]
-   )
-
-   const resetTheme = useCallback(() => {
-      setValue('primaryColor', '#2C2C2C', { shouldValidate: true })
-      setValue('secondaryColor', '#666666', { shouldValidate: true })
-      setValue('backgroundColor', '#FFFFFF', { shouldValidate: true })
-      setValue('fontFamily', 'Noto Sans KR, sans-serif', { shouldValidate: true })
-      setValue('animation', 'fade', { shouldValidate: true })
-      setSelectedPreset(null)
-   }, [setValue])
-
-   // 애니메이션 타겟 토글 핸들러 수정
-   const handleTargetToggle = useCallback(
-      (targetId) => {
-         setSelectedTargets((prev) => {
-            const newTargets = new Set(prev)
-            if (newTargets.has(targetId)) {
-               newTargets.delete(targetId)
-            } else {
-               newTargets.add(targetId)
-            }
-            const targetsArray = Array.from(newTargets)
-            onThemeChange('animationTargets', targetsArray)
-            return newTargets
-         })
-      },
-      [onThemeChange]
-   )
-
-   // 컴포넌트 마운트 시 저장된 애니메이션 타겟 불러오기
-   useEffect(() => {
-      if (theme.animationTargets) {
-         setSelectedTargets(new Set(theme.animationTargets))
-      }
-   }, [theme.animationTargets])
 
    return (
       <SectionContainer component={motion.div} variants={fadeInUp} initial="initial" animate="animate" exit="exit" transition={easeTransition}>
@@ -307,7 +215,6 @@ const ThemeSection = ({ theme, onThemeChange }) => {
             </TitleText>
             <IconButtonWrapper>
                <HelpOutlineIcon onClick={() => setShowHelp((prev) => !prev)} />
-               <RestartAltIcon onClick={resetTheme} />
             </IconButtonWrapper>
          </SectionTitle>
 
@@ -411,52 +318,6 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                   </Grid>
                ))}
             </Grid>
-
-            {/* <Typography variant="subtitle1" sx={{ mb: 2, color: COLORS.text.primary, fontWeight: 500 }}>
-               <AutoFixHighIcon sx={{ mr: 1, verticalAlign: 'middle', color: COLORS.accent.main }} />
-               애니메이션
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-               {animationPresets.map((animation) => (
-                  <PresetChip key={animation.name} icon={<span>{animation.icon}</span>} label={animation.name} onClick={() => handleAnimationSelect(animation.value)} selected={theme.animation === animation.value} />
-               ))}
-            </Box>
-
-            {theme.animation && (
-               <Box
-                  sx={{
-                     mt: 2,
-                     p: 2,
-                     backgroundColor: 'rgba(255,255,255,0.8)',
-                     borderRadius: 1,
-                     border: `1px solid ${COLORS.accent.main}15`,
-                  }}
-               >
-                  <Typography variant="subtitle2" sx={{ mb: 2, color: COLORS.text.secondary }}>
-                     애니메이션을 적용할 요소 선택:
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                     {animationTargetOptions.map((target) => (
-                        <Chip
-                           key={target.id}
-                           icon={<span>{target.icon}</span>}
-                           label={target.label}
-                           onClick={() => handleTargetToggle(target.id)}
-                           sx={{
-                              backgroundColor: selectedTargets.has(target.id) ? `${COLORS.accent.main}15` : 'transparent',
-                              color: selectedTargets.has(target.id) ? COLORS.accent.main : COLORS.text.secondary,
-                              border: `1px solid ${selectedTargets.has(target.id) ? COLORS.accent.main : COLORS.accent.main + '40'}`,
-                              cursor: 'pointer',
-                              '&:hover': {
-                                 backgroundColor: selectedTargets.has(target.id) ? `${COLORS.accent.main}25` : 'rgba(255,255,255,0.8)',
-                              },
-                           }}
-                        />
-                     ))}
-                  </Box>
-               </Box>
-            )} 
-            */}
 
             <ThemePreview>
                <Typography variant="h6" sx={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}>
