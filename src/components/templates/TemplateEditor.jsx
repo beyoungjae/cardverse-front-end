@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react'
-import { Box, Button, Drawer, Snackbar, Alert, SpeedDial, SpeedDialIcon, SpeedDialAction, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material'
+import { Box, Button, Drawer, Snackbar, Alert, SpeedDial, SpeedDialIcon, SpeedDialAction, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Link } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
@@ -34,6 +34,7 @@ import { COLORS } from './editor/styles/commonStyles'
 
 // API
 import { templateApi } from '../../api/templateApi'
+import { userTemplateApi } from '../../api/userTemplateApi'
 import { fetchTemplateDetail } from '../../features/templateSlice'
 
 // ===================== styled components =====================
@@ -359,7 +360,7 @@ const AdminTemplateDialog = React.memo(
          return Object.keys(newErrors).length === 0
       }, [formData])
 
-      // 제출 핸들러 수정
+      // 템플릿 업로드 제출 핸들러
       const handleSubmit = useCallback(
          async (e) => {
             e.preventDefault()
@@ -417,10 +418,16 @@ const AdminTemplateDialog = React.memo(
                   submitFormData.append('detailImages', file)
                })
 
-               await templateApi.createTemplate(submitFormData)
+               const response = await templateApi.createTemplate(submitFormData)
                showNotification('템플릿이 성공적으로 생성되었습니다.')
                onClose()
                resetForm()
+
+               if (response.success) {
+                  const newUserTemplateId = response.userTemplateId
+                  const previewUrl = `/templates/preview/${newUserTemplateId}`
+                  showNotification('템플릿이 저장되었습니다. 상단의 링크로 미리보기가 가능합니다.')
+               }
             } catch (error) {
                showNotification(error.response?.data?.message || error.message || '템플릿 생성 중 오류가 발생했습니다.', 'error')
             } finally {
@@ -506,9 +513,26 @@ const TemplateEditor = () => {
    const location = useLocation()
    const navigate = useNavigate()
 
-   const { detail: template } = useSelector((state) => state.templates)
+   const queryParams = new URLSearchParams(location.search)
+   const userTemplateIdFromUrl = queryParams.get('userTemplateId')
 
-   console.log('현재 가지고 온 템플릿 데이터:', template)
+   const { detail: template } = useSelector((state) => state.templates)
+   const { isAuthenticated, user } = useSelector((state) => state.auth)
+   const isAdmin = user?.role === 'admin'
+
+   // 상태 변수 선언
+   const [userTemplateId, setUserTemplateId] = useState(userTemplateIdFromUrl || null)
+   const [isPreviewLoading, setIsPreviewLoading] = useState(false)
+   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' })
+   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false)
+   const [activeSection, setActiveSection] = useState('profile')
+   const [previewState, setPreviewState] = useState({
+      showInvitation: false,
+      showSections: false,
+      sectionAnimationIndex: -1,
+   })
+   const [previewLink, setPreviewLink] = useState('')
 
    // react-hook-form
    const methods = useForm({
@@ -557,31 +581,6 @@ const TemplateEditor = () => {
       },
    })
 
-   // URL에서 templateId가 있거나, 상태로 받은 templateId가 있을 경우 데이터 불러오기
-   // useEffect(() => {
-   //    if (templateId && (!template || template.id !== Number(templateId))) {
-   //       dispatch(fetchTemplateDetail(templateId))
-   //    }
-   // }, [dispatch, templateId, template])
-
-   useEffect(() => {
-      if (templateId) {
-         dispatch(fetchTemplateDetail(templateId))
-      }
-   }, [dispatch, templateId])
-
-   useEffect(() => {
-      if (templateId && template) {
-         methods.reset({
-            type: template.category,
-            price: template.price,
-            thumbnail: template.thumbnail,
-            detailImages: template.detailImages || [], // 없으면 빈 배열로
-            data: template.data,
-         })
-      }
-   }, [template, templateId, methods])
-
    // react-hook-form 훅 : 폼 상태 관리
    const {
       control, // 컨트롤러
@@ -595,13 +594,85 @@ const TemplateEditor = () => {
    // 테마 훅
    const { theme: themeSettings, handleThemeChange, resetTheme, undo, redo, canUndo, canRedo, applyPreset } = useThemeControl()
 
-   const THEME_STORAGE_KEY = 'theme_settings'
+   // 알림 표시
+   const showNotification = useCallback((message, severity = 'success') => {
+      setNotification({ open: true, message, severity })
+   }, [])
 
+   // 로컬 스토리지에서 마지막 저장된 템플릿 ID 불러오기
    useEffect(() => {
+      if (userTemplateIdFromUrl) {
+         setUserTemplateId(userTemplateIdFromUrl)
+      } else {
+         const savedTemplateId = localStorage.getItem(`template_${templateId}_userTemplateId`)
+         if (savedTemplateId) {
+            setUserTemplateId(savedTemplateId)
+         }
+      }
+   }, [templateId, userTemplateIdFromUrl])
+
+   // 템플릿 데이터 불러오기
+   useEffect(() => {
+      if (templateId) {
+         dispatch(fetchTemplateDetail(templateId))
+      }
+   }, [dispatch, templateId])
+
+   // 템플릿 데이터 업데이트
+   useEffect(() => {
+      if (templateId && template) {
+         methods.reset({
+            type: template.category,
+            price: template.price,
+            thumbnail: template.thumbnail,
+            detailImages: template.detailImages || [], // 없으면 빈 배열로
+            data: template.data,
+         })
+      }
+   }, [template, templateId, methods])
+
+   // 저장된 사용자 템플릿 데이터 불러오기
+   useEffect(() => {
+      const loadUserTemplate = async () => {
+         if (userTemplateId) {
+            try {
+               setIsPreviewLoading(true)
+               const { userTemplate } = await userTemplateApi.getUserTemplate(userTemplateId)
+
+               if (userTemplate && userTemplate.formData) {
+                  // 폼 데이터로 설정
+                  methods.reset(userTemplate.formData)
+               }
+            } catch (error) {
+               console.error('사용자 템플릿 로드 오류:', error)
+               // 오류 발생 시 로컬 스토리지에서 ID 제거
+               localStorage.removeItem(`template_${templateId}_userTemplateId`)
+               setUserTemplateId(null)
+            } finally {
+               setIsPreviewLoading(false)
+            }
+         }
+      }
+
+      loadUserTemplate()
+   }, [userTemplateId, methods, templateId])
+
+   // 테마 프리셋 적용
+   useEffect(() => {
+      const THEME_STORAGE_KEY = 'theme_settings'
       if (!localStorage.getItem(THEME_STORAGE_KEY)) {
          applyPreset && applyPreset('classic')
       }
    }, [applyPreset])
+
+   console.log('현재 가지고 온 템플릿 데이터:', template)
+
+   // URL에서 templateId가 있거나, 상태로 받은 templateId가 있을 경우 데이터 불러오기
+   // useEffect(() => {
+   //    if (templateId && (!template || template.id !== Number(templateId))) {
+   //       dispatch(fetchTemplateDetail(templateId))
+   //    }
+   // }, [dispatch, templateId, template])
 
    // sections
    const themeProps = {
@@ -615,16 +686,6 @@ const TemplateEditor = () => {
    }
 
    const sections = useMemo(() => createSections(control, watch, themeProps), [control, watch, themeProps])
-   const [isPreviewLoading, setIsPreviewLoading] = useState(false)
-   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' })
-   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false)
-   const [activeSection, setActiveSection] = useState('profile')
-   const [previewState, setPreviewState] = useState({
-      showInvitation: false,
-      showSections: false,
-      sectionAnimationIndex: -1,
-   })
 
    // type 관련 상태와 핸들러
    const currentType = watch('type') || 'wedding'
@@ -646,24 +707,88 @@ const TemplateEditor = () => {
       [currentType, handleTypeChange]
    )
 
-   // 알림 표시
-   const showNotification = useCallback((message, severity = 'success') => {
-      setNotification({ open: true, message, severity })
-   }, [])
-
-   // 관리자 권한 체크를 위해 auth 상태 추가
-   const { isAuthenticated, user } = useSelector((state) => state.auth)
-   const isAdmin = user?.role === 'admin'
-
    // 관리자용 폼 상태 추가
    const [adminDialogOpen, setAdminDialogOpen] = useState(false)
 
-   // SpeedDial 액션 수정
+   // SpeedDial 액션
    const speedDialActions = useMemo(() => {
       const defaultActions = [
          {
             icon: <SaveIcon />,
             name: '저장하기',
+            action: async () => {
+               try {
+                  if (!isAuthenticated) {
+                     showNotification('저장하려면 로그인이 필요합니다.', 'warning')
+                     navigate('/login', { state: { from: location, message: '템플릿을 저장하려면 로그인이 필요합니다.' } })
+                     return
+                  }
+
+                  setIsPreviewLoading(true)
+
+                  // 현재 폼 데이터 가져오기
+                  const currentFormData = getValues()
+
+                  // API 호출을 위한 데이터 구성
+                  const saveData = {
+                     templateId: templateId,
+                     formData: JSON.stringify(currentFormData),
+                  }
+
+                  let response
+                  let savedUserTemplateId
+
+                  if (userTemplateId) {
+                     // 기존 템플릿 업데이트
+                     response = await userTemplateApi.updateTemplateSet(userTemplateId, saveData)
+                     savedUserTemplateId = userTemplateId
+                     showNotification('템플릿이 성공적으로 업데이트되었습니다.')
+                  } else {
+                     // 새 템플릿 생성
+                     response = await userTemplateApi.createUserTemplate(saveData)
+                     savedUserTemplateId = response.userTemplateId
+
+                     // 생성된 ID 저장
+                     setUserTemplateId(savedUserTemplateId)
+                     localStorage.setItem(`template_${templateId}_userTemplateId`, savedUserTemplateId)
+
+                     showNotification('템플릿이 성공적으로 저장되었습니다.')
+                  }
+
+                  if (response.success) {
+                     const previewUrl = `/templates/preview/${savedUserTemplateId}`
+                     setPreviewLink(previewUrl)
+                     showNotification('템플릿이 저장되었습니다. 상단의 링크로 미리보기가 가능합니다.')
+                  }
+               } catch (error) {
+                  console.error('템플릿 저장 오류:', error)
+                  showNotification(error.response?.data?.message || '템플릿 저장 중 오류가 발생했습니다.', 'error')
+               } finally {
+                  setIsPreviewLoading(false)
+               }
+            },
+         },
+         {
+            icon: <PreviewIcon />,
+            name: '미리보기',
+            action: () => {
+               if (userTemplateId) {
+                  // 저장된 템플릿이 있으면 새 창에서 미리보기
+                  window.open(`/templates/preview/${userTemplateId}`, '_blank')
+               } else {
+                  // 아직 저장되지 않은 경우 드로어로 미리보기
+                  setIsPreviewOpen(true)
+                  showNotification('저장 후 공유 가능한 미리보기 링크가 생성됩니다.', 'info')
+               }
+            },
+         },
+      ]
+
+      // 관리자인 경우
+      if (isAdmin) {
+         defaultActions.unshift({
+            icon: <PublishIcon />,
+            name: '템플릿 업로드',
             action: async () => {
                if (isAdmin) {
                   // 관리자인 경우 다이얼로그 열기
@@ -716,16 +841,6 @@ const TemplateEditor = () => {
                   setIsPreviewLoading(false)
                }
             },
-         },
-         { icon: <PreviewIcon />, name: '미리보기', action: () => setIsPreviewOpen(true) },
-      ]
-
-      // 관리자인 경우 추가 액션
-      if (isAdmin) {
-         defaultActions.unshift({
-            icon: <PublishIcon />,
-            name: '템플릿 업로드',
-            action: () => setAdminDialogOpen(true),
          })
       }
 
@@ -775,6 +890,28 @@ const TemplateEditor = () => {
    return (
       <FormProvider {...methods}>
          <EditorContainer variants={containerVariants} initial="initial" animate="animate">
+            {previewLink && (
+               <Box
+                  sx={{
+                     position: 'fixed',
+                     top: 20,
+                     left: '50%',
+                     transform: 'translateX(-50%)',
+                     zIndex: 1000,
+                     bgcolor: 'background.paper',
+                     p: 2,
+                     borderRadius: 1,
+                     boxShadow: 3,
+                  }}
+               >
+                  <Typography>
+                     미리보기 링크:
+                     <Link href={previewLink} target="_blank" sx={{ ml: 1 }}>
+                        {window.location.origin + previewLink}
+                     </Link>
+                  </Typography>
+               </Box>
+            )}
             <PreviewContainer>
                <PreviewFrame>{isPreviewLoading ? <PreviewLoading /> : <PreviewPanel {...previewPanelProps} onPreviewStateChange={handlePreviewStateChange} />}</PreviewFrame>
             </PreviewContainer>
