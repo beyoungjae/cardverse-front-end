@@ -26,14 +26,14 @@ const themePresets = {
       fontFamily: 'Nanum Myeongjo',
       primaryColor: '#8b4513',
       secondaryColor: '#a0522d',
-      animation: 'slide',
+      animation: 'fade',
    },
    minimal: {
       backgroundColor: '#ffffff',
       fontFamily: 'Pretendard',
       primaryColor: '#333333',
       secondaryColor: '#999999',
-      animation: 'scale',
+      animation: 'fade',
    },
 }
 
@@ -55,6 +55,9 @@ const useThemeControl = () => {
             [key]: value,
          }))
          updateStyle({ [key]: value })
+
+         // 테마 변경 로그 추가
+         console.log(`테마 속성 변경: ${key} = ${value}`)
       },
       [updateStyle]
    )

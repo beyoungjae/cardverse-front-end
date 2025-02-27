@@ -11,7 +11,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 // 컴포넌트 import
 import Navbar from './components/shared/Navbar'
-import { Home, MyPage, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, AdminPage, CreatePostPage, AboutPage, QnaPage, FaqPage, EventPage } from './pages'
+import { Home, MyPage, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, AdminPage, CreatePostPage, AboutPage, QnaPage, FaqPage, EventPage, TemplatePreviewPage } from './pages'
 import Footer from './components/shared/Footer'
 import { Login } from './components/auth'
 import ReviewEditor from './components/review/ReviewEditor'
@@ -118,7 +118,7 @@ function App() {
    //    }
    // }, [sdkLoaded])
 
-   const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname.startsWith('/admin')
+   const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/template/preview/') || location.pathname.startsWith('/preview/')
 
    return (
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
@@ -142,6 +142,38 @@ function App() {
                   <Route index element={<Navigate to="/template/wedding" replace />} />
                   <Route path=":tab/*" element={<TemplatePage key={window.location.pathname} />} />
                </Route>
+
+               {/* 독립적인 미리보기 페이지 라우트 */}
+               <Route path="/preview/:userTemplateId" element={<TemplatePreviewPage />} />
+
+               {/* /templates/preview/ 경로에 대한 리다이렉트 */}
+               <Route
+                  path="/templates/preview/:userTemplateId"
+                  element={
+                     <Navigate
+                        replace
+                        to={(location) => {
+                           const userTemplateId = location.pathname.split('/').pop()
+                           return `/preview/${userTemplateId}`
+                        }}
+                     />
+                  }
+               />
+
+               {/* 기존 /template/preview/ 경로에 대한 리다이렉트 */}
+               <Route
+                  path="/template/preview/:userTemplateId"
+                  element={
+                     <Navigate
+                        replace
+                        to={(location) => {
+                           const userTemplateId = location.pathname.split('/').pop()
+                           return `/preview/${userTemplateId}`
+                        }}
+                     />
+                  }
+               />
+
                <Route path="/login" element={<LoginPage />}>
                   <Route index element={<Login />} />
                   <Route path="*" element={<Navigate to="/login" replace />} />

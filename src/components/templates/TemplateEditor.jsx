@@ -422,12 +422,6 @@ const AdminTemplateDialog = React.memo(
                showNotification('템플릿이 성공적으로 생성되었습니다.')
                onClose()
                resetForm()
-
-               if (response.success) {
-                  const newUserTemplateId = response.userTemplateId
-                  const previewUrl = `/templates/preview/${newUserTemplateId}`
-                  showNotification('템플릿이 저장되었습니다. 상단의 링크로 미리보기가 가능합니다.')
-               }
             } catch (error) {
                showNotification(error.response?.data?.message || error.message || '템플릿 생성 중 오류가 발생했습니다.', 'error')
             } finally {
@@ -520,6 +514,10 @@ const TemplateEditor = () => {
    const { isAuthenticated, user } = useSelector((state) => state.auth)
    const isAdmin = user?.role === 'admin'
 
+   // 강제 리렌더링을 위한 상태
+   const [, setForceRender] = useState(0)
+   const forceUpdate = () => setForceRender((prev) => prev + 1)
+
    // 상태 변수 선언
    const [userTemplateId, setUserTemplateId] = useState(userTemplateIdFromUrl || null)
    const [isPreviewLoading, setIsPreviewLoading] = useState(false)
@@ -532,7 +530,6 @@ const TemplateEditor = () => {
       showSections: false,
       sectionAnimationIndex: -1,
    })
-   const [previewLink, setPreviewLink] = useState('')
 
    // react-hook-form
    const methods = useForm({
@@ -598,6 +595,20 @@ const TemplateEditor = () => {
    const showNotification = useCallback((message, severity = 'success') => {
       setNotification({ open: true, message, severity })
    }, [])
+
+   // 테마 설정이 폼 데이터에 반영되도록 useEffect 추가
+   useEffect(() => {
+      if (themeSettings) {
+         console.log('테마 설정을 폼 데이터에 반영합니다:', themeSettings)
+
+         // 테마 설정을 폼 데이터에 반영
+         methods.setValue('backgroundColor', themeSettings.backgroundColor)
+         methods.setValue('primaryColor', themeSettings.primaryColor)
+         methods.setValue('secondaryColor', themeSettings.secondaryColor)
+         methods.setValue('fontFamily', themeSettings.fontFamily)
+         methods.setValue('animation', themeSettings.animation)
+      }
+   }, [themeSettings, methods])
 
    // 로컬 스토리지에서 마지막 저장된 템플릿 ID 불러오기
    useEffect(() => {
@@ -666,13 +677,6 @@ const TemplateEditor = () => {
    }, [applyPreset])
 
    console.log('현재 가지고 온 템플릿 데이터:', template)
-
-   // URL에서 templateId가 있거나, 상태로 받은 templateId가 있을 경우 데이터 불러오기
-   // useEffect(() => {
-   //    if (templateId && (!template || template.id !== Number(templateId))) {
-   //       dispatch(fetchTemplateDetail(templateId))
-   //    }
-   // }, [dispatch, templateId, template])
 
    // sections
    const themeProps = {
@@ -746,42 +750,39 @@ const TemplateEditor = () => {
                   } else {
                      // 새 템플릿 생성
                      response = await userTemplateApi.createUserTemplate(saveData)
-                     savedUserTemplateId = response.userTemplateId
+                     // API 응답에서 userTemplateId 추출
+                     savedUserTemplateId = response.userTemplateId || response.id
 
-                     // 생성된 ID 저장
-                     setUserTemplateId(savedUserTemplateId)
-                     localStorage.setItem(`template_${templateId}_userTemplateId`, savedUserTemplateId)
-
-                     showNotification('템플릿이 성공적으로 저장되었습니다.')
+                     if (savedUserTemplateId) {
+                        setUserTemplateId(savedUserTemplateId)
+                        // 로컬 스토리지에 ID 저장
+                        localStorage.setItem(`template_${templateId}_userTemplateId`, savedUserTemplateId)
+                        showNotification('템플릿이 성공적으로 저장되었습니다.')
+                     } else {
+                        console.error('저장된 템플릿 ID가 없습니다:', response)
+                        showNotification('템플릿 저장에 문제가 발생했습니다.', 'error')
+                        setIsPreviewLoading(false)
+                        return
+                     }
                   }
 
-                  if (response.success) {
-                     const previewUrl = `/templates/preview/${savedUserTemplateId}`
-                     setPreviewLink(previewUrl)
-                     showNotification('템플릿이 저장되었습니다. 상단의 링크로 미리보기가 가능합니다.')
+                  // 저장 성공 시 3초 후에 미리보기 페이지를 새 창으로 엽니다
+                  if (savedUserTemplateId) {
+                     showNotification('잠시후 미리보기 페이지가 열립니다...', 'info')
+                     setTimeout(() => {
+                        const previewUrl = `/preview/${savedUserTemplateId}`
+                        window.open(previewUrl, '_blank')
+                     }, 3000)
                   }
+
+                  setIsPreviewLoading(false)
                } catch (error) {
                   console.error('템플릿 저장 오류:', error)
                   showNotification(error.response?.data?.message || '템플릿 저장 중 오류가 발생했습니다.', 'error')
-               } finally {
-                  setIsPreviewLoading(false)
                }
             },
          },
-         {
-            icon: <PreviewIcon />,
-            name: '미리보기',
-            action: () => {
-               if (userTemplateId) {
-                  // 저장된 템플릿이 있으면 새 창에서 미리보기
-                  window.open(`/templates/preview/${userTemplateId}`, '_blank')
-               } else {
-                  // 아직 저장되지 않은 경우 드로어로 미리보기
-                  setIsPreviewOpen(true)
-                  showNotification('저장 후 공유 가능한 미리보기 링크가 생성됩니다.', 'info')
-               }
-            },
-         },
+         { icon: <PreviewIcon />, name: '미리보기', action: () => setIsPreviewOpen(true) },
       ]
 
       // 관리자인 경우
@@ -833,7 +834,7 @@ const TemplateEditor = () => {
 
                   const response = await templateApi.createTemplate(formData)
                   showNotification('템플릿이 성공적으로 생성되었습니다.')
-                  navigate(`preview/${response.id}`)
+                  navigate(`/preview/${response.id}`)
                } catch (error) {
                   console.error('템플릿 생성 오류:', error)
                   showNotification(error.response?.data?.message || '템플릿 생성 중 오류가 발생했습니다.', 'error')
@@ -846,6 +847,8 @@ const TemplateEditor = () => {
 
       return defaultActions
    }, [isAdmin, getValues, navigate, showNotification])
+
+   console.log('현재 폼 데이터:', getValues())
 
    // ThemeSection에 전달할 props
    const themeSectionProps = {
@@ -890,28 +893,6 @@ const TemplateEditor = () => {
    return (
       <FormProvider {...methods}>
          <EditorContainer variants={containerVariants} initial="initial" animate="animate">
-            {previewLink && (
-               <Box
-                  sx={{
-                     position: 'fixed',
-                     top: 20,
-                     left: '50%',
-                     transform: 'translateX(-50%)',
-                     zIndex: 1000,
-                     bgcolor: 'background.paper',
-                     p: 2,
-                     borderRadius: 1,
-                     boxShadow: 3,
-                  }}
-               >
-                  <Typography>
-                     미리보기 링크:
-                     <Link href={previewLink} target="_blank" sx={{ ml: 1 }}>
-                        {window.location.origin + previewLink}
-                     </Link>
-                  </Typography>
-               </Box>
-            )}
             <PreviewContainer>
                <PreviewFrame>{isPreviewLoading ? <PreviewLoading /> : <PreviewPanel {...previewPanelProps} onPreviewStateChange={handlePreviewStateChange} />}</PreviewFrame>
             </PreviewContainer>

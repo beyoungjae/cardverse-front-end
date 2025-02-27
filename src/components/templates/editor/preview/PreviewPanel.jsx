@@ -189,14 +189,25 @@ const invitationTypes = [
    { id: 'invitation', label: '초빙장', icon: <EmojiEventsIcon />, format: '특별한 행사가 (D-Day)일 남았습니다.' },
 ]
 
-const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
+const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange, previewState, onSettingComplete, onInvitationClick }) => {
    const { detail: template, status } = useSelector((state) => state.templates)
 
    const [selectedType, setSelectedType] = useState(template?.data?.type || 'wedding')
    const [selectedImageIndex, setSelectedImageIndex] = useState(null)
-   const [showInvitation, setShowInvitation] = useState(false)
-   const [showSections, setShowSections] = useState(false)
-   const [sectionAnimationIndex, setSectionAnimationIndex] = useState(-1)
+
+   // 외부에서 상태를 받아오는 경우 내부 상태 대신 사용
+   const [showInvitation, setShowInvitation] = useState(previewState?.showInvitation ?? false)
+   const [showSections, setShowSections] = useState(previewState?.showSections ?? false)
+   const [sectionAnimationIndex, setSectionAnimationIndex] = useState(previewState?.sectionAnimationIndex ?? -1)
+
+   // 외부 상태가 변경되면 내부 상태도 업데이트
+   useEffect(() => {
+      if (previewState) {
+         setShowInvitation(previewState.showInvitation)
+         setShowSections(previewState.showSections)
+         setSectionAnimationIndex(previewState.sectionAnimationIndex)
+      }
+   }, [previewState])
 
    const sectionOrder = useMemo(() => ['title', 'profile', 'greeting', 'datetime', 'location', 'account', 'gallery'], [])
 
@@ -239,6 +250,12 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
 
    // SettingSection 완료 핸들러
    const handleSettingComplete = useCallback(() => {
+      // 외부에서 제공된 핸들러가 있으면 사용
+      if (onSettingComplete) {
+         onSettingComplete()
+         return
+      }
+
       // 직접 상태를 변경
       setShowInvitation(true)
       setShowSections(false)
@@ -250,7 +267,7 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
          showSections: false,
          sectionAnimationIndex: -1,
       })
-   }, [onPreviewStateChange])
+   }, [onPreviewStateChange, onSettingComplete])
 
    const startSectionAnimations = useCallback(() => {
       let currentIndex = 0
@@ -274,6 +291,12 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
    }, [onPreviewStateChange, sectionOrder])
 
    const handleInvitationClick = useCallback(() => {
+      // 외부에서 제공된 핸들러가 있으면 사용
+      if (onInvitationClick) {
+         onInvitationClick()
+         return
+      }
+
       // 로컬 상태 변경
       setShowInvitation(false)
       setShowSections(true)
@@ -290,7 +313,7 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
       setTimeout(() => {
          startSectionAnimations()
       }, 300)
-   }, [onPreviewStateChange, startSectionAnimations])
+   }, [onPreviewStateChange, startSectionAnimations, onInvitationClick])
 
    // useEffect(() => {
    //    // formData.type이 있으면 해당 값을 사용, 없으면 프로필의 type 확인

@@ -19,6 +19,7 @@ export const userTemplateApi = {
          return response.data
       } catch (error) {
          console.error('사용자 템플릿 조회 오류:', error.response?.data || error.message)
+         console.error('오류 상세:', error)
          throw error
       }
    },
