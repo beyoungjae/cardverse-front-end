@@ -21,6 +21,7 @@ const CategoryControl = styled(FormControl)(({ theme }) => ({
    marginBottom: '16px',
    height: '54px',
    width: '561px',
+   borderColor: '#00B2FF',
    [theme.bps.md]: {
       width: '80%',
    },
@@ -104,8 +105,8 @@ export const InnerText = ({ onSubmit }) => {
       <InnerContainer onSubmit={handleSubmit}>
          <TextContainer>
             <CategoryControl error={error}>
-               <InputLabel>카테고리 선택하세요</InputLabel>
-               <Select value={category} label="카테고리 선택하세요" onChange={handleCategoryChange}>
+               <InputLabel>카테고리 </InputLabel>
+               <Select value={category} label="카테고리" onChange={handleCategoryChange}>
                   <StyledMenuItem value="login">로그인</StyledMenuItem>
                   <StyledMenuItem value="template">템플릿</StyledMenuItem>
                   <StyledMenuItem value="event">이벤트</StyledMenuItem>

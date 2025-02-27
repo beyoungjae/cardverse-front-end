@@ -94,7 +94,7 @@ const CustomTab = styled(Tab)(({ theme }) => ({
    color: '#A4A4A4',
    padding: '8px 16px',
    '&.Mui-selected': {
-      color: 'black',
+      color: '#000',
    },
    [theme.bps.md]: {
       fontSize: '1.3rem',

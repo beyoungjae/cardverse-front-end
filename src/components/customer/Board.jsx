@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Box, Typography, Pagination } from '@mui/material'
 import { styled } from '@mui/material/styles'
+import { width } from '@mui/system'
 
 // 보드 컨테이너
 const BoardContainer = styled(Box)(({ theme }) => ({
@@ -92,7 +93,7 @@ const Board = ({ result }) => {
 
          {/* 페이지네이션 */}
          <PaginationContent>
-            <Pagination count={Math.ceil(result.length / itemsPerPage)} page={currentPage} onChange={handlePageChange} shape="rounded" color="#EEEEEE" />
+            <Pagination count={Math.ceil(result.length / itemsPerPage)} page={currentPage} onChange={handlePageChange} color="primary" />
          </PaginationContent>
       </BoardContainer>
    )

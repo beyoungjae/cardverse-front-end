@@ -41,8 +41,9 @@ const BannerTitle = styled(Typography)(({ theme }) => ({
 const SearchBox = styled(FormControl)(({ theme }) => ({
    width: '581px',
    backgroundColor: theme.palette.background.default,
-   margin: '200px auto',
+   margin: '-20px auto',
    display: 'flex',
+   borderRadius: '5px',
    [theme.bps.md]: {
       width: '80%',
    },
@@ -53,7 +54,7 @@ const SearchBox = styled(FormControl)(({ theme }) => ({
 
 // 자주묻는질문 컨테이너
 const CustomerContentContainer = styled(Box)(({ theme }) => ({
-   padding: '0 50px',
+   padding: '80px 50px',
    backgroundColor: theme.palette.background.default,
    minHeight: '100vh',
    maxWidth: '1100px',
@@ -71,12 +72,13 @@ const CustomerContentContainer = styled(Box)(({ theme }) => ({
 
 //탭 타이틀
 const CustomTab = styled(Tab)(({ theme }) => ({
+   minWidth: '0 !important',
    fontSize: '1.5rem',
    fontWeight: 'bold',
    color: '#A4A4A4',
    padding: '8px 16px',
    '&.Mui-selected': {
-      color: 'black',
+      color: '#000',
    },
    [theme.bps.md]: {
       fontSize: '1.3rem',
