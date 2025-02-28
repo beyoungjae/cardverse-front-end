@@ -671,12 +671,11 @@ const TemplateEditor = () => {
    // 테마 프리셋 적용
    useEffect(() => {
       const THEME_STORAGE_KEY = 'theme_settings'
-      if (!localStorage.getItem(THEME_STORAGE_KEY)) {
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
+      if (!savedTheme) {
          applyPreset && applyPreset('classic')
       }
-   }, [applyPreset])
-
-   console.log('현재 가지고 온 템플릿 데이터:', template)
+   }, [])
 
    // sections
    const themeProps = {
@@ -847,8 +846,6 @@ const TemplateEditor = () => {
 
       return defaultActions
    }, [isAdmin, getValues, navigate, showNotification])
-
-   console.log('현재 폼 데이터:', getValues())
 
    // ThemeSection에 전달할 props
    const themeSectionProps = {
