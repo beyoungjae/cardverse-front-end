@@ -357,19 +357,19 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange, preview
    // 텍스트 스타일 메모이제이션
    const textStyle = useMemo(
       () => ({
-         color: theme?.secondaryColor || typeStyle.color,
-         fontFamily: combinedStyle.fontFamily,
+         color: theme?.secondaryColor || typeStyle?.color,
+         fontFamily: combinedStyle?.fontFamily || typeStyle?.fontFamily,
       }),
-      [theme?.secondaryColor, combinedStyle.fontFamily, typeStyle.color]
+      [theme?.secondaryColor, combinedStyle?.fontFamily, typeStyle?.color]
    )
 
    // 섹션 스타일 메모이제이션
    const sectionStyle = useMemo(
       () => ({
          backgroundColor: `${theme?.backgroundColor || '#ffffff'}dd`,
-         borderColor: `${theme?.primaryColor || typeStyle.color}15`,
+         borderColor: `${theme?.primaryColor || typeStyle?.color}15`,
       }),
-      [theme?.backgroundColor, theme?.primaryColor, typeStyle.color]
+      [theme?.backgroundColor, theme?.primaryColor, typeStyle?.color]
    )
 
    // 프로필 섹션 스타일 메모이제이션

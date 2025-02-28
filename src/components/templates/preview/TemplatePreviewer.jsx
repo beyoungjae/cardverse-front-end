@@ -124,12 +124,12 @@ const TemplatePreviewer = ({ userTemplateId: propUserTemplateId }) => {
                if (nextIndex >= introImages.length) {
                   clearInterval(timerRef.current)
                   // 마지막 이미지 후 초대장 표시
-                  setTimeout(() => setShowInvitation(true), 1000)
+                  setTimeout(() => setShowInvitation(true), 2000)
                   return prev
                }
                return nextIndex
             })
-         }, 2000) // 2초마다 이미지 변경
+         }, 3000) // 3초마다 이미지 변경
 
          return () => {
             if (timerRef.current) {
@@ -162,6 +162,8 @@ const TemplatePreviewer = ({ userTemplateId: propUserTemplateId }) => {
    const { setting, thumbnail } = userTemplate?.formData || {}
    const introImages = setting?.images || []
    const animationType = setting?.animation || 'fade'
+
+   console.log('userTemplate', userTemplate)
 
    // 애니메이션 변형 정의
    const variants = {

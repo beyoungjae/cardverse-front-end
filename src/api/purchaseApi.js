@@ -4,9 +4,16 @@ export const purchaseApi = {
    // 결제 처리
    processPurchase: async (purchaseData) => {
       try {
-         const response = await commonApi.post('/purchase', purchaseData)
+         const response = await commonApi.post('/purchase', {
+            templateId: purchaseData.templateId,
+            paymentInfo: purchaseData.paymentInfo,
+            totalAmount: purchaseData.totalAmount,
+         })
          return response.data
       } catch (error) {
+         if (error.response?.status === 401) {
+            throw new Error('로그인이 필요합니다.')
+         }
          throw error
       }
    },

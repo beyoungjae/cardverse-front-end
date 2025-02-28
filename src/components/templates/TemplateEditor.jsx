@@ -524,7 +524,7 @@ const TemplateEditor = () => {
    const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' })
    const [isPreviewOpen, setIsPreviewOpen] = useState(false)
    const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false)
-   const [activeSection, setActiveSection] = useState('profile')
+   const [activeSection, setActiveSection] = useState('setting')
    const [previewState, setPreviewState] = useState({
       showInvitation: false,
       showSections: false,
