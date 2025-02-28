@@ -27,7 +27,7 @@ const TopBar = styled(Box)(({ theme }) => ({
    right: 0,
    padding: theme.spacing(2),
    display: 'flex',
-   justifyContent: 'space-between',
+   justifyContent: 'center',
    alignItems: 'center',
    backgroundColor: 'rgba(255, 255, 255, 0.95)',
    backdropFilter: 'blur(10px)',
@@ -197,9 +197,6 @@ const TemplatePreviewer = ({ userTemplateId: propUserTemplateId }) => {
       <PreviewContainer>
          <TopBar>
             <Typography variant="h6">{userTemplate?.formData?.title || '미리보기'}</Typography>
-            <IconButton>
-               <ShareIcon />
-            </IconButton>
          </TopBar>
 
          <PreviewContent>
@@ -233,29 +230,74 @@ const TemplatePreviewer = ({ userTemplateId: propUserTemplateId }) => {
                   <motion.div
                      key="invitation"
                      onClick={handleInvitationClick}
-                     initial={{ opacity: 0 }}
-                     animate={{ opacity: 1 }}
+                     initial={{ opacity: 0, scale: 0.9 }}
+                     animate={{ opacity: 1, scale: 1 }}
                      exit={{ opacity: 0 }}
-                     transition={{ duration: 0.3 }}
+                     transition={{ duration: 0.5, ease: 'easeOut' }}
                      style={{
-                        width: '100%',
+                        width: '100vw',
                         height: '100vh',
                         cursor: 'pointer',
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
                         display: 'flex',
-                        justifyContent: 'center',
+                        flexDirection: 'column',
                         alignItems: 'center',
-                        padding: '24px',
+                        justifyContent: 'center',
+                        gap: '20px',
+                        textAlign: 'center',
+                        background: 'rgba(0, 0, 0, 0.5)',
+                        color: 'white',
+                        padding: '20px',
+                        borderRadius: '8px',
+                        zIndex: 2000,
                      }}
                   >
-                     <img
-                        src={thumbnail}
-                        alt="초대장 썸네일"
+                     <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}>
+                        <Typography variant="h4" sx={{ fontWeight: 'bold', textShadow: '0px 2px 10px rgba(0,0,0,0.5)' }}>
+                           특별한 순간에 초대합니다
+                        </Typography>
+                        <Typography variant="subtitle1" sx={{ mt: 1, textShadow: '0px 1px 5px rgba(0,0,0,0.3)' }}>
+                           함께하는 이 순간이 더욱 빛나길 바랍니다.
+                        </Typography>
+                     </motion.div>
+
+                     <motion.button
+                        whileHover={{ scale: 1.1, backgroundColor: '#FFD700', color: '#333' }}
+                        whileTap={{ scale: 0.9 }}
                         style={{
-                           maxWidth: '100%',
-                           maxHeight: '100%',
+                           padding: '12px 24px',
+                           fontSize: '18px',
+                           fontWeight: 'bold',
+                           backgroundColor: 'white',
+                           color: 'black',
+                           border: 'none',
+                           borderRadius: '30px',
+                           cursor: 'pointer',
+                           boxShadow: '0px 4px 10px rgba(0,0,0,0.3)',
+                           zIndex: 2100,
+                        }}
+                        onClick={handleInvitationClick}
+                     >
+                        초대장 확인하기
+                     </motion.button>
+
+                     {/* 썸네일 사진 */}
+                     <motion.img
+                        src={userTemplate?.formData?.thumbnail}
+                        alt="Invitation"
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                        style={{
+                           width: 'auto',
+                           maxWidth: '80vw',
+                           height: 'auto',
+                           maxHeight: '80vh',
                            objectFit: 'contain',
-                           borderRadius: '8px',
-                           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                           borderRadius: '12px',
+                           boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
                         }}
                      />
                   </motion.div>

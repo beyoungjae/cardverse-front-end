@@ -608,11 +608,11 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange, preview
                            layout={mergedFormData.galleryLayout}
                            style={galleryStyle}
                            typeStyle={typeStyle}
-                           selectedImageIndex={selectedImageIndex}
-                           onImageClick={handleImageClick}
-                           onCloseModal={handleCloseModal}
-                           onPrevImage={handlePrevImage}
-                           onNextImage={handleNextImage}
+                           // selectedImageIndex={selectedImageIndex}
+                           // onImageClick={handleImageClick}
+                           // onCloseModal={handleCloseModal}
+                           // onPrevImage={handlePrevImage}
+                           // onNextImage={handleNextImage}
                            combinedStyle={combinedStyle}
                         />
                      )
@@ -653,10 +653,10 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange, preview
                   <motion.div
                      key="invitation"
                      onClick={handleInvitationClick}
-                     initial={{ opacity: 0 }}
-                     animate={{ opacity: 1 }}
+                     initial={{ opacity: 0, scale: 0.9 }}
+                     animate={{ opacity: 1, scale: 1 }}
                      exit={{ opacity: 0 }}
-                     transition={{ duration: 0.3 }}
+                     transition={{ duration: 0.5, ease: 'easeOut' }}
                      style={{
                         width: '100%',
                         height: '100%',
@@ -664,15 +664,61 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange, preview
                         position: 'absolute',
                         top: 0,
                         left: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '20px',
+                        textAlign: 'center',
+                        background: 'rgba(0, 0, 0, 0.5)',
+                        color: 'white',
+                        padding: '20px',
+                        borderRadius: '8px',
                      }}
                   >
-                     <img
+                     <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}>
+                        <Typography variant="h4" sx={{ fontWeight: 'bold', textShadow: '0px 2px 10px rgba(0,0,0,0.5)' }}>
+                           특별한 순간에 초대합니다
+                        </Typography>
+                        <Typography variant="subtitle1" sx={{ mt: 1, textShadow: '0px 1px 5px rgba(0,0,0,0.3)' }}>
+                           함께하는 이 순간이 더욱 빛나길 바랍니다.
+                        </Typography>
+                     </motion.div>
+
+                     <motion.button
+                        whileHover={{ scale: 1.1, backgroundColor: '#FFD700', color: '#333' }}
+                        whileTap={{ scale: 0.9 }}
+                        style={{
+                           padding: '12px 24px',
+                           fontSize: '18px',
+                           fontWeight: 'bold',
+                           backgroundColor: 'white',
+                           color: 'black',
+                           border: 'none',
+                           borderRadius: '30px',
+                           cursor: 'pointer',
+                           boxShadow: '0px 4px 10px rgba(0,0,0,0.3)',
+                        }}
+                     >
+                        초대장 확인하기
+                     </motion.button>
+
+                     {/* 썸네일 사진 */}
+                     <motion.img
                         src={template?.thumbnail}
                         alt="Invitation"
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.8, ease: 'easeOut' }}
                         style={{
                            width: '100%',
                            height: '100%',
                            objectFit: 'contain',
+                           position: 'absolute',
+                           top: 0,
+                           left: 0,
+                           borderRadius: '8px',
+                           zIndex: -1,
                         }}
                      />
                   </motion.div>
@@ -715,10 +761,10 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange, preview
                                        style={galleryStyle}
                                        typeStyle={typeStyle}
                                        selectedImageIndex={selectedImageIndex}
-                                       onImageClick={handleImageClick}
-                                       onCloseModal={handleCloseModal}
-                                       onPrevImage={handlePrevImage}
-                                       onNextImage={handleNextImage}
+                                       // onImageClick={handleImageClick}
+                                       // onCloseModal={handleCloseModal}
+                                       // onPrevImage={handlePrevImage}
+                                       // onNextImage={handleNextImage}
                                        combinedStyle={combinedStyle}
                                     />
                                  )}
