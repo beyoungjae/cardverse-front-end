@@ -524,7 +524,7 @@ const TemplateEditor = () => {
    const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' })
    const [isPreviewOpen, setIsPreviewOpen] = useState(false)
    const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false)
-   const [activeSection, setActiveSection] = useState('profile')
+   const [activeSection, setActiveSection] = useState('setting')
    const [previewState, setPreviewState] = useState({
       showInvitation: false,
       showSections: false,
@@ -671,12 +671,11 @@ const TemplateEditor = () => {
    // 테마 프리셋 적용
    useEffect(() => {
       const THEME_STORAGE_KEY = 'theme_settings'
-      if (!localStorage.getItem(THEME_STORAGE_KEY)) {
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
+      if (!savedTheme) {
          applyPreset && applyPreset('classic')
       }
-   }, [applyPreset])
-
-   console.log('현재 가지고 온 템플릿 데이터:', template)
+   }, [])
 
    // sections
    const themeProps = {
@@ -847,8 +846,6 @@ const TemplateEditor = () => {
 
       return defaultActions
    }, [isAdmin, getValues, navigate, showNotification])
-
-   console.log('현재 폼 데이터:', getValues())
 
    // ThemeSection에 전달할 props
    const themeSectionProps = {

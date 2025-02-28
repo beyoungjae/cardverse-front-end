@@ -1,14 +1,13 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
-import { debounce } from 'lodash'
 import useTemplateStore from '../../../../store/templateStore'
 
 const THEME_STORAGE_KEY = 'template_theme_draft'
 
 const defaultTheme = {
    backgroundColor: '#ffffff',
-   fontFamily: 'Noto Sans KR',
-   primaryColor: '#2c3e50',
-   secondaryColor: '#7f8c8d',
+   fontFamily: 'Malgun Gothic',
+   primaryColor: '#000000',
+   secondaryColor: '#666666',
    animation: 'fade',
 }
 
@@ -22,10 +21,10 @@ const themePresets = {
       animation: 'fade',
    },
    classic: {
-      backgroundColor: '#f9f5f0',
-      fontFamily: 'Nanum Myeongjo',
-      primaryColor: '#8b4513',
-      secondaryColor: '#a0522d',
+      backgroundColor: '#ffffff',
+      fontFamily: 'Malgun Gothic',
+      primaryColor: '#000000',
+      secondaryColor: '#666666',
       animation: 'fade',
    },
    minimal: {
@@ -119,10 +118,12 @@ const useThemeControl = () => {
       } catch (error) {
          console.error('Failed to load theme:', error)
       }
-   }, [updateStyle])
+   }, [])
 
-   // 폰트 로드 상태 관리
-   const [loadedFonts, setLoadedFonts] = useState(new Set())
+   // 테마 변경 시 localStorage에 저장
+   useEffect(() => {
+      localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme))
+   }, [theme])
 
    // 폰트 동적 로드
    const loadFont = async (fontFamily) => {

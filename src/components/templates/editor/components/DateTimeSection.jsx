@@ -297,7 +297,7 @@ const DateTimeSection = () => {
                   rules={{ required: '날짜와 시간을 선택해주세요' }}
                   render={({ field: { onChange, value }, fieldState: { error } }) => (
                      <StyledDateTimePicker
-                        value={value}
+                        value={value ? dayjs(value) : null}
                         onChange={onChange}
                         format="YYYY년 MM월 DD일 dddd A hh:mm"
                         ampm
