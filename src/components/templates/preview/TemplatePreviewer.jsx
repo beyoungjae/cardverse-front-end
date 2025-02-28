@@ -124,7 +124,7 @@ const TemplatePreviewer = ({ userTemplateId: propUserTemplateId }) => {
                if (nextIndex >= introImages.length) {
                   clearInterval(timerRef.current)
                   // 마지막 이미지 후 초대장 표시
-                  setTimeout(() => setShowInvitation(true), 2000)
+                  setTimeout(() => setShowInvitation(true), 1000)
                   return prev
                }
                return nextIndex

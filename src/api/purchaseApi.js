@@ -18,6 +18,17 @@ export const purchaseApi = {
       }
    },
 
+   // 구매 내역 조회 추가
+   getPurchaseHistory: async () => {
+      try {
+         const response = await commonApi.get('/purchase/history')
+         return response.data
+      } catch (error) {
+         console.error('구매 내역 조회 오류:', error)
+         throw error
+      }
+   },
+
    // 쿠폰 검증
    validateCoupon: async (couponCode) => {
       try {

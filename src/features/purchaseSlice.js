@@ -7,6 +7,12 @@ export const processPurchaseTemplate = createAsyncThunk('purchase/processPurchas
    return response
 })
 
+// 구매 내역 조회
+export const fetchPurchaseHistory = createAsyncThunk('purchase/fetchHistory', async () => {
+   const response = await purchaseApi.getPurchaseHistory()
+   return response
+})
+
 const purchaseSlice = createSlice({
    name: 'purchase',
    initialState: {
@@ -24,6 +30,7 @@ const purchaseSlice = createSlice({
    },
    extraReducers: (builder) => {
       builder
+         // 결제 처리 액션
          .addCase(processPurchaseTemplate.pending, (state) => {
             state.status = 'loading'
          })
@@ -33,6 +40,18 @@ const purchaseSlice = createSlice({
             state.purchaseHistory.push(action.payload)
          })
          .addCase(processPurchaseTemplate.rejected, (state, action) => {
+            state.status = 'failed'
+            state.error = action.error.message
+         })
+         // 구매 내역 조회 액션
+         .addCase(fetchPurchaseHistory.pending, (state) => {
+            state.status = 'loading'
+         })
+         .addCase(fetchPurchaseHistory.fulfilled, (state, action) => {
+            state.status = 'succeeded'
+            state.purchaseHistory = action.payload
+         })
+         .addCase(fetchPurchaseHistory.rejected, (state, action) => {
             state.status = 'failed'
             state.error = action.error.message
          })
