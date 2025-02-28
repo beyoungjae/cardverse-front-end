@@ -1,15 +1,10 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { styled } from '@mui/material/styles'
-import { Box, Typography, Container, Grid, Card, CardMedia, CardContent, IconButton, Tabs, Tab, Chip, Button } from '@mui/material'
+import { Box, Typography, Container, Button } from '@mui/material'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Navigation } from 'swiper/modules'
-import { useLocation, useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { fetchTemplates } from '../../features/templateSlice'
-
-import 'swiper/css'
-import 'swiper/css/navigation'
 
 // 배너 영역
 const BannerContainer = styled(Box)(({ theme }) => ({
@@ -90,6 +85,9 @@ const TotalText = styled(motion.div)(({ theme }) => ({
 const TabContainer = styled(Box)(({ theme }) => ({
    position: 'relative',
    marginBottom: '5rem',
+   padding: '2.5rem 0',
+   maxWidth: '900px',
+   margin: '0 auto',
    '&::before': {
       content: '""',
       position: 'absolute',
@@ -100,50 +98,77 @@ const TabContainer = styled(Box)(({ theme }) => ({
       backgroundColor: 'rgba(0,0,0,0.08)',
       borderRadius: '1px',
    },
-   '.swiper': {
-      padding: '2.5rem 0',
-      maxWidth: '900px',
-      margin: '0 auto',
-      [theme.breakpoints.down('sm')]: {
-         maxWidth: '100%',
-         padding: '1.5rem 0',
-      },
+   [theme.breakpoints.down('sm')]: {
+      maxWidth: '100%',
+      padding: '1.5rem 0',
    },
 }))
 
-// 탭 버튼 스타일
-const StyledTab = styled(motion.div)(({ theme, $selected, $isAdjacent }) => ({
+// 탭 메뉴 컨테이너
+const TabsWrapper = styled(Box)(({ theme }) => ({
+   display: 'flex',
+   justifyContent: 'center',
+   alignItems: 'center',
+   gap: theme.spacing(1),
+   position: 'relative',
+   [theme.breakpoints.down('sm')]: {
+      gap: theme.spacing(0.5),
+   },
+}))
+
+// 탭 버튼 스타일 - 커스텀 속성 제거 및 클래스 기반 스타일링으로 변경
+const TabButton = styled(motion.button)(({ theme }) => ({
    position: 'relative',
    padding: '1.2rem 2.5rem',
    cursor: 'pointer',
-   fontSize: $selected ? '1.2rem' : $isAdjacent ? '1.1rem' : '1rem',
-   fontWeight: $selected ? '600' : '400',
-   color: $selected ? theme.palette.primary.main : $isAdjacent ? '#555' : '#888',
-   transition: 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
+   background: 'transparent',
+   border: 'none',
+   outline: 'none',
    textAlign: 'center',
    whiteSpace: 'nowrap',
-   opacity: $selected ? 1 : $isAdjacent ? 0.9 : 0.75,
-   transform: $selected ? 'scale(1.05)' : $isAdjacent ? 'scale(0.95)' : 'scale(0.9)',
+   transition: 'all 0.3s ease',
    '&::after': {
       content: '""',
       position: 'absolute',
       bottom: '-8px',
       left: '50%',
       transform: 'translateX(-50%)',
-      width: $selected ? '70%' : '0%',
+      width: '0%',
       height: '3px',
       borderRadius: '3px',
       background: `linear-gradient(to right, ${theme.palette.primary.light}, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
-      transition: 'width 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
-      boxShadow: $selected ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
+      transition: 'width 0.4s cubic-bezier(0.25, 0.8, 0.5, 1), opacity 0.4s ease',
+      opacity: 0,
    },
-   '&:hover': {
-      backgroundColor: 'rgba(0, 0, 0, 0.03)',
+   '&.selected': {
+      color: theme.palette.primary.main,
+      fontSize: '1.2rem',
+      fontWeight: 600,
+      opacity: 1,
       transform: 'scale(1.05)',
+      '&::after': {
+         width: '70%',
+         opacity: 1,
+         boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+      },
+   },
+   '&.adjacent': {
+      color: '#555',
+      fontSize: '1.1rem',
+      opacity: 0.9,
+      transform: 'scale(0.95)',
+   },
+   '&:not(.selected):not(.adjacent)': {
+      color: '#888',
+      fontSize: '1rem',
+      opacity: 0.75,
+      transform: 'scale(0.9)',
    },
    [theme.breakpoints.down('sm')]: {
       padding: '1rem 1.8rem',
-      fontSize: $selected ? '1rem' : $isAdjacent ? '0.9rem' : '0.85rem',
+      '&.selected': { fontSize: '1rem' },
+      '&.adjacent': { fontSize: '0.9rem' },
+      '&:not(.selected):not(.adjacent)': { fontSize: '0.85rem' },
    },
 }))
 
@@ -179,11 +204,8 @@ const TemplateCard = styled(motion.div)(({ theme }) => ({
    overflow: 'hidden',
    cursor: 'pointer',
    boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
-   transition: 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
-   '&:hover': {
-      transform: 'translateY(-12px)',
-      boxShadow: '0 14px 28px rgba(0,0,0,0.15)',
-   },
+   display: 'block',
+   textAlign: 'left',
 }))
 
 const TemplateTitle = styled(Typography)(({ theme }) => ({
@@ -273,7 +295,6 @@ const CreateTemplateButton = styled(Button)(({ theme }) => ({
 }))
 
 const TemplateList = () => {
-   // const location = useLocation()
    const { tab: urlTab } = useParams()
    const navigate = useNavigate()
    const dispatch = useDispatch()
@@ -283,74 +304,57 @@ const TemplateList = () => {
 
    // 탭 순서 배열
    const tabOrder = ['wedding', 'invitation', 'newyear', 'gohyeon']
-   const L = tabOrder.length
    const initialTab = urlTab && tabOrder.includes(urlTab) ? urlTab : 'wedding'
 
-   // 상태 및 ref
+   // 상태
    const [currentTab, setCurrentTab] = useState(initialTab)
-   const [desiredTab, setDesiredTab] = useState(initialTab)
    const [showMore, setShowMore] = useState(false)
-   const swiperRef = useRef(null)
-   const animatingRef = useRef(false)
-
-   // useLayoutEffect(() => {
-   //    const isMobile = window.innerWidth <= 768
-   //    window.scrollTo({ top: 0, left: 0, behavior: isMobile ? 'smooth' : 'auto' })
-   // }, [location.pathname])
+   const [direction, setDirection] = useState(null)
+   const [isTransitioning, setIsTransitioning] = useState(false)
+   const [hoveredTab, setHoveredTab] = useState(null)
 
    useEffect(() => {
       if (urlTab && tabOrder.includes(urlTab)) {
          setCurrentTab(urlTab)
-         setDesiredTab(urlTab)
       }
-   }, [urlTab])
+   }, [urlTab, tabOrder])
 
    useEffect(() => {
       dispatch(fetchTemplates(currentTab))
    }, [dispatch, currentTab])
 
    // 탭 변경 handler
-   const handleTabChange = (event, newValue) => {
-      setCurrentTab(newValue)
-      navigate(`/template/${newValue}`, {
-         state: { currentTab: newValue },
-      })
-   }
+   const handleTabChange = (newValue) => {
+      if (currentTab === newValue || isTransitioning) return
 
-   useEffect(() => {
-      const swiper = swiperRef.current?.swiper
-      if (swiper && desiredTab !== currentTab && !animatingRef.current) {
-         const currentIndex = tabOrder.indexOf(currentTab)
-         const targetIndex = tabOrder.indexOf(desiredTab)
-         let diff = targetIndex - currentIndex
-         if (diff > L / 2) {
-            diff -= L
-         } else if (diff < -L / 2) {
-            diff += L
-         }
-         animatingRef.current = true
-         if (diff > 0) {
-            swiper.slideNext(300)
-         } else if (diff < 0) {
-            swiper.slidePrev(300)
-         }
+      // 방향 계산
+      const currentIndex = tabOrder.indexOf(currentTab)
+      const newIndex = tabOrder.indexOf(newValue)
+
+      // 일반적인 방향 계산
+      let newDirection
+      if (Math.abs(newIndex - currentIndex) > tabOrder.length / 2) {
+         // 순환 케이스 (첫 탭 <-> 마지막 탭)
+         newDirection = newIndex < currentIndex ? 'right' : 'left'
+      } else {
+         newDirection = newIndex > currentIndex ? 'right' : 'left'
       }
-   }, [desiredTab, currentTab, L])
 
-   // 슬라이드 전환 완료 handler
-   const handleTransitionEnd = (swiper) => {
-      const newIndex = swiper.realIndex % L
-      setCurrentTab(tabOrder[newIndex])
-      animatingRef.current = false
-   }
+      setDirection(newDirection)
+      setIsTransitioning(true)
 
-   // 사용자가 직접 슬라이드한 경우 동기화
-   const handleSlideChange = (swiper) => {
-      if (!animatingRef.current) {
-         const newIndex = swiper.realIndex % L
-         setCurrentTab(tabOrder[newIndex])
-         setDesiredTab(tabOrder[newIndex])
-      }
+      // 약간의 지연 후 탭 변경 및 URL 업데이트
+      setTimeout(() => {
+         setCurrentTab(newValue)
+         navigate(`/template/${newValue}`, {
+            state: { currentTab: newValue },
+         })
+
+         // 트랜지션 상태 초기화
+         setTimeout(() => {
+            setIsTransitioning(false)
+         }, 500)
+      }, 50)
    }
 
    // 현재 탭의 인접성 판단 (디자인 조절용)
@@ -358,18 +362,20 @@ const TemplateList = () => {
       const currentIndex = tabOrder.indexOf(currentTab)
       const tabIndex = tabOrder.indexOf(tabName)
       const diff = Math.abs(currentIndex - tabIndex)
-      return diff === 1 || diff === L - 1
+      return diff === 1 || diff === tabOrder.length - 1
    }
 
    const currentTemplates = templates?.filter((template) => template.category === currentTab) || []
    const displayedTemplates = showMore ? currentTemplates : currentTemplates.slice(0, 6)
 
+   // 템플릿 클릭 핸들러
    const handleTemplateClick = (templateId) => {
       navigate(`/template/${currentTab}/detail/${templateId}`, {
          state: { currentTab },
       })
    }
 
+   // 템플릿 생성 핸들러
    const handleCreateTemplate = () => {
       navigate(`/template/${currentTab}/edit`, {
          state: { currentTab },
@@ -428,6 +434,53 @@ const TemplateList = () => {
       },
    }
 
+   // 탭 콘텐츠 전환 애니메이션
+   const contentVariants = {
+      enter: (direction) => ({
+         x: direction === 'right' ? 30 : -30,
+         opacity: 0,
+      }),
+      center: {
+         x: 0,
+         opacity: 1,
+         transition: {
+            x: { type: 'spring', stiffness: 300, damping: 25 },
+            opacity: { duration: 0.4 },
+         },
+      },
+      exit: (direction) => ({
+         x: direction === 'right' ? -30 : 30,
+         opacity: 0,
+         transition: {
+            x: { type: 'spring', stiffness: 300, damping: 25 },
+            opacity: { duration: 0.4 },
+         },
+      }),
+   }
+
+   // 탭 이름 변환 함수
+   const getTabName = (tabValue) => {
+      switch (tabValue) {
+         case 'wedding':
+            return '청첩장'
+         case 'newyear':
+            return '연하장'
+         case 'gohyeon':
+            return '고희연'
+         case 'invitation':
+            return '초빙장'
+         default:
+            return tabValue
+      }
+   }
+
+   // 탭 클래스 결정 함수
+   const getTabClass = (tabName) => {
+      if (currentTab === tabName) return 'selected'
+      if (isAdjacentTab(tabName)) return 'adjacent'
+      return ''
+   }
+
    return (
       <>
          <BannerContainer>
@@ -445,71 +498,54 @@ const TemplateList = () => {
             </TotalText>
 
             <TabContainer>
-               <Swiper
-                  ref={swiperRef}
-                  modules={[Navigation]}
-                  slidesPerView={3}
-                  centeredSlides
-                  initialSlide={tabOrder.indexOf(currentTab) + L}
-                  speed={300}
-                  loop
-                  observer
-                  observeParents
-                  watchSlidesProgress
-                  allowTouchMove={false}
-                  navigation={false}
-                  onTransitionEnd={handleTransitionEnd}
-                  onSlideChange={handleSlideChange}
-                  breakpoints={{
-                     320: { slidesPerView: 3, spaceBetween: 10 },
-                     768: { slidesPerView: 3, spaceBetween: 20 },
-                     1024: { slidesPerView: 3, spaceBetween: 30 },
-                  }}
-               >
-                  {[...Array(3)].map((_, i) => (
-                     <React.Fragment key={i}>
-                        {tabOrder.map((tabName) => (
-                           <SwiperSlide key={`${tabName}-${i}`}>
-                              <StyledTab
-                                 $selected={currentTab === tabName}
-                                 $isAdjacent={isAdjacentTab(tabName)}
-                                 onClick={(event) => handleTabChange(event, tabName)}
-                                 whileHover={{
-                                    backgroundColor: 'rgba(0, 0, 0, 0.03)',
-                                    scale: currentTab === tabName ? 1.05 : 1.05,
-                                 }}
-                                 whileTap={{ scale: 0.98 }}
-                              >
-                                 {tabName === 'wedding' && '청첩장'}
-                                 {tabName === 'newyear' && '연하장'}
-                                 {tabName === 'gohyeon' && '고희연'}
-                                 {tabName === 'invitation' && '초빙장'}
-                              </StyledTab>
-                           </SwiperSlide>
-                        ))}
-                     </React.Fragment>
+               <TabsWrapper>
+                  {tabOrder.map((tabName) => (
+                     <TabButton
+                        key={tabName}
+                        className={getTabClass(tabName)}
+                        onClick={() => handleTabChange(tabName)}
+                        disabled={isTransitioning}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{
+                           opacity: currentTab === tabName ? 1 : isAdjacentTab(tabName) ? 0.9 : 0.75,
+                           scale: currentTab === tabName ? 1.05 : isAdjacentTab(tabName) ? 0.95 : 0.9,
+                           y: 0,
+                        }}
+                        transition={{ duration: 0.4, ease: [0.25, 0.8, 0.5, 1] }}
+                        whileHover={{
+                           backgroundColor: hoveredTab === tabName ? 'rgba(0, 0, 0, 0.03)' : 'transparent',
+                           scale: 1.05,
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        onHoverStart={() => setHoveredTab(tabName)}
+                        onHoverEnd={() => setHoveredTab(null)}
+                     >
+                        {getTabName(tabName)}
+                     </TabButton>
                   ))}
-               </Swiper>
+               </TabsWrapper>
             </TabContainer>
 
             <ListSection initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }}>
-               <AnimatePresence mode="wait">
-                  <motion.div key={currentTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}>
+               <AnimatePresence mode="wait" custom={direction}>
+                  <motion.div key={currentTab} custom={direction} variants={contentVariants} initial="enter" animate="center" exit="exit">
                      <TemplateGrid as={motion.div} variants={containerVariants} initial="hidden" animate="visible">
                         {displayedTemplates.map((template, index) => (
                            <TemplateCard
                               key={template.id}
                               onClick={() => handleTemplateClick(template.id)}
-                              variants={itemVariants}
                               whileHover={{
                                  y: -12,
                                  boxShadow: '0 14px 28px rgba(0,0,0,0.15)',
                                  transition: { duration: 0.3 },
                               }}
                               whileTap={{ scale: 0.98 }}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.5, delay: index * 0.1 }}
                            >
                               <ImageWrapper>
-                                 <TemplateImage src={template.thumbnail || '/images/default-template.png'} alt={template.title} whileHover={{ scale: 1.05 }} transition={{ duration: 0.8 }} />
+                                 <TemplateImage src={template.thumbnail || '/images/default-template.png'} alt={template.title} whileHover={{ scale: 1.05 }} />
                               </ImageWrapper>
                               <PriceInfo>₩ {Number(template.price).toLocaleString()}</PriceInfo>
                               <TemplateTitle>{template.title}</TemplateTitle>
