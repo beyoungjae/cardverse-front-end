@@ -218,6 +218,8 @@ const Navbar = ({ isAuthenticated, user }) => {
    const [mobileOpen, setMobileOpen] = useState(false)
    const [expandedMenus, setExpandedMenus] = useState({})
 
+   console.log(user)
+
    const menuItems = {
       HOME: [
          { name: '메인', path: '/' },
@@ -244,6 +246,7 @@ const Navbar = ({ isAuthenticated, user }) => {
    }
 
    const handleLogout = useCallback(() => {
+      localStorage.removeItem('loginType')
       dispatch(logoutUserThunk())
          .unwrap()
          .then(() => {

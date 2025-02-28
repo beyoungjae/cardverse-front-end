@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { checkAuthStatusThunk } from './features/authSlice'
+import { checkOAuthStatusThunk } from './features/oauthSlice'
 
 // style 세팅
 import CssBaseline from '@mui/material/CssBaseline'
@@ -75,10 +76,39 @@ function App() {
    const location = useLocation()
    const dispatch = useDispatch()
    const { isAuthenticated, user } = useSelector((state) => state.auth)
-   const [sdkLoaded, setSdkLoaded] = useState(false)
+   const { token, kakaoUser } = useSelector((state) => state.oauth)
+   const [isAuth, setIsAuth] = useState(false)
+   const [activeUser, setActiveUser] = useState(null)
+
+   const loginType = localStorage.getItem('loginType')
+
+   const authRef = useRef(false)
 
    useEffect(() => {
-      dispatch(checkAuthStatusThunk())
+      let authenticated = false
+      let currentUser = null
+
+      if (loginType === 'local') {
+         authenticated = !!isAuthenticated
+         currentUser = authenticated ? user : null
+      } else if (loginType === 'oauth') {
+         authenticated = !!token.accessToken
+         currentUser = authenticated ? kakaoUser : null
+      }
+
+      authRef.current = authenticated
+      setIsAuth(authenticated)
+      setActiveUser(currentUser)
+   }, [isAuthenticated, token.accessToken, user, kakaoUser, loginType])
+
+   useEffect(() => {
+      const loginType = localStorage.getItem('loginType')
+
+      if (loginType === 'local') {
+         dispatch(checkAuthStatusThunk())
+      } else if (loginType === 'oauth') {
+         dispatch(checkOAuthStatusThunk())
+      }
    }, [dispatch])
 
    // useEffect(() => {
@@ -125,7 +155,7 @@ function App() {
          <GlobalStyle />
          <CssBaseline />
 
-         {!hideLayout && <Navbar isAuthenticated={isAuthenticated} user={user} />}
+         {!hideLayout && <Navbar isAuthenticated={isAuth} user={activeUser} />}
 
          <MainContent $hideLayout={hideLayout}>
             <Routes>

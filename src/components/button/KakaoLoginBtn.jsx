@@ -66,6 +66,7 @@ const KakaoLoginBtn = () => {
 
       // 카카오로 리다이렉트 될 경우 code가 존재
       if (code) {
+         localStorage.setItem('loginType', 'oauth')
          dispatch(kakaoLoginUserThunk({ code }))
             .unwrap()
             .then(() => {
