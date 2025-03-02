@@ -1,15 +1,19 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+
 import { TextField, Button, Container, CircularProgress, InputAdornment, IconButton, MenuItem, Typography, Box, FormControlLabel, Checkbox, Grid } from '@mui/material'
 import { useForm, Controller } from 'react-hook-form'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import { useTheme } from '@mui/material/styles'
 import { styled } from '@mui/system'
+
 import * as Yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useNavigate } from 'react-router-dom'
+import { useFormik } from 'formik'
+
 import { signupUserThunk } from '../../features/authSlice'
-import { useDispatch, useSelector } from 'react-redux'
 
 const FormControlText = styled(Typography)(({ theme }) => ({
    fontSize: '16px',
@@ -52,22 +56,38 @@ const LogoButton = styled('img')(({ theme }) => ({
 // 유효성 검사 스키마 (Yup 사용)
 const schema = Yup.object({
    email: Yup.string().email('올바른 이메일을 입력해주세요.').required('이메일을 입력해주세요.'),
+
    password: Yup.string()
       .min(8, '비밀번호는 최소 8자 이상이어야 합니다.')
       .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, '비밀번호는 문자, 숫자, 특수문자를 포함해야 합니다.')
       .required('비밀번호를 입력해주세요.'),
+
    confirmPassword: Yup.string()
       .oneOf([Yup.ref('password'), null], '비밀번호가 일치하지 않습니다.')
       .required('비밀번호 확인을 입력해주세요.'),
-   nick: Yup.string().required('닉네임을 입력해주세요.'),
-   signupType: Yup.string()
-      .oneOf(['normal', 'referral'], '올바른 가입 유형을 선택해주세요.') // 두 가지 값만 허용
-      .required('가입 유형을 선택해주세요.'),
+
+   nick: Yup.string().trim().required('닉네임을 입력해주세요.'),
+
+   signupType: Yup.string().oneOf(['normal', 'referral'], '올바른 가입 유형을 선택해주세요.').required('가입 유형을 선택해주세요.'),
+
    referralEmail: Yup.string().when('signupType', {
-      is: '추천인',
-      then: Yup.string().email('올바른 이메일을 입력해주세요.').required('추천인 이메일을 입력해주세요.'),
+      is: 'referral',
+      then: (schema) => schema.email('올바른 이메일을 입력해주세요.').trim().required('추천인 이메일을 입력해주세요.'),
+      otherwise: (schema) => schema.notRequired().nullable(),
    }),
+
+   // referralEmail: Yup.string().when('signupType', (signupType, schema) => {
+   //    return signupType === 'referral' ? schema.email('올바른 이메일을 입력해주세요.').required('추천인 이메일을 입력해주세요.') : schema.notRequired().nullable()
+   // }),
+
+   // referralEmail: Yup.string().when('signupType', {
+   //    is: 'referral',
+   //    then: Yup.string().email('올바른 이메일을 입력해주세요.').required('추천인 이메일을 입력해주세요.'),
+   //    otherwise: Yup.string().nullable(),
+   // }),
 }).required()
+
+
 
 const Signup = () => {
    const theme = useTheme()
@@ -79,8 +99,17 @@ const Signup = () => {
       handleSubmit,
       formState: { errors },
       watch,
+      setValue, // ✅ setValue 추가
    } = useForm({
       resolver: yupResolver(schema),
+      defaultValues: {
+         email: '',
+         password: '',
+         confirmPassword: '',
+         nick: '',
+         signupType: 'normal', // ✅ 기본값 normal로 설정
+         referralEmail: '',
+      },
    })
 
    const [formStatus, setFormStatus] = useState({
@@ -108,7 +137,7 @@ const Signup = () => {
             if (result) {
                setIsSignupComplete(true)
                alert('회원가입이 완료되었습니다!')
-               navigate('/')
+               navigate('/login')
             } else {
                throw new Error('회원가입 처리 중 문제가 발생했습니다.')
             }
@@ -123,7 +152,7 @@ const Signup = () => {
             setFormStatus((prevState) => ({ ...prevState, loading: false }))
          }
       },
-      [formStatus.agreeTerms, navigate, dispatch],
+      [formStatus.agreeTerms, navigate, dispatch]
    )
 
    const renderTextField = useCallback(
@@ -149,7 +178,8 @@ const Signup = () => {
                                     onClick={() => {
                                        name === 'password' ? setFormStatus((prev) => ({ ...prev, showPassword: !prev.showPassword })) : setFormStatus((prev) => ({ ...prev, showConfirmPassword: !prev.showConfirmPassword }))
                                     }}
-                                    edge="end">
+                                    edge="end"
+                                 >
                                     {name === 'password' ? formStatus.showPassword ? <VisibilityOff /> : <Visibility /> : formStatus.showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                                  </IconButton>
                               </InputAdornment>
@@ -160,44 +190,15 @@ const Signup = () => {
             />
          )
       },
-      [control, errors, formStatus.showPassword, formStatus.showConfirmPassword],
+      [control, errors, formStatus.showPassword, formStatus.showConfirmPassword]
    )
-   // const renderTextField = useCallback(
-   //    (name, placeholder, type = 'text') => {
-   //       return (
-   //          <Controller
-   //             name={name}
-   //             control={control}
-   //             defaultValue=""
-   //             render={({ field }) => (
-   //                <StyledTextField
-   //                   {...field}
-   //                   placeholder={placeholder}
-   //                   type={type}
-   //                   error={!!errors[name]}
-   //                   helperText={errors[name] ? errors[name].message : ''}
-   //                   InputProps={{
-   //                      endAdornment:
-   //                         name === 'password' || name === 'confirmPassword' ? (
-   //                            <InputAdornment position="end">
-   //                               <IconButton
-   //                                  onClick={() => {
-   //                                     name === 'password' ? setFormStatus((prev) => ({ ...prev, showPassword: !prev.showPassword })) : setFormStatus((prev) => ({ ...prev, showConfirmPassword: !prev.showConfirmPassword }))
-   //                                  }}
-   //                                  edge="end">
-   //                                  {name === 'password' ? formStatus.showPassword ? <VisibilityOff /> : <Visibility /> : formStatus.showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-   //                               </IconButton>
-   //                            </InputAdornment>
-   //                         ) : null,
-   //                   }}
-   //                />
-   //             )}
-   //          />
-   //       )
-   //    },
-   //    [control, errors, formStatus.showPassword, formStatus.showConfirmPassword],
-   // )
 
+   useEffect(() => {
+      if (signupType === 'normal') {
+         setValue('referralEmail', '') // ✅ signupType이 normal이면 referralEmail 초기화
+      }
+   }, [signupType, setValue])
+   
    return (
       <Container
          sx={{
@@ -208,7 +209,8 @@ const Signup = () => {
             paddingTop: { xs: theme.spacing(2), sm: theme.spacing(3), md: theme.spacing(5) },
             paddingBottom: theme.spacing(5),
             maxWidth: '100%',
-         }}>
+         }}
+      >
          <Box
             sx={{
                width: '100%',
@@ -218,7 +220,8 @@ const Signup = () => {
                padding: { xs: theme.spacing(2), sm: theme.spacing(3), md: theme.spacing(4) },
                boxSizing: 'border-box',
                border: `1px solid ${theme.palette.divider}`,
-            }}>
+            }}
+         >
             <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: theme.spacing(4) }}>
                <LogoButton src="/images/logo.png" alt="Logo" onClick={() => navigate('/')} />
             </Box>
@@ -232,7 +235,8 @@ const Signup = () => {
                      marginBottom: theme.spacing(2),
                      borderRadius: '4px',
                      textAlign: 'center',
-                  }}>
+                  }}
+               >
                   {formStatus.errorMessage}
                </Box>
             )}
@@ -263,7 +267,7 @@ const Signup = () => {
                   <Controller
                      name="signupType"
                      control={control}
-                     defaultValue=""
+                     defaultValue="normal"
                      render={({ field }) => (
                         <StyledTextField select label="가입유형 (추천인 / 일반사용자)" {...field} error={!!errors.signupType} helperText={errors.signupType ? errors.signupType.message : ''}>
                            <MenuItem value="referral">추천인</MenuItem>
@@ -296,3 +300,38 @@ const Signup = () => {
 }
 
 export default Signup
+
+/* 
+ return (
+      <form onSubmit={formik.handleSubmit}>
+         <input type="email" name="email" onChange={formik.handleChange} value={formik.values.email} />
+         {formik.errors.email && <div>{formik.errors.email}</div>}
+
+         <input type="password" name="password" onChange={formik.handleChange} value={formik.values.password} />
+         {formik.errors.password && <div>{formik.errors.password}</div>}
+
+         <input type="password" name="confirmPassword" onChange={formik.handleChange} value={formik.values.confirmPassword} />
+         {formik.errors.confirmPassword && <div>{formik.errors.confirmPassword}</div>}
+
+         <input type="text" name="nick" onChange={formik.handleChange} value={formik.values.nick} />
+         {formik.errors.nick && <div>{formik.errors.nick}</div>}
+
+         <select name="signupType" onChange={formik.handleChange} value={formik.values.signupType}>
+            <option value="normal">일반 가입</option>
+            <option value="referral">추천인 가입</option>
+         </select>
+         {formik.errors.signupType && <div>{formik.errors.signupType}</div>}
+
+         {formik.values.signupType === 'referral' && (
+            <>
+               <input type="email" name="referralEmail" onChange={formik.handleChange} value={formik.values.referralEmail} />
+               {formik.errors.referralEmail && <div>{formik.errors.referralEmail}</div>}
+            </>
+         )}
+
+         <button type="submit">가입하기</button>
+      </form>
+   )
+
+
+*/

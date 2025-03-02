@@ -216,8 +216,8 @@ const Login = () => {
          try {
             e.preventDefault()
             if (email.trim() && password.trim()) {
-               const result = await dispatch(loginUserThunk({ email, password })).unwrap()
                localStorage.setItem('loginType', 'local')
+               const result = await dispatch(loginUserThunk({ email, password })).unwrap()
                if (result.id) {
                   navigate('/')
                }
@@ -228,7 +228,7 @@ const Login = () => {
             console.error('로그인 에러:', error)
          }
       },
-      [dispatch, email, password, navigate],
+      [dispatch, email, password, navigate]
    )
 
    return (

@@ -17,6 +17,8 @@ export const signupUserThunk = createAsyncThunk('auth/signupUser', async (userDa
 // 로그인
 export const loginUserThunk = createAsyncThunk('auth/loginUser', async (credentials, { rejectWithValue }) => {
    try {
+      console.log('credentials Check:', credentials)
+      console.log('로그인 thunk 진행시작')
       const response = await loginUser(credentials)
       return response.data.user
    } catch (error) {
@@ -36,6 +38,7 @@ export const logoutUserThunk = createAsyncThunk('auth/logoutUser', async (_, { r
 export const checkAuthStatusThunk = createAsyncThunk('auth/checkAuthStatus', async (_, { rejectWithValue }) => {
    try {
       const response = await checkAuthStatus()
+      console.log(response.data)
       return response.data
    } catch (error) {
       return rejectWithValue(handleApiError(error, '상태 확인'))
@@ -116,8 +119,6 @@ const authSlice = createSlice({
             state.isAuthenticated = false
             state.user = null
          })
-
-     
    },
 })
 

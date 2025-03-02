@@ -21,9 +21,7 @@ export const kakaoLoginUser = async (code) => {
 
 export const checkOAuthStatus = async () => {
    try {
-      const response = await commonApi.get('/oauth/kakao/status', {
-         withCredentials: true, // 중요! CORS 요청에 쿠키 포함
-      })
+      const response = await commonApi.get('/oauth/kakao/status')
 
       return response
    } catch (error) {

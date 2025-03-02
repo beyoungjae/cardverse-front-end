@@ -102,7 +102,7 @@ function App() {
    }, [isAuthenticated, token.accessToken, user, kakaoUser, loginType])
 
    useEffect(() => {
-      const loginType = localStorage.getItem('loginType')
+      const loginType = localStorage?.getItem('loginType') || 'local                                                    '
 
       if (loginType === 'local') {
          dispatch(checkAuthStatusThunk())
