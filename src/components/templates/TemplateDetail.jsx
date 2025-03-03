@@ -9,7 +9,8 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import CloseIcon from '@mui/icons-material/Close'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
-import { fetchTemplateDetail, updateTemplate, deleteTemplate } from '../../features/templateSlice'
+import { fetchTemplateDetail, updateTemplate, deleteTemplate} from '../../features/templateSlice'
+import { checkTemplatePurchased } from '../../features/purchaseSlice'
 
 // 애니메이션 keyframes
 const fadeIn = keyframes`
@@ -550,6 +551,7 @@ const TemplateDetail = () => {
 
    const { detail: template, status, error } = useSelector((state) => state.templates)
    const { isAuthenticated, user } = useSelector((state) => state.auth)
+   const { isPurchased, checkingPurchase } = useSelector((state) => state.purchase)
    const isAdmin = user?.role === 'admin'
 
    const [activeIndex, setActiveIndex] = useState(0)
@@ -578,6 +580,13 @@ const TemplateDetail = () => {
          dispatch(fetchTemplateDetail(templateId))
       }
    }, [dispatch, templateId, template])
+
+   // 템플릿 구매 여부 확인
+   useEffect(() => {
+      if (isAuthenticated && templateId) {
+         dispatch(checkTemplatePurchased(templateId))
+      }
+   }, [dispatch, isAuthenticated, templateId])
 
    const handleBack = () => {
       navigate(`/template/${currentTab}`, {
@@ -700,7 +709,24 @@ const TemplateDetail = () => {
                <Typography className="title-text">{template.title}</Typography>
                <Typography className="price-text">Price | {Number(template.price).toLocaleString('ko-KR')}원</Typography>
                <ButtonGroup>
-                  <BuyButton onClick={handlePurchase}>구매하기</BuyButton>
+                  {isPurchased ? (
+                     <Typography 
+                        sx={{ 
+                           color: 'success.main', 
+                           fontWeight: 'bold', 
+                           padding: '10px 20px',
+                           border: '1px solid',
+                           borderColor: 'success.main',
+                           borderRadius: '4px'
+                        }}
+                     >
+                        이미 구매한 템플릿입니다
+                     </Typography>
+                  ) : (
+                     <BuyButton onClick={handlePurchase} disabled={checkingPurchase}>
+                        {checkingPurchase ? '확인 중...' : '구매하기'}
+                     </BuyButton>
+                  )}
                   <PreviewButton onClick={handlePreviewOpen}>미리보기</PreviewButton>
                </ButtonGroup>
                {isAdmin && (

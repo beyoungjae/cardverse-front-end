@@ -3,7 +3,7 @@ import { styled } from '@mui/system'
 import { KAKAO_REST_API } from '../../api/oauthApi'
 import { useDispatch } from 'react-redux'
 import { kakaoLoginUserThunk } from '../../features/oauthSlice'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 const KakaoStyleBtn = styled('button')(({ theme }) => ({
    backgroundColor: '#B699BB',
@@ -53,20 +53,25 @@ const KakaoStyleBtn = styled('button')(({ theme }) => ({
 const KakaoLoginBtn = () => {
    const dispatch = useDispatch()
    const navigate = useNavigate()
-   // useEffect(() => {
-   //    if (!window.Kakao.isInitialized()) {
-   //       window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY)
-   //    }
-   // })
+   const location = useLocation()
+   const [isProcessingCode, setIsProcessingCode] = useState(false)
 
    useEffect(() => {
-      const search = new URLSearchParams(window.location.search) //http://localhost:3000/login?code=데이터
-      const code = search.get('code')
-      console.log(code)
+      // 이미 코드를 처리 중인 경우 중복 실행 방지
+      if (isProcessingCode) return;
 
+      const search = new URLSearchParams(window.location.search)
+      const code = search.get('code')
+      
       // 카카오로 리다이렉트 될 경우 code가 존재
       if (code) {
+         setIsProcessingCode(true)
          localStorage.setItem('loginType', 'oauth')
+         
+         // 코드 파라미터를 URL에서 제거하기 위한 처리
+         const cleanUrl = window.location.pathname
+         window.history.replaceState({}, document.title, cleanUrl)
+         
          dispatch(kakaoLoginUserThunk({ code }))
             .unwrap()
             .then(() => {
@@ -76,8 +81,11 @@ const KakaoLoginBtn = () => {
                console.error('로그인 실패:', error)
                alert('로그인에 실패하셨습니다.')
             })
+            .finally(() => {
+               setIsProcessingCode(false)
+            })
       }
-   }, [dispatch, navigate])
+   }, [dispatch, navigate, isProcessingCode])
 
    const handleKakaoLogin = () => {
       window.location.href = KAKAO_REST_API

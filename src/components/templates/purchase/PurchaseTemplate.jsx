@@ -215,21 +215,30 @@ const PurchaseTemplate = () => {
       }
    }, [appliedCoupon])
 
+   // 컴포넌트 마운트 시 구매 상태 초기화
    useEffect(() => {
+      // 컴포넌트 마운트 시 구매 상태 초기화
+      dispatch(resetPurchaseStatus())
+      
+      // 컴포넌트 언마운트 시에도 초기화
       return () => {
          dispatch(resetPurchaseStatus())
       }
    }, [dispatch])
 
    useEffect(() => {
-      if (purchaseStatus === 'succeeded') {
-         setCurrentStep(2)
-         setIsProcessing(false)
-      } else if (purchaseStatus === 'failed') {
-         alert(purchaseError || '결제 처리 중 오류가 발생했습니다.')
-         setIsProcessing(false)
+      // 결제 처리 중인 경우에만 상태 변경을 감시
+      if (isProcessing) {
+         if (purchaseStatus === 'succeeded') {
+            // 결제 성공 시에만 결제 완료 단계로 이동
+            setCurrentStep(2)
+            setIsProcessing(false)
+         } else if (purchaseStatus === 'failed') {
+            alert(purchaseError || '결제 처리 중 오류가 발생했습니다.')
+            setIsProcessing(false)
+         }
       }
-   }, [purchaseStatus, purchaseError])
+   }, [purchaseStatus, purchaseError, isProcessing])
 
    if (status === 'loading') {
       return (
@@ -302,7 +311,30 @@ const PurchaseTemplate = () => {
          return
       }
 
-      if (currentStep === 1) {
+      // 현재 단계에 따라 다른 처리
+      if (currentStep === 0) {
+         // 상품 확인 단계에서 결제 정보 단계로 이동
+         setCurrentStep(1)
+      } else if (currentStep === 1) {
+         // 결제 정보 단계에서 결제 처리 진행
+         
+         // 카드 결제인 경우 카드 정보 검증
+         if (paymentMethod === 'card') {
+            // 간단한 유효성 검사
+            if (!paymentInfo.cardNumber || paymentInfo.cardNumber.length < 16) {
+               alert('유효한 카드 번호를 입력해주세요.')
+               return
+            }
+            if (!paymentInfo.expiry || paymentInfo.expiry.length < 5) {
+               alert('유효한 유효기간을 입력해주세요.')
+               return
+            }
+            if (!paymentInfo.cvv || paymentInfo.cvv.length < 3) {
+               alert('유효한 CVV를 입력해주세요.')
+               return
+            }
+         }
+         
          setIsProcessing(true)
          try {
             const purchaseData = {
@@ -314,9 +346,10 @@ const PurchaseTemplate = () => {
                totalAmount: calculateTotal(),
             }
 
-            console.log('결제 요청 데이터:', purchaseData)
-            dispatch(processPurchaseTemplate(purchaseData))
+            await dispatch(processPurchaseTemplate(purchaseData)).unwrap()
+            // 결제 성공 시 다음 단계로 이동 (useEffect에서 처리)
          } catch (error) {
+            setIsProcessing(false)
             if (error.response?.status === 401) {
                alert('로그인이 만료되었습니다. 다시 로그인해주세요.')
                navigate('/login', {
@@ -325,10 +358,10 @@ const PurchaseTemplate = () => {
                      templateId: template.id,
                   },
                })
+            } else {
+               alert(error.message || '결제 처리 중 오류가 발생했습니다.')
             }
          }
-      } else {
-         setCurrentStep((prev) => prev + 1)
       }
    }
 

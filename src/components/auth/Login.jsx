@@ -10,7 +10,7 @@ import { styled } from '@mui/system'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 
-import { loginUserThunk } from '../../features/authSlice'
+import { loginUserThunk, logoutUserThunk } from '../../features/authSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import KakaoLoginBtn from '../button/KakaoLoginBtn'
 
@@ -213,11 +213,18 @@ const Login = () => {
 
    const handleLogin = useCallback(
       async (e) => {
+         e.preventDefault()
          try {
-            e.preventDefault()
-            if (email.trim() && password.trim()) {
+            if (email && password) {
                localStorage.setItem('loginType', 'local')
-               const result = await dispatch(loginUserThunk({ email, password })).unwrap()
+               
+               // 로그인 시도
+               const result = await dispatch(loginUserThunk({ 
+                  email, 
+                  password,
+                  forceLogin: true // 강제 로그인 옵션 추가
+               })).unwrap()
+               
                if (result.id) {
                   navigate('/')
                }
@@ -226,6 +233,40 @@ const Login = () => {
             }
          } catch (error) {
             console.error('로그인 에러:', error)
+            
+            // 에러 메시지에 따른 처리
+            if (error && typeof error === 'string') {
+               if (error.includes('이미 로그인되어 있습니다')) {
+                  // 자동으로 로그아웃 후 다시 로그인 시도
+                  try {
+                     await dispatch(logoutUserThunk()).unwrap()
+                     
+                     // 세션 스토리지와 로컬 스토리지 초기화
+                     sessionStorage.removeItem('statusCheckFlag')
+                     
+                     // 로그아웃 성공 후 다시 로그인 시도
+                     const result = await dispatch(loginUserThunk({ 
+                        email, 
+                        password,
+                        forceLogin: true
+                     })).unwrap()
+                     
+                     if (result.id) {
+                        navigate('/')
+                     }
+                  } catch (secondError) {
+                     console.error('두 번째 로그인 시도 에러:', secondError)
+                     alert('로그인에 실패했습니다. 페이지를 새로고침한 후 다시 시도해주세요.')
+                     // 페이지 새로고침
+                     window.location.reload()
+                  }
+               } else {
+                  // 다른 로그인 에러 처리
+                  alert(`로그인에 실패했습니다: ${error}`)
+               }
+            } else {
+               alert('로그인에 실패했습니다. 다시 시도해주세요.')
+            }
          }
       },
       [dispatch, email, password, navigate]

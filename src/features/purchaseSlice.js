@@ -13,6 +13,12 @@ export const fetchPurchaseHistory = createAsyncThunk('purchase/fetchHistory', as
    return response
 })
 
+// 특정 템플릿 구매 여부 확인
+export const checkTemplatePurchased = createAsyncThunk('purchase/checkTemplatePurchased', async (templateId) => {
+   const response = await purchaseApi.checkTemplatePurchased(templateId)
+   return response
+})
+
 const purchaseSlice = createSlice({
    name: 'purchase',
    initialState: {
@@ -20,6 +26,8 @@ const purchaseSlice = createSlice({
       status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
       error: null,
       currentPurchase: null,
+      isPurchased: false, // 특정 템플릿 구매 여부
+      checkingPurchase: false, // 구매 여부 확인 중
    },
    reducers: {
       resetPurchaseStatus: (state) => {
@@ -54,6 +62,19 @@ const purchaseSlice = createSlice({
          .addCase(fetchPurchaseHistory.rejected, (state, action) => {
             state.status = 'failed'
             state.error = action.error.message
+         })
+         // 특정 템플릿 구매 여부 확인
+         .addCase(checkTemplatePurchased.pending, (state) => {
+            state.checkingPurchase = true
+            state.isPurchased = false
+         })
+         .addCase(checkTemplatePurchased.fulfilled, (state, action) => {
+            state.checkingPurchase = false
+            state.isPurchased = action.payload.purchased
+         })
+         .addCase(checkTemplatePurchased.rejected, (state) => {
+            state.checkingPurchase = false
+            state.isPurchased = false
          })
    },
 })

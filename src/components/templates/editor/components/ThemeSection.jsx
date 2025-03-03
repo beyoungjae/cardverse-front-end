@@ -85,36 +85,44 @@ const ThemePreview = styled(motion.div)(({ theme }) => ({
 
 const colorPresets = [
    {
+      id: 'classic',
       name: '클래식',
       colors: {
          primary: '#2C2C2C',
          secondary: '#666666',
          background: '#FFFFFF',
       },
+      font: 'Malgun Gothic',
    },
    {
+      id: 'romantic',
       name: '로맨틱',
       colors: {
          primary: '#FF6B6B',
          secondary: '#FFA8A8',
          background: '#FFF5F5',
       },
+      font: 'Noto Serif KR',
    },
    {
+      id: 'modern',
       name: '모던',
       colors: {
          primary: '#364FC7',
          secondary: '#748FFC',
          background: '#EDF2FF',
       },
+      font: 'Pretendard',
    },
    {
+      id: 'natural',
       name: '내추럴',
       colors: {
          primary: '#2F9E44',
          secondary: '#8CE99A',
          background: '#EBFBEE',
       },
+      font: 'Noto Sans KR',
    },
 ]
 
@@ -125,87 +133,160 @@ const fontPresets = [
    { name: '나눔명조', value: 'NanumMyeongjo, serif', type: '명조' },
 ]
 
-const ThemeSection = ({ theme, onThemeChange }) => {
-   const [showHelp, setShowHelp] = useState(false)
-   const [selectedPreset, setSelectedPreset] = useState(null)
-   const { setValue } = useFormContext()
+const ThemeSection = ({ control, onThemeChange, theme, handleThemeChange, resetTheme, undo, redo, canUndo, canRedo, templateId }) => {
+   const [activeTab, setActiveTab] = useState('colors')
+   const [selectedPreset, setSelectedPreset] = useState('classic')
+   const [customColors, setCustomColors] = useState({
+      primary: theme?.primaryColor || '#000000',
+      secondary: theme?.secondaryColor || '#666666',
+      background: theme?.backgroundColor || '#ffffff',
+   })
+   const [selectedFont, setSelectedFont] = useState(theme?.fontFamily || 'Malgun Gothic')
 
-   const [themeToApply, setThemeToApply] = useState(null)
+   // 테마 설정을 로컬 스토리지에 저장
+   const saveThemeToStorage = (settings) => {
 
-   const handleTypeSelect = useCallback((type) => {
-      const defaultTheme = {
-         wedding: {
-            type: 'wedding',
-            primaryColor: '#FF69B4',
-            secondaryColor: '#FFA8A8',
-            backgroundColor: '#FFF5F5',
-            fontFamily: 'Noto Serif KR, serif',
-            animation: 'fade',
-         },
-         newyear: {
-            primaryColor: '#FFD700',
-            secondaryColor: '#FFD8A8',
-            backgroundColor: '#FFFAF0',
-            fontFamily: 'Pretendard, sans-serif',
-            animation: 'slide',
-         },
-         gohyeyon: {
-            primaryColor: '#9370DB',
-            secondaryColor: '#E6E6FA',
-            backgroundColor: '#F0E6FF',
-            fontFamily: 'Noto Sans KR, sans-serif',
-            animation: 'zoom',
-         },
-         invitation: {
-            primaryColor: '#4169E1',
-            secondaryColor: '#B0E0E6',
-            backgroundColor: '#F0F8FF',
-            fontFamily: 'Pretendard, sans-serif',
-            animation: 'bounce',
-         },
-      }[type]
-
-      setThemeToApply({ type, ...defaultTheme })
-   }, [])
-
-   useEffect(() => {
-      if (themeToApply) {
-         const timeoutId = setTimeout(() => {
-            Object.entries(themeToApply).forEach(([key, value]) => {
-               setValue(key, value, { shouldValidate: true })
-               onThemeChange(key, value)
-            })
-         }, 0)
-
-         return () => clearTimeout(timeoutId)
+      // 템플릿별 테마 설정 저장
+      if (templateId) {
+         const templateSpecificKey = `template_theme_${templateId}`
+         localStorage.setItem(templateSpecificKey, JSON.stringify(settings))
       }
-   }, [themeToApply, setValue, onThemeChange])
+      
+      // 글로벌 테마 설정도 함께 저장
+      localStorage.setItem('template_theme_draft', JSON.stringify(settings))
+   }
 
-   const handleColorChange = useCallback(
-      (type, color) => {
-         onThemeChange(type, color)
-      },
-      [onThemeChange]
-   )
+   // 컴포넌트 마운트 시 테마 설정 불러오기
+   useEffect(() => {
+      if (theme) {
+         setCustomColors({
+            primary: theme.primaryColor || '#000000',
+            secondary: theme.secondaryColor || '#666666',
+            background: theme.backgroundColor || '#ffffff',
+         })
+         setSelectedFont(theme.fontFamily || 'Malgun Gothic')
+      }
+   }, [theme, templateId]) // templateId 의존성 추가
 
-   const handleFontChange = useCallback(
-      (font) => {
-         onThemeChange('fontFamily', font)
-      },
-      [onThemeChange]
-   )
+   // 프리셋 선택 핸들러
+   const handlePresetSelect = (preset) => {
+      // 상태 업데이트
+      setSelectedPreset(preset.id)
+      
+      // 새 색상 값과 폰트 설정
+      const newColors = {
+         primary: preset.colors.primary,
+         secondary: preset.colors.secondary,
+         background: preset.colors.background
+      };
+      
+      // 상태 업데이트
+      setCustomColors(newColors)
+      setSelectedFont(preset.font)
+      
+      // 테마 설정 객체 생성
+      const themeSettings = {
+         primaryColor: preset.colors.primary,
+         secondaryColor: preset.colors.secondary,
+         backgroundColor: preset.colors.background,
+         fontFamily: preset.font,
+         animation: 'fade',
+      }
+      
+      // 부모 컴포넌트에 테마 변경 알림
+      if (onThemeChange) {
+         Object.entries(themeSettings).forEach(([key, value]) => {
+            onThemeChange(key, value)
+         })
+      }
+      
+      // 테마 설정 저장
+      saveThemeToStorage(themeSettings)
+   }
 
-   const handlePresetSelect = useCallback(
-      (preset) => {
-         setSelectedPreset(preset.name)
-         onThemeChange('primaryColor', preset.colors.primary)
-         onThemeChange('secondaryColor', preset.colors.secondary)
-         onThemeChange('backgroundColor', preset.colors.background)
-         onThemeChange('fontFamily', preset.colors.fontFamily)
-      },
-      [onThemeChange]
-   )
-
+   // 색상 변경 핸들러
+   const handleColorChange = (type, color) => {
+      // 함수형 업데이트로 최신 상태 보장 (로컬 상태만 업데이트)
+      setCustomColors(prev => {
+         const newColors = {
+            ...prev,
+            [type]: color
+         };
+         return newColors;
+      });
+   }
+   
+   // 폰트 변경 핸들러
+   const handleFontChange = (font) => {
+      // 상태 업데이트
+      setSelectedFont(font.value);
+   }
+   
+   // customColors가 변경될 때마다 부모 컴포넌트에 알림
+   useEffect(() => {
+      // 초기 렌더링 시에는 실행하지 않음
+      if (!theme) return;
+      
+      // 현재 테마와 로컬 상태가 다를 때만 업데이트
+      const hasColorChanged = 
+         customColors.primary !== theme.primaryColor ||
+         customColors.secondary !== theme.secondaryColor ||
+         customColors.background !== theme.backgroundColor;
+      
+      if (!hasColorChanged) return;
+      
+      // 테마 설정 객체 생성
+      const themeSettings = {
+         primaryColor: customColors.primary,
+         secondaryColor: customColors.secondary,
+         backgroundColor: customColors.background,
+         fontFamily: selectedFont,
+         animation: 'fade',
+      };
+      
+      // 템플릿별 테마 설정 저장
+      if (templateId) {
+         const templateSpecificKey = `template_theme_${templateId}`;
+         localStorage.setItem(templateSpecificKey, JSON.stringify(themeSettings));
+         console.log(`템플릿별 테마 설정 저장 (${templateId}):`, themeSettings);
+      }
+      
+      // 글로벌 테마 설정도 함께 저장
+      localStorage.setItem('template_theme_draft', JSON.stringify(themeSettings));
+      
+      // 색상 매핑
+      const colorMapping = {
+         primary: 'primaryColor',
+         secondary: 'secondaryColor',
+         background: 'backgroundColor',
+      };
+      
+      // 변경된 색상만 부모에게 알림
+      if (customColors.primary !== theme.primaryColor) {
+         onThemeChange(colorMapping.primary, customColors.primary);
+      }
+      if (customColors.secondary !== theme.secondaryColor) {
+         onThemeChange(colorMapping.secondary, customColors.secondary);
+      }
+      if (customColors.background !== theme.backgroundColor) {
+         onThemeChange(colorMapping.background, customColors.background);
+      }
+      
+   }, [customColors, templateId, onThemeChange, theme, selectedFont]);
+   
+   // selectedFont가 변경될 때마다 부모 컴포넌트에 알림
+   useEffect(() => {
+      // 초기 렌더링 시에는 실행하지 않음
+      if (!theme) return;
+      
+      // 현재 테마와 로컬 상태가 다를 때만 업데이트
+      if (selectedFont === theme.fontFamily) return;
+      
+      // 부모 컴포넌트에 테마 변경 알림
+      onThemeChange('fontFamily', selectedFont);
+      
+   }, [selectedFont, onThemeChange, theme]);
+   
    return (
       <SectionContainer component={motion.div} variants={fadeInUp} initial="initial" animate="animate" exit="exit" transition={easeTransition}>
          <SectionTitle>
@@ -214,12 +295,12 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                <Box className="title">테마 설정</Box>
             </TitleText>
             <IconButtonWrapper>
-               <HelpOutlineIcon onClick={() => setShowHelp((prev) => !prev)} />
+               <HelpOutlineIcon onClick={() => setActiveTab((prev) => (prev === 'help' ? 'colors' : 'help'))} />
             </IconButtonWrapper>
          </SectionTitle>
 
          <AnimatePresence>
-            {showHelp && (
+            {activeTab === 'help' && (
                <HelpText>
                   <strong>테마 설정 도움말</strong>
                   <ul>
@@ -238,7 +319,7 @@ const ThemeSection = ({ theme, onThemeChange }) => {
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 4 }}>
                {colorPresets.map((preset) => (
-                  <PresetChip key={preset.name} label={preset.name} onClick={() => handlePresetSelect(preset)} selected={selectedPreset === preset.name} />
+                  <PresetChip key={preset.id} label={preset.name} onClick={() => handlePresetSelect(preset)} selected={selectedPreset === preset.id} />
                ))}
             </Box>
 
@@ -254,7 +335,7 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                      </Typography>
                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                         {['#2C2C2C', '#364FC7', '#2F9E44', '#F03E3E', '#F76707'].map((color) => (
-                           <ColorSwatch key={color} color={color} selected={theme.primaryColor === color} onClick={() => handleColorChange('primaryColor', color)} />
+                           <ColorSwatch key={color} color={color} selected={customColors.primary === color} onClick={() => handleColorChange('primary', color)} />
                         ))}
                      </Box>
                   </ColorPicker>
@@ -266,7 +347,7 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                      </Typography>
                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                         {['#666666', '#748FFC', '#8CE99A', '#FFA8A8', '#FFD8A8'].map((color) => (
-                           <ColorSwatch key={color} color={color} selected={theme.secondaryColor === color} onClick={() => handleColorChange('secondaryColor', color)} />
+                           <ColorSwatch key={color} color={color} selected={customColors.secondary === color} onClick={() => handleColorChange('secondary', color)} />
                         ))}
                      </Box>
                   </ColorPicker>
@@ -278,7 +359,7 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                      </Typography>
                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                         {['#FFFFFF', '#EDF2FF', '#EBFBEE', '#FFF5F5', '#FFF9DB'].map((color) => (
-                           <ColorSwatch key={color} color={color} selected={theme.backgroundColor === color} onClick={() => handleColorChange('backgroundColor', color)} />
+                           <ColorSwatch key={color} color={color} selected={customColors.background === color} onClick={() => handleColorChange('background', color)} />
                         ))}
                      </Box>
                   </ColorPicker>
@@ -294,9 +375,9 @@ const ThemeSection = ({ theme, onThemeChange }) => {
                   <Grid item xs={12} sm={6} key={font.name}>
                      <FontPreview
                         font={font.value}
-                        onClick={() => handleFontChange(font.value)}
+                        onClick={() => handleFontChange(font)}
                         sx={{
-                           border: theme.fontFamily === font.value ? `2px solid ${COLORS.accent.main}` : undefined,
+                           border: selectedFont === font.value ? `2px solid ${COLORS.accent.main}` : undefined,
                         }}
                      >
                         <Typography variant="subtitle2" sx={{ mb: 1, color: COLORS.text.secondary }}>
@@ -320,19 +401,19 @@ const ThemeSection = ({ theme, onThemeChange }) => {
             </Grid>
 
             <ThemePreview>
-               <Typography variant="h6" sx={{ color: theme.primaryColor, fontFamily: theme.fontFamily }}>
+               <Typography variant="h6" sx={{ color: customColors.primary, fontFamily: selectedFont }}>
                   테마 미리보기
                </Typography>
                <Box
                   sx={{
                      p: 3,
-                     backgroundColor: theme.backgroundColor,
+                     backgroundColor: customColors.background,
                      borderRadius: '8px',
-                     border: `1px solid ${theme.secondaryColor}40`,
+                     border: `1px solid ${customColors.secondary}40`,
                   }}
                >
-                  <Typography sx={{ color: theme.primaryColor, fontFamily: theme.fontFamily, mb: 1 }}>제목 텍스트 스타일</Typography>
-                  <Typography sx={{ color: theme.secondaryColor, fontFamily: theme.fontFamily, fontSize: '0.9rem' }}>본문 텍스트 스타일입니다. 선택하신 폰트와 색상으로 표시됩니다.</Typography>
+                  <Typography sx={{ color: customColors.primary, fontFamily: selectedFont, mb: 1 }}>제목 텍스트 스타일</Typography>
+                  <Typography sx={{ color: customColors.secondary, fontFamily: selectedFont, fontSize: '0.9rem' }}>본문 텍스트 스타일입니다. 선택하신 폰트와 색상으로 표시됩니다.</Typography>
                </Box>
             </ThemePreview>
          </Box>

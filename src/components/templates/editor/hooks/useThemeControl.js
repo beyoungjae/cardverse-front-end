@@ -45,6 +45,23 @@ const useThemeControl = () => {
    })
    const [history, setHistory] = useState([template.style || defaultTheme])
    const [historyIndex, setHistoryIndex] = useState(0)
+   const [templateId, setTemplateId] = useState(null)
+
+   // Get template ID from URL
+   useEffect(() => {
+      const path = window.location.pathname
+      const match = path.match(/\/editor\/(\d+)/)
+      if (match && match[1]) {
+         const id = match[1]
+         setTemplateId(id)
+         console.log('템플릿 ID 감지:', id)
+      }
+   }, [])
+
+   // Create storage key based on template ID
+   const getStorageKey = useCallback(() => {
+      return templateId ? `template_theme_${templateId}` : THEME_STORAGE_KEY
+   }, [templateId])
 
    // 테마 변경 핸들러 최적화
    const handleThemeChange = useCallback(
@@ -87,8 +104,14 @@ const useThemeControl = () => {
       updateStyle(defaultTheme)
       setHistory([defaultTheme])
       setHistoryIndex(0)
+      
+      if (templateId) {
+         const storageKey = getStorageKey()
+         localStorage.removeItem(storageKey)
+         console.log(`Removed theme from storage: ${storageKey}`)
+      }
       localStorage.removeItem(THEME_STORAGE_KEY)
-   }, [updateStyle])
+   }, [updateStyle, templateId, getStorageKey])
 
    // 프리셋 테마 적용
    const applyPreset = useCallback(
@@ -106,24 +129,46 @@ const useThemeControl = () => {
 
    // 컴포넌트 마운트 시 저장된 테마 불러오기
    useEffect(() => {
+      if (!templateId) return;
+      
       try {
-         const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
+         const storageKey = getStorageKey()
+         const savedTheme = localStorage.getItem(storageKey)
          if (savedTheme) {
             const parsedTheme = JSON.parse(savedTheme)
             setTheme(parsedTheme)
             updateStyle(parsedTheme)
             setHistory([parsedTheme])
             setHistoryIndex(0)
+            console.log(`Loaded theme from storage: ${storageKey}`, parsedTheme)
+         } else {
+            // If no saved theme for this template, check for global theme
+            const globalTheme = localStorage.getItem(THEME_STORAGE_KEY)
+            if (globalTheme) {
+               const parsedGlobalTheme = JSON.parse(globalTheme)
+               setTheme(parsedGlobalTheme)
+               updateStyle(parsedGlobalTheme)
+               setHistory([parsedGlobalTheme])
+               setHistoryIndex(0)
+               console.log('Loaded global theme', parsedGlobalTheme)
+            }
          }
       } catch (error) {
          console.error('Failed to load theme:', error)
       }
-   }, [])
+   }, [templateId, updateStyle, getStorageKey])
 
    // 테마 변경 시 localStorage에 저장
    useEffect(() => {
+      if (!templateId) return;
+      
+      const storageKey = getStorageKey()
+      localStorage.setItem(storageKey, JSON.stringify(theme))
+      console.log(`Saved theme to storage: ${storageKey}`, theme)
+      
+      // Also save to global theme storage for new templates
       localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme))
-   }, [theme])
+   }, [theme, templateId, getStorageKey])
 
    // 폰트 동적 로드
    const loadFont = async (fontFamily) => {

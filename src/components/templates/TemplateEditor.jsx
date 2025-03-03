@@ -431,8 +431,6 @@ const AdminTemplateDialog = React.memo(
          [formData, validateForm, showNotification, onClose, resetForm]
       )
 
-      console.log(formData)
-
       // Dialog가 닫힐 때 폼 초기화
       useEffect(() => {
          if (!open) {
@@ -599,7 +597,6 @@ const TemplateEditor = () => {
    // 테마 설정이 폼 데이터에 반영되도록 useEffect 추가
    useEffect(() => {
       if (themeSettings) {
-         console.log('테마 설정을 폼 데이터에 반영합니다:', themeSettings)
 
          // 테마 설정을 폼 데이터에 반영
          methods.setValue('backgroundColor', themeSettings.backgroundColor)
@@ -670,12 +667,70 @@ const TemplateEditor = () => {
 
    // 테마 프리셋 적용
    useEffect(() => {
-      const THEME_STORAGE_KEY = 'theme_settings'
-      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
-      if (!savedTheme) {
+      const loadThemeSettings = () => {
+         // 템플릿별 테마 설정 키
+         const templateSpecificKey = `template_theme_${templateId}`
+         // 먼저 템플릿별 테마 설정 확인
+         const savedTemplateTheme = localStorage.getItem(templateSpecificKey)
+         
+         // 템플릿별 저장된 테마 설정 불러오기 시
+            if (savedTemplateTheme) {
+               try {
+                  const parsedTheme = JSON.parse(savedTemplateTheme)
+
+                  // 테마 설정을 폼 데이터에 반영
+                  methods.setValue('backgroundColor', parsedTheme.backgroundColor)
+                  methods.setValue('primaryColor', parsedTheme.primaryColor)
+                  methods.setValue('secondaryColor', parsedTheme.secondaryColor)
+                  methods.setValue('fontFamily', parsedTheme.fontFamily)
+                  methods.setValue('animation', parsedTheme.animation)
+                  
+                  // 테마 설정 상태 업데이트 (handleThemeChange 사용)
+                  Object.entries(parsedTheme).forEach(([key, value]) => {
+                     handleThemeChange(key, value)
+                  })
+                  
+                  return true
+               } catch (error) {
+                  console.error('템플릿별 테마 설정 파싱 오류:', error)
+               }
+            }
+         
+         // 글로벌 테마 설정 확인
+         const THEME_STORAGE_KEY = 'template_theme_draft'
+         const savedGlobalTheme = localStorage.getItem(THEME_STORAGE_KEY)
+         
+         if (savedTemplateTheme) {
+            try {
+               const parsedTheme = JSON.parse(savedTemplateTheme)
+               
+               // 테마 설정을 폼 데이터에 반영
+               methods.setValue('backgroundColor', parsedTheme.backgroundColor)
+               methods.setValue('primaryColor', parsedTheme.primaryColor)
+               methods.setValue('secondaryColor', parsedTheme.secondaryColor)
+               methods.setValue('fontFamily', parsedTheme.fontFamily)
+               methods.setValue('animation', parsedTheme.animation)
+               
+               // 테마 설정 상태 업데이트 (handleThemeChange 사용)
+               Object.entries(parsedTheme).forEach(([key, value]) => {
+                  handleThemeChange(key, value)
+               })
+               
+               return true
+            } catch (error) {
+               console.error('템플릿별 테마 설정 파싱 오류:', error)
+            }
+         }
+         
+         return false
+      }
+      
+      // 저장된 테마 설정이 없으면 기본 프리셋 적용
+      const themeLoaded = loadThemeSettings()
+      if (!themeLoaded) {
          applyPreset && applyPreset('classic')
       }
-   }, [])
+   }, [templateId, methods, applyPreset])
 
    // sections
    const themeProps = {
@@ -686,6 +741,7 @@ const TemplateEditor = () => {
       canUndo, // 실행 취소 가능 여부
       canRedo, // 실행 복원 가능 여부
       theme: themeSettings, // 테마
+      templateId, // 템플릿 ID 추가
    }
 
    const sections = useMemo(() => createSections(control, watch, themeProps), [control, watch, themeProps])
@@ -912,7 +968,7 @@ const TemplateEditor = () => {
                      {activeSection === 'location' && <LocationSection key="location" {...sectionProps} />}
                      {activeSection === 'gallery' && <GallerySection key="gallery" {...sectionProps} />}
                      {activeSection === 'account' && <AccountSection key="account" {...sectionProps} />}
-                     {activeSection === 'theme' && <ThemeSection key="theme" {...themeSectionProps} />}
+                     {activeSection === 'theme' && <ThemeSection key="theme" {...themeSectionProps} templateId={templateId} />}
                   </AnimatePresence>
                </Box>
             </EditorPanel>

@@ -163,8 +163,6 @@ const TemplatePreviewer = ({ userTemplateId: propUserTemplateId }) => {
    const introImages = setting?.images || []
    const animationType = setting?.animation || 'fade'
 
-   console.log('userTemplate', userTemplate)
-
    // 애니메이션 변형 정의
    const variants = {
       fade: {

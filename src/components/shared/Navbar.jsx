@@ -218,8 +218,6 @@ const Navbar = ({ isAuthenticated, user }) => {
    const [mobileOpen, setMobileOpen] = useState(false)
    const [expandedMenus, setExpandedMenus] = useState({})
 
-   console.log(user)
-
    const menuItems = {
       HOME: [
          { name: '메인', path: '/' },
