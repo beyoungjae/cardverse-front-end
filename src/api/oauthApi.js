@@ -9,9 +9,9 @@ const oauthParam = new URLSearchParams({
 
 export const KAKAO_REST_API = `https://kauth.kakao.com/oauth/authorize?${oauthParam.toString()}`
 
-export const kakaoLoginUser = async (code) => {
+export const kakaoLoginUser = async (credentials) => {
    try {
-      const response = await commonApi.post('/oauth/kakao/login', code)
+      const response = await commonApi.post('/oauth/kakao/login', credentials)
       return response
    } catch (error) {
       console.error(`API Request 오류: ${error.message}`)
@@ -23,6 +23,16 @@ export const checkOAuthStatus = async () => {
    try {
       const response = await commonApi.get('/oauth/kakao/status')
 
+      return response
+   } catch (error) {
+      console.error(`API Request 오류: ${error.message}`)
+      throw error
+   }
+}
+
+export const oauthLoginUser = async (credentials) => {
+   try {
+      const response = await commonApi.post('/oauth/login', credentials)
       return response
    } catch (error) {
       console.error(`API Request 오류: ${error.message}`)

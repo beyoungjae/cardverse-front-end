@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { styled } from '@mui/system'
 import { KAKAO_REST_API } from '../../api/oauthApi'
 import { useDispatch } from 'react-redux'
+import { oauthLoginUserThunk } from '../../features/authSlice'
 import { kakaoLoginUserThunk } from '../../features/oauthSlice'
 import { useNavigate } from 'react-router-dom'
 
@@ -66,8 +67,7 @@ const KakaoLoginBtn = () => {
 
       // 카카오로 리다이렉트 될 경우 code가 존재
       if (code) {
-         localStorage.setItem('loginType', 'oauth')
-         dispatch(kakaoLoginUserThunk({ code }))
+         dispatch(oauthLoginUserThunk({ code, provider: 'kakao' }))
             .unwrap()
             .then(() => {
                navigate('/')

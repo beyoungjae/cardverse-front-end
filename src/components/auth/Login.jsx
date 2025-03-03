@@ -216,7 +216,6 @@ const Login = () => {
          try {
             e.preventDefault()
             if (email.trim() && password.trim()) {
-               localStorage.setItem('loginType', 'local')
                const result = await dispatch(loginUserThunk({ email, password })).unwrap()
                if (result.id) {
                   navigate('/')

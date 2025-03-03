@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FaInstagram, FaFacebookF, FaYoutube } from 'react-icons/fa'
 import { AppBar, Toolbar, IconButton, Box, Drawer, List, ListItem, ListItemText, Collapse } from '@mui/material'
@@ -211,7 +211,7 @@ const dropdownVariants = {
    },
 }
 
-const Navbar = ({ isAuthenticated, user }) => {
+const Navbar = React.memo(({ isAuthenticated, user }) => {
    const dispatch = useDispatch()
    const navigate = useNavigate()
    const [activeMenu, setActiveMenu] = useState(null)
@@ -265,7 +265,8 @@ const Navbar = ({ isAuthenticated, user }) => {
                   onClick={() => handleMenuToggle(menu)}
                   sx={{
                      backgroundColor: expandedMenus[menu] ? 'rgba(0, 0, 0, 0.04)' : 'transparent',
-                  }}>
+                  }}
+               >
                   <ListItemText
                      primary={menu}
                      sx={{
@@ -395,11 +396,12 @@ const Navbar = ({ isAuthenticated, user }) => {
             onClose={handleDrawerToggle}
             ModalProps={{
                keepMounted: true,
-            }}>
+            }}
+         >
             {drawer}
          </StyledDrawer>
       </>
    )
-}
+})
 
 export default Navbar

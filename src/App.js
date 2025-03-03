@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { checkAuthStatusThunk } from './features/authSlice'
-import { checkOAuthStatusThunk } from './features/oauthSlice'
 
 // style 세팅
 import CssBaseline from '@mui/material/CssBaseline'
@@ -75,78 +74,11 @@ const GlobalStyle = createGlobalStyle`
 function App() {
    const location = useLocation()
    const dispatch = useDispatch()
-   const { isAuthenticated, user } = useSelector((state) => state.auth)
-   const { token, kakaoUser } = useSelector((state) => state.oauth)
-   const [isAuth, setIsAuth] = useState(false)
-   const [activeUser, setActiveUser] = useState(null)
-
-   const loginType = localStorage.getItem('loginType')
-
-   const authRef = useRef(false)
+   const { isAuthenticated, user, loading } = useSelector((state) => state.auth)
 
    useEffect(() => {
-      let authenticated = false
-      let currentUser = null
-
-      if (loginType === 'local') {
-         authenticated = !!isAuthenticated
-         currentUser = authenticated ? user : null
-      } else if (loginType === 'oauth') {
-         authenticated = !!token.accessToken
-         currentUser = authenticated ? kakaoUser : null
-      }
-
-      authRef.current = authenticated
-      setIsAuth(authenticated)
-      setActiveUser(currentUser)
-   }, [isAuthenticated, token.accessToken, user, kakaoUser, loginType])
-
-   useEffect(() => {
-      const loginType = localStorage?.getItem('loginType') || 'local                                                    '
-
-      if (loginType === 'local') {
-         dispatch(checkAuthStatusThunk())
-      } else if (loginType === 'oauth') {
-         dispatch(checkOAuthStatusThunk())
-      }
+      dispatch(checkAuthStatusThunk())
    }, [dispatch])
-
-   // useEffect(() => {
-   //    if (!window.Kakao.isInitialized()) {
-   //       window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY)
-   //       console.log('Kakao SDK 초기화 완료')
-   //    }
-   // }, [])
-
-   // useEffect(() => {
-   //    if (!window.Kakao.isInitialized()) {
-   //       window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY, {
-   //          throughTalk: false, // 카카오톡 간편로그인 사용 여부
-   //       })
-   //       console.log('Kakao SDK 초기화 완료')
-   //    }
-   // }, [])
-
-   // useEffect(() => {
-   //    // 이미 로드되었다면 스킵
-   //    if (sdkLoaded) return
-   //    //       <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.4.0/kakao.min.js" integrity="sha384-mXVrIX2T/Kszp6Z0aEWaA8Nm7J6/ZeWXbL8UpGRjKwWe56Srd/iyNmWMBhcItAjH" crossorigin="anonymous"></script>
-   //    const script = document.createElement('script')
-   //    script.src = 'https://developers.kakao.com/sdk/js/kakao.js'
-   //    script.async = true
-   //    script.onload = () => {
-   //       if (window.Kakao && !window.Kakao.isInitialized()) {
-   //          window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY)
-   //          console.log('카카오 SDK 초기화 성공')
-   //       }
-   //       setSdkLoaded(true)
-   //    }
-   //    document.head.appendChild(script)
-
-   //    return () => {
-   //       document.head.removeChild(script)
-   //    }
-   // }, [sdkLoaded])
 
    const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/template/preview/') || location.pathname.startsWith('/preview/')
 
@@ -155,7 +87,7 @@ function App() {
          <GlobalStyle />
          <CssBaseline />
 
-         {!hideLayout && <Navbar isAuthenticated={isAuth} user={activeUser} />}
+         {!loading && !hideLayout && <Navbar isAuthenticated={isAuthenticated} user={user} />}
 
          <MainContent $hideLayout={hideLayout}>
             <Routes>
