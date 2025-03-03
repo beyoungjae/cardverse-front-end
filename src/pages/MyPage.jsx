@@ -582,14 +582,14 @@ const MyPage = () => {
                                  <Typography variant="body2" color="textSecondary" gutterBottom>
                                     새로운 알림이 도착하면 이곳에 표시됩니다
                                  </Typography>
-                                 <Button
+                                 <ActionButton
                                     variant="contained"
                                     color="primary"
                                     onClick={() => navigate('/template')}
                                     sx={{ mt: 2 }}
                                  >
                                     템플릿 둘러보기
-                                 </Button>
+                                 </ActionButton>
                               </EmptyStateBox>
                            )}
                         </TabPanel>
@@ -660,14 +660,14 @@ const MyPage = () => {
                      >
                         취소
                      </Button>
-                     <Button
+                     <ActionButton
                         variant="contained"
                         color="primary"
                         onClick={handleUpdateProfile}
                         disabled={updateLoading || !!nicknameError}
                      >
                         {updateLoading ? '저장 중...' : '저장'}
-                     </Button>
+                     </ActionButton>
                   </Box>
                </ModalTabPanel>
 

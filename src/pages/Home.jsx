@@ -15,19 +15,20 @@ import 'swiper/css/pagination'
 // 배너 컨테이너
 const BannerContainer = styled(Box)(({ theme }) => ({
    width: '100%',
-   height: '100vh',
-   maxHeight: '1000px',
+   height: '85vh',
+   maxHeight: '800px',
    position: 'relative',
    overflow: 'hidden',
    userSelect: 'none',
    [theme.breakpoints.down('lg')]: {
-      maxHeight: '800px',
+      maxHeight: '700px',
    },
    [theme.breakpoints.down('md')]: {
       maxHeight: '600px',
    },
    [theme.breakpoints.down('sm')]: {
-      maxHeight: '400px',
+      height: '100vh',
+      maxHeight: '500px',
    },
 }))
 
@@ -54,16 +55,20 @@ const Overlay = styled(Box)(() => ({
 // 배너 컨텐츠
 const BannerContent = styled(Box)(({ theme }) => ({
    position: 'absolute',
-   bottom: '10%',
+   bottom: '15%',
    left: '10%',
    zIndex: 1,
    transition: 'all 0.3s ease',
+   [theme.breakpoints.up('lg')]: {
+      bottom: '20%',
+      maxWidth: '50%',
+   },
    [theme.breakpoints.down('md')]: {
-      bottom: '8%',
+      bottom: '12%',
       left: '8%',
    },
    [theme.breakpoints.down('sm')]: {
-      bottom: '6%',
+      bottom: '10%',
       left: '6%',
    },
 }))
@@ -110,39 +115,46 @@ const BannerSubtitle = styled('img')(({ theme }) => ({
 const SliderTitle = styled(Typography)(({ theme }) => ({
    ...theme.typography.h1,
    textAlign: 'center',
-   marginBottom: '2rem',
+   marginBottom: '1.5rem',
    color: theme.palette.text.secondary,
-   [theme.breakpoints.down('lg')]: {
-      fontSize: '2.5rem',
+   [theme.breakpoints.up('md')]: {
+      fontSize: '3rem',
    },
    [theme.breakpoints.down('md')]: {
-      fontSize: '2rem',
+      fontSize: '2.2rem',
    },
    [theme.breakpoints.down('sm')]: {
-      fontSize: '1.5rem',
+      fontSize: '1.8rem',
    },
 }))
 
 // 슬라이더 서브타이틀
 const SliderSubtitle = styled(Typography)(({ theme }) => ({
    ...theme.typography.body1,
-   marginBottom: '10rem',
+   marginBottom: '5rem',
    textAlign: 'center',
    color: theme.palette.text.disabled,
-   [theme.breakpoints.down('lg')]: {
-      fontSize: '1.5rem',
+   maxWidth: '800px',
+   margin: '0 auto 5rem',
+   lineHeight: 1.6,
+   [theme.breakpoints.up('md')]: {
+      fontSize: '1.3rem',
+      marginBottom: '6rem',
    },
    [theme.breakpoints.down('md')]: {
-      fontSize: '1rem',
+      fontSize: '1.1rem',
+      marginBottom: '4rem',
+      padding: '0 2rem',
    },
    [theme.breakpoints.down('sm')]: {
-      fontSize: '0.8rem',
+      fontSize: '0.9rem',
+      marginBottom: '3rem',
    },
 }))
 
 // 반응형 슬라이더 섹션
 const SliderSection = styled(Box)(({ theme }) => ({
-   padding: '8rem 0',
+   padding: '6rem 0',
    backgroundColor: theme.palette.background.default,
    position: 'relative',
    '&::before': {
@@ -155,8 +167,8 @@ const SliderSection = styled(Box)(({ theme }) => ({
       background: 'linear-gradient(180deg, rgba(0,0,0,0.03) 0%, rgba(0,0,0,0) 100%)',
       pointerEvents: 'none',
    },
-   [theme.breakpoints.down('md')]: {
-      padding: '6rem 0',
+   [theme.breakpoints.up('md')]: {
+      padding: '7rem 0 5rem',
    },
    [theme.breakpoints.down('sm')]: {
       padding: '4rem 0',
@@ -165,26 +177,30 @@ const SliderSection = styled(Box)(({ theme }) => ({
 
 // 슬라이드 스타일 컴포넌트
 const StyledSlide = styled(Box)(({ theme }) => ({
-   paddingTop: '50px',
-   width: '400px',
-   height: '660px',
+   paddingTop: '30px',
+   width: '350px',
+   height: '580px',
    backgroundColor: 'transparent',
    margin: '0 auto',
-   marginBottom: '100px',
+   marginBottom: '60px',
+   [theme.breakpoints.up('xl')]: {
+      width: '380px',
+      height: '620px',
+   },
    [theme.breakpoints.down('lg')]: {
       width: '300px',
-      height: '580px',
-      marginBottom: '60px',
+      height: '500px',
+      marginBottom: '50px',
    },
    [theme.breakpoints.down('md')]: {
       width: '280px',
       height: '460px',
-      marginBottom: '70px',
+      marginBottom: '40px',
    },
    [theme.breakpoints.down('sm')]: {
       width: '200px',
       height: '395px',
-      marginBottom: '80px',
+      marginBottom: '30px',
    },
 }))
 
@@ -376,8 +392,14 @@ const cards = [
 
 // 샘플 섹션
 const SampleSection = styled(Box)(({ theme }) => ({
-   padding: '120px 0',
+   padding: '5rem 0',
    backgroundColor: theme.palette.background.default,
+   [theme.breakpoints.up('md')]: {
+      padding: '6rem 0',
+   },
+   [theme.breakpoints.down('sm')]: {
+      padding: '4rem 0',
+   },
 }))
 
 // 샘플 타이틀
@@ -403,19 +425,19 @@ const SampleTitle = styled(Typography)(({ theme }) => ({
 // 갤러리 타이틀
 const GalleryTitle = styled(Typography)(({ theme }) => ({
    textAlign: 'center',
-   marginBottom: '4rem',
+   marginBottom: '10rem',
    ...theme.typography.h1,
    color: theme.palette.text.primary,
-   fontSize: '2.5rem',
+   fontSize: '3.5rem',
    fontWeight: 500,
    [theme.breakpoints.down('lg')]: {
-      fontSize: '2rem',
+      fontSize: '2.5rem',
    },
    [theme.breakpoints.down('md')]: {
-      fontSize: '1.5rem',
+      fontSize: '2rem',
    },
    [theme.breakpoints.down('sm')]: {
-      fontSize: '1rem',
+      fontSize: '1.5rem',
    },
 }))
 
@@ -423,46 +445,44 @@ const GalleryTitle = styled(Typography)(({ theme }) => ({
 const GalleryGrid = styled(Box)(({ theme }) => ({
    display: 'flex',
    flexDirection: 'column',
-   gap: '120px',
-   width: '100%',
-   position: 'relative',
-   overflow: 'hidden',
-   marginBottom: '5rem',
+   gap: '8rem',
+   maxWidth: '1200px',
+   margin: '0 auto',
+   padding: '0 1rem',
+   [theme.breakpoints.down('md')]: {
+      gap: '5rem',
+   },
+   [theme.breakpoints.down('sm')]: {
+      gap: '4rem',
+   },
 }))
 
 // 갤러리 아이템
 const GalleryItem = styled(motion.div)(({ theme }) => ({
    display: 'flex',
+   flexDirection: 'column',
    alignItems: 'center',
-   gap: '80px',
-   padding: '0 20px',
-   marginBottom: '10rem',
-   position: 'relative',
-   '&[data-reverse="true"]': {
-      flexDirection: 'row-reverse',
-   },
-   [theme.breakpoints.down('md')]: {
-      flexDirection: 'column',
-      gap: '40px',
-      '&[data-reverse="true"], &[data-reverse="false"]': {
-         flexDirection: 'column',
+   gap: '2rem',
+   width: '100%',
+   [theme.breakpoints.up('md')]: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: '4rem',
+      '&[data-reverse="true"]': {
+         flexDirection: 'row-reverse',
       },
    },
 }))
 
 // 이미지 컨테이너
 const ImageContainer = styled(Box)(({ theme }) => ({
-   flex: '0 0 65%',
-   position: 'relative',
-   '&[data-reverse="false"]': {
-      marginLeft: '-1.2vw',
-   },
-   '&[data-reverse="true"]': {
-      marginRight: '-1.2vw',
-   },
-   [theme.breakpoints.down('md')]: {
-      width: '100%',
-      margin: '0 !important',
+   width: '100%',
+   maxWidth: '450px',
+   display: 'flex',
+   justifyContent: 'center',
+   [theme.breakpoints.up('md')]: {
+      width: '50%',
    },
 }))
 
@@ -472,6 +492,8 @@ const ImageWrapper = styled(Box)(({ theme }) => ({
    width: '100%',
    paddingTop: '75%',
    overflow: 'hidden',
+   borderRadius: '8px',
+   boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
    '&::after': {
       content: '""',
       position: 'absolute',
@@ -482,14 +504,6 @@ const ImageWrapper = styled(Box)(({ theme }) => ({
       background: 'linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3))',
       pointerEvents: 'none',
       zIndex: 1,
-   },
-   '&[data-reverse="false"]::after': {
-      right: 0,
-      background: 'linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3))',
-   },
-   '&[data-reverse="true"]::after': {
-      left: 0,
-      background: 'linear-gradient(to left, transparent, rgba(255, 255, 255, 0.3))',
    },
    [theme.breakpoints.down('md')]: {
       '&::after': {
@@ -509,54 +523,79 @@ const GalleryImage = styled('img')({
    zIndex: 0,
 })
 
-// 갤러리 컨텐츠
+// 갤러리 콘텐츠
 const GalleryContent = styled(Box)(({ theme }) => ({
-   flex: '0 0 35%',
-   display: 'flex',
-   flexDirection: 'column',
-   alignItems: 'flex-start',
-   maxWidth: '500px',
-   margin: '0 auto',
-   '&[data-reverse="true"]': {
-      alignItems: 'flex-end',
-   },
-   [theme.breakpoints.down('md')]: {
-      flex: '0 0 100%',
-      maxWidth: '100%',
-      alignItems: 'flex-start',
+   width: '100%',
+   padding: '0 1rem',
+   [theme.breakpoints.up('md')]: {
+      width: '50%',
+      padding: 0,
+      textAlign: 'left',
       '&[data-reverse="true"]': {
-         alignItems: 'flex-start',
+         textAlign: 'right',
       },
+   },
+   [theme.breakpoints.down('sm')]: {
+      textAlign: 'center',
    },
 }))
 
 // 갤러리 아이템 타이틀
 const GalleryItemTitle = styled(Typography)(({ theme }) => ({
-   fontSize: '1.8rem',
-   marginBottom: '1.5rem',
+   ...theme.typography.h2,
    color: theme.palette.text.primary,
+   marginBottom: '1rem',
+   fontSize: '1.8rem',
+   fontWeight: 600,
+   [theme.breakpoints.down('lg')]: {
+      fontSize: '1.6rem',
+   },
+   [theme.breakpoints.down('md')]: {
+      fontSize: '1.4rem',
+   },
+   [theme.breakpoints.down('sm')]: {
+      fontSize: '1.2rem',
+   },
 }))
 
 // 갤러리 아이템 텍스트
 const GalleryItemText = styled(Typography)(({ theme }) => ({
-   fontSize: '1rem',
+   ...theme.typography.body1,
    color: theme.palette.text.secondary,
-   lineHeight: 1.8,
    marginBottom: '2rem',
+   lineHeight: 1.8,
+   [theme.breakpoints.down('lg')]: {
+      fontSize: '1rem',
+   },
+   [theme.breakpoints.down('md')]: {
+      fontSize: '0.9rem',
+   },
+   [theme.breakpoints.down('sm')]: {
+      fontSize: '0.8rem',
+   },
 }))
 
-// 리드모어 버튼
+// 더 보기 링크
 const ReadMore = styled(Link)(({ theme }) => ({
+   ...theme.typography.body1,
+   color: theme.palette.primary.light,
+   textDecoration: 'none',
    display: 'inline-flex',
    alignItems: 'center',
    gap: '0.5rem',
-   color: theme.palette.text.primary,
-   textDecoration: 'none',
-   fontSize: '0.9rem',
-   marginTop: '1rem',
+   transition: 'all 0.3s ease',
    '&:hover': {
-      fontSize: '0.95rem',
-      transition: 'all 0.3s ease',
+      color: theme.palette.primary.main,
+      transform: 'translateY(-2px)',
+   },
+   [theme.breakpoints.down('lg')]: {
+      fontSize: '1rem',
+   },
+   [theme.breakpoints.down('md')]: {
+      fontSize: '0.9rem',
+   },
+   [theme.breakpoints.down('sm')]: {
+      fontSize: '0.8rem',
    },
 }))
 
@@ -596,10 +635,10 @@ const Home = () => {
    const swiperRef = React.useRef(null)
 
    // 각 갤러리 아이템에 대한 개별 ref 생성
-   const [ref1, inView1] = useInView({ threshold: 0.3, triggerOnce: true })
-   const [ref2, inView2] = useInView({ threshold: 0.3, triggerOnce: true })
-   const [ref3, inView3] = useInView({ threshold: 0.3, triggerOnce: true })
-   const [ref4, inView4] = useInView({ threshold: 0.3, triggerOnce: true })
+   const [ref1, inView1] = useInView({ threshold: 0.2, triggerOnce: true })
+   const [ref2, inView2] = useInView({ threshold: 0.2, triggerOnce: true })
+   const [ref3, inView3] = useInView({ threshold: 0.2, triggerOnce: true })
+   const [ref4, inView4] = useInView({ threshold: 0.2, triggerOnce: true })
 
    // ref와 inView 상태를 배열로 구성
    const galleryRefs = [
@@ -665,16 +704,25 @@ const Home = () => {
                style={{
                   width: '100%',
                   padding: '15px 0',
+                  maxWidth: '1600px',
+                  margin: '0 auto',
                }}
                breakpoints={{
                   320: {
-                     slidesPerView: 2,
+                     slidesPerView: 1.5,
+                     spaceBetween: 15,
                   },
-                  768: {
+                  600: {
                      slidesPerView: 2,
+                     spaceBetween: 20,
                   },
-                  1024: {
+                  960: {
+                     slidesPerView: 3,
+                     spaceBetween: 25,
+                  },
+                  1280: {
                      slidesPerView: 4,
+                     spaceBetween: 30,
                   },
                }}
                spaceBetween={30}
@@ -703,7 +751,14 @@ const Home = () => {
                   const isReverse = index % 2 === 1
 
                   return (
-                     <GalleryItem key={item.id} ref={galleryRefs[index].ref} data-reverse={isReverse} initial={{ opacity: 0, x: isReverse ? 100 : -100 }} animate={galleryRefs[index].inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.8, delay: index * 0.2 }}>
+                     <GalleryItem 
+                        key={item.id} 
+                        ref={galleryRefs[index].ref} 
+                        data-reverse={isReverse} 
+                        initial={{ opacity: 0, y: 50 }} 
+                        animate={galleryRefs[index].inView ? { opacity: 1, y: 0 } : {}} 
+                        transition={{ duration: 0.8, delay: index * 0.2 }}
+                     >
                         <ImageContainer data-reverse={isReverse}>
                            <ImageWrapper data-reverse={isReverse}>
                               <GalleryImage src={item.image} alt={item.title} />

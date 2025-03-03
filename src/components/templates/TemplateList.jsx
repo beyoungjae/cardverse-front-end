@@ -116,7 +116,7 @@ const TabsWrapper = styled(Box)(({ theme }) => ({
    },
 }))
 
-// 탭 버튼 스타일 - 커스텀 속성 제거 및 클래스 기반 스타일링으로 변경
+// 탭 버튼 스타일
 const TabButton = styled(motion.button)(({ theme }) => ({
    position: 'relative',
    padding: '1.2rem 2.5rem',
@@ -152,23 +152,10 @@ const TabButton = styled(motion.button)(({ theme }) => ({
          boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
       },
    },
-   '&.adjacent': {
-      color: '#555',
-      fontSize: '1.1rem',
-      opacity: 0.9,
-      transform: 'scale(0.95)',
-   },
-   '&:not(.selected):not(.adjacent)': {
-      color: '#888',
-      fontSize: '1rem',
-      opacity: 0.75,
-      transform: 'scale(0.9)',
-   },
    [theme.breakpoints.down('sm')]: {
       padding: '1rem 1.8rem',
       '&.selected': { fontSize: '1rem' },
-      '&.adjacent': { fontSize: '0.9rem' },
-      '&:not(.selected):not(.adjacent)': { fontSize: '0.85rem' },
+      '&:not(.selected)': { fontSize: '0.9rem' },
    },
 }))
 
