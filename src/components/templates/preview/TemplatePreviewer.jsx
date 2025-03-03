@@ -1,38 +1,71 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, IconButton, Typography, Container } from '@mui/material'
+import { Box, Typography, Container } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { motion, AnimatePresence } from 'framer-motion'
-import ShareIcon from '@mui/icons-material/Share'
 import PreviewLoading from '../editor/preview/PreviewLoading'
 import PreviewPanel from '../editor/preview/PreviewPanel'
 import { userTemplateApi } from '../../../api/userTemplateApi'
 
 const PreviewContainer = styled(Container)(({ theme }) => ({
-   maxWidth: '600px !important',
+   margin: '0 auto !important',
+   padding: '0 !important',
+   maxWidth: '500px !important',
    position: 'relative',
    minHeight: '100vh',
-   padding: theme.spacing(4),
-   backgroundColor: '#fff',
    zIndex: 100,
-   [theme.breakpoints.down('md')]: {
-      padding: theme.spacing(2),
-   },
 }))
 
 const TopBar = styled(Box)(({ theme }) => ({
-   position: 'fixed',
-   top: 0,
-   left: 0,
-   right: 0,
-   padding: theme.spacing(2),
    display: 'flex',
    justifyContent: 'center',
    alignItems: 'center',
-   backgroundColor: 'rgba(255, 255, 255, 0.95)',
-   backdropFilter: 'blur(10px)',
-   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+   width: '100%',
+   height: '60px',
+   position: 'sticky',
+   top: 0,
+   backgroundColor: 'rgba(255, 255, 255, 0.7)',
+   backdropFilter: 'blur(8px)',
+   WebkitBackdropFilter: 'blur(8px)',
+   borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
    zIndex: 1000,
+   transition: 'all 0.3s ease',
+}))
+
+const TopBarTitle = styled(Typography)(({ theme }) => ({
+   zIndex: 1000,
+   fontFamily: "'Playfair Display', 'Noto Serif KR', serif",
+   fontWeight: 700,
+   fontSize: '1.4rem',
+   letterSpacing: '0.05em',
+   background: 'linear-gradient(45deg, #000000 30%, #333333 90%)',
+   WebkitBackgroundClip: 'text',
+   WebkitTextFillColor: 'transparent',
+   padding: '0.5rem 1rem',
+   position: 'relative',
+   opacity: 0.9,
+   filter: 'blur(0.5px)',
+   '&::after': {
+      content: '""',
+      position: 'absolute',
+      bottom: '0.2rem',
+      left: '50%',
+      width: '40px',
+      height: '2px',
+      background: 'linear-gradient(45deg, #000000 30%, #333333 90%)',
+      transform: 'translateX(-50%)',
+      transition: 'width 0.3s ease',
+      opacity: 0.7,
+   },
+   '&:hover::after': {
+      width: '80px',
+   },
+   animation: 'fadeIn 1s ease-in-out',
+   '@keyframes fadeIn': {
+      '0%': { opacity: 0, transform: 'translateY(-10px)' },
+      '100%': { opacity: 1, transform: 'translateY(0)' },
+   },
+   transition: 'all 0.3s ease',
 }))
 
 const PreviewContent = styled(motion.div)(({ backgroundColor }) => ({
@@ -40,7 +73,6 @@ const PreviewContent = styled(motion.div)(({ backgroundColor }) => ({
    height: '100%',
    overflowY: 'auto',
    WebkitOverflowScrolling: 'touch',
-   padding: '24px',
    backgroundColor: backgroundColor || '#FFFFFF',
    position: 'relative',
    '&::-webkit-scrollbar': {
@@ -196,7 +228,7 @@ const TemplatePreviewer = ({ userTemplateId: propUserTemplateId }) => {
    return (
       <PreviewContainer>
          <TopBar>
-            <Typography variant="h6">{userTemplate?.formData?.title || '미리보기'}</Typography>
+            <TopBarTitle>From Cardverse</TopBarTitle>
          </TopBar>
 
          <PreviewContent>
@@ -313,7 +345,6 @@ const TemplatePreviewer = ({ userTemplateId: propUserTemplateId }) => {
                      style={{
                         width: '100%',
                         minHeight: '100vh',
-                        paddingTop: '60px',
                         pointerEvents: 'auto',
                      }}
                   >

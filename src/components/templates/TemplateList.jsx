@@ -45,8 +45,9 @@ const BannerOverlay = styled(Box)(({ theme }) => ({
 const BannerTitle = styled(motion.div)(({ theme }) => ({
    color: '#fff',
    fontSize: '3.8rem',
-   fontWeight: theme.typography.fontWeightRegular,
    letterSpacing: '0.4em',
+   fontFamily: theme.typography.h1.fontFamily,
+   fontWeight: theme.typography.h1.fontWeight,
    textAlign: 'center',
    textShadow: '3px 3px 8px rgba(0,0,0,0.5)',
    [theme.breakpoints.down('md')]: {

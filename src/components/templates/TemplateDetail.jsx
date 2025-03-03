@@ -3,9 +3,9 @@ import { useForm } from 'react-hook-form'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { Container, Typography, Box, Button, Modal, IconButton, CircularProgress, MenuItem, TextField, Select } from '@mui/material'
+import ReactPlayer from 'react-player'
 import { styled as muiStyled, keyframes } from '@mui/material/styles'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import CloseIcon from '@mui/icons-material/Close'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
@@ -22,12 +22,6 @@ const fadeIn = keyframes`
     opacity: 1;
     transform: scale(1);
   }
-`
-
-const pulse = keyframes`
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
 `
 
 // 뒤로가기 버튼 컨테이너
@@ -302,17 +296,20 @@ const VideoSection = muiStyled(Box)(({ theme }) => ({
    borderRadius: '10px',
    padding: '2rem',
    marginBottom: '3rem',
-   '& .play-button': {
-      width: '60px',
-      height: '60px',
-      borderRadius: '50%',
-      backgroundColor: '#FF0000',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      margin: '0 auto',
-      cursor: 'pointer',
-      animation: `${pulse} 2s infinite ease-in-out`,
+   '& .video-container': {
+      position: 'relative',
+      paddingTop: '56.25%', // 16:9 비율
+      width: '100%',
+      height: 0,
+      overflow: 'hidden',
+      borderRadius: '8px',
+   },
+   '& .react-player': {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
    },
 }))
 
@@ -756,9 +753,15 @@ const TemplateDetail = () => {
             <DetailSectionTitle>클릭 몇 번으로 나만의 감성을 담은 초대장을 완성하세요.</DetailSectionTitle>
 
             <VideoSection>
-               <Box className="play-button">
-                  <PlayArrowIcon sx={{ color: 'white', fontSize: '2rem' }} />
-               </Box>
+               <div className="video-container">
+                  <ReactPlayer
+                     url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                     className="react-player"
+                     controls
+                     width="100%"
+                     height="100%"
+                  />
+               </div>
             </VideoSection>
             <VideoSectionSubComment>
                템플릿의 다채로운 기능과 세련된 디자인을 영상으로 확인하세요. <br />본 영상은 예시이며, 실제 템플릿은 자유롭게 편집 가능합니다.

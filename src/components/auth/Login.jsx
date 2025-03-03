@@ -17,7 +17,6 @@ import KakaoLoginBtn from '../button/KakaoLoginBtn'
 
 // 페이지 컨테이너
 const PageContainer = styled(Box)(({ theme }) => ({
-   minHeight: '100vh',
    display: 'flex',
    alignItems: 'center',
    justifyContent: 'center',

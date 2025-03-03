@@ -212,12 +212,12 @@ function App() {
                      <Navigate
                         replace
                         to={(location) => {
-                           const userTemplateId = location.pathname.split('/').pop()
+                           const userTemplateId = decodeURIComponent(location.pathname.split('/').pop())
                            return `/preview/${userTemplateId}`
                         }}
                      />
                   }
-               />
+                />
 
                {/* 기존 /template/preview/ 경로에 대한 리다이렉트 */}
                <Route
@@ -226,7 +226,7 @@ function App() {
                      <Navigate
                         replace
                         to={(location) => {
-                           const userTemplateId = location.pathname.split('/').pop()
+                           const userTemplateId = decodeURIComponent(location.pathname.split('/').pop())
                            return `/preview/${userTemplateId}`
                         }}
                      />

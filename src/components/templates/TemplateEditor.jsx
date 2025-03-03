@@ -732,6 +732,19 @@ const TemplateEditor = () => {
       }
    }, [templateId, methods, applyPreset])
 
+   /**
+    * URL을 난독화하는 함수
+    * ID를 Base64로 인코딩하고 타임스탬프를 추가하여 난독화
+    */
+   const encodeTemplateId = (id) => {
+      // 타임스탬프를 추가하여 동일한 ID도 다른 URL이 되도록 함
+      const timestamp = Date.now();
+      const data = `${id}-${timestamp}`;
+      
+      // Base64로 인코딩
+      return btoa(data);
+   };
+
    // sections
    const themeProps = {
       handleThemeChange, // 테마 변경
@@ -825,7 +838,9 @@ const TemplateEditor = () => {
                   if (savedUserTemplateId) {
                      showNotification('잠시후 미리보기 페이지가 열립니다...', 'info')
                      setTimeout(() => {
-                        const previewUrl = `/preview/${savedUserTemplateId}`
+                        // 인코딩된 URL 생성
+                        const encodedId = encodeTemplateId(savedUserTemplateId);
+                        const previewUrl = `/preview/${encodedId}`
                         window.open(previewUrl, '_blank')
                      }, 3000)
                   }
