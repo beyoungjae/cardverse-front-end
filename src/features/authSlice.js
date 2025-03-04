@@ -2,10 +2,6 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { signupUser, loginUser, logoutUser, checkAuthStatus, updateUserProfile } from '../api/authApi'
 import { oauthLoginUser } from '../api/oauthApi'
 import handleApiError from '../utils/errorHandler'
-import { saveUserData } from '../utils/storages'
-// import { persistor } from '../store/store'
-
-// rejectWithValue: 서버에서 보낸 에러 메세지
 
 // 회원가입
 export const signupUserThunk = createAsyncThunk('auth/signupUser', async (userData, { rejectWithValue }) => {
@@ -20,8 +16,6 @@ export const signupUserThunk = createAsyncThunk('auth/signupUser', async (userDa
 // 로그인
 export const loginUserThunk = createAsyncThunk('auth/loginUser', async (credentials, { rejectWithValue }) => {
    try {
-      console.log('credentials Check:', credentials)
-      console.log('로그인 thunk 진행시작')
       const response = await loginUser(credentials)
       return response.data
    } catch (error) {
@@ -33,7 +27,6 @@ export const loginUserThunk = createAsyncThunk('auth/loginUser', async (credenti
 export const oauthLoginUserThunk = createAsyncThunk('oauth/oauthLoginUser', async (credentials, { rejectWithValue }) => {
    try {
       const response = await oauthLoginUser(credentials)
-      console.log(response.data)
       return response.data
    } catch (error) {
       return rejectWithValue(handleApiError(error, '카카오 로그인'))
@@ -54,7 +47,6 @@ export const logoutUserThunk = createAsyncThunk('auth/logoutUser', async (remove
 export const checkAuthStatusThunk = createAsyncThunk('auth/checkAuthStatus', async (userData, { rejectWithValue }) => {
    try {
       const response = await checkAuthStatus(userData)
-      console.log(response.data)
       return response.data
    } catch (error) {
       return rejectWithValue(handleApiError(error, '상태 확인'))
@@ -75,7 +67,7 @@ const authSlice = createSlice({
    name: 'auth',
    initialState: {
       user: null,
-      isAuthenticated: false, // ▶ true: 로그인 | ▶ false: 로그아웃
+      isAuthenticated: false, 
       loading: true,
       error: null,
       loginHistory: [],
@@ -131,6 +123,7 @@ const authSlice = createSlice({
          .addCase(oauthLoginUserThunk.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload
+            localStorage.removeItem('persist:auth') 
          })
 
       //로그아웃
@@ -142,9 +135,9 @@ const authSlice = createSlice({
          .addCase(logoutUserThunk.fulfilled, (state, action) => {
             state.loading = false
             state.isAuthenticated = false
-            state.user = null // 로그아웃 => 유저 정보 초기화
+            state.user = null 
 
-            localStorage.removeItem('persist:auth') // ✅ 특정 유저의 Redux-Persist 데이터 삭제
+            localStorage.removeItem('persist:auth') 
          })
          .addCase(logoutUserThunk.rejected, (state, action) => {
             state.loading = false
@@ -187,9 +180,7 @@ const authSlice = createSlice({
 
             state.isAuthenticated = false
             state.user = null
-
-            // 인증 실패 시 로컬 스토리지에서 loginType 제거
-            localStorage.removeItem('loginType')
+            localStorage.removeItem('persist:auth')
          })
 
       // 프로필 업데이트

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { checkAuthStatusThunk, logoutUserThunk } from './features/authSlice'
-import { checkOAuthStatusThunk } from './features/oauthSlice'
 
 // style 세팅
 import CssBaseline from '@mui/material/CssBaseline'
@@ -19,7 +18,7 @@ import ReviewEditor from './components/review/ReviewEditor'
 
 // 라우트 세팅
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom'
-import { getUserData } from './utils/storages'
+import AuthChecker from './components/auth/AuthChecker'
 
 // 네비바 아래 컨텐츠를 위한 컨테이너
 const MainContent = muiStyled('div')(({ theme, $hideLayout }) => ({
@@ -77,14 +76,8 @@ function App() {
    const location = useLocation()
    const dispatch = useDispatch()
    const { isAuthenticated, user, authData, loading } = useSelector((state) => state.auth)
-   console.log(isAuthenticated)
-   console.log(user)
 
    useEffect(() => {
-      console.log('App.js authData:', authData)
-
-      // dispatch(checkAuthStatusThunk())
-
       dispatch(checkAuthStatusThunk(authData))
    }, [dispatch])
 
@@ -94,6 +87,7 @@ function App() {
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
          <GlobalStyle />
          <CssBaseline />
+         <AuthChecker authData={authData} isAuthenticated={isAuthenticated} />
 
          {!loading && !hideLayout && <Navbar isAuthenticated={isAuthenticated} user={user} />}
 

@@ -209,35 +209,35 @@ const Login = () => {
       triggerOnce: true,
    })
 
-   // useEffect(() => {
-   //    if (isProcessingCode) return
+   useEffect(() => {
+      if (isProcessingCode) return
 
-   //    const search = new URLSearchParams(window.location.search)
-   //    const code = search.get('code')
+      const search = new URLSearchParams(window.location.search)
+      const code = search.get('code')
 
-   //    // 카카오로 리다이렉트 될 경우 code가 존재
-   //    if (code) {
-   //       setIsProcessingCode(true)
-   //       localStorage.setItem('loginType', 'kakao')
+      // 카카오로 리다이렉트 될 경우 code가 존재
+      if (code) {
+         setIsProcessingCode(true)
+         localStorage.setItem('loginType', 'kakao')
 
-   //       // 코드 파라미터를 URL에서 제거하기 위한 처리
-   //       const cleanUrl = window.location.pathname
-   //       window.history.replaceState({}, document.title, cleanUrl)
+         // 코드 파라미터를 URL에서 제거하기 위한 처리
+         const cleanUrl = window.location.pathname
+         window.history.replaceState({}, document.title, cleanUrl)
 
-   //       dispatch(oauthLoginUserThunk({ code, provider: 'kakao' }))
-   //          .unwrap()
-   //          .then(() => {
-   //             navigate('/')
-   //          })
-   //          .catch((error) => {
-   //             console.error('로그인 실패:', error)
-   //             alert('로그인에 실패하셨습니다.')
-   //          })
-   //          .finally(() => {
-   //             setIsProcessingCode(false)
-   //          })
-   //    }
-   // }, [dispatch, navigate, isProcessingCode])
+         dispatch(oauthLoginUserThunk({ code, provider: 'kakao' }))
+            .unwrap()
+            .then(() => {
+               navigate('/')
+            })
+            .catch((error) => {
+               console.error('로그인 실패:', error)
+               alert('로그인에 실패하셨습니다.')
+            })
+            .finally(() => {
+               setIsProcessingCode(false)
+            })
+      }
+   }, [dispatch, navigate, isProcessingCode])
 
    const handleLogin = useCallback(
       async (e) => {
@@ -246,7 +246,6 @@ const Login = () => {
             if (email.trim() && password.trim()) {
                await dispatch(loginUserThunk({ email, password })).unwrap()
                navigate('/')
-           
             } else {
                alert('이메일과 비밀번호를 입력해주세요.')
             }
@@ -257,13 +256,13 @@ const Login = () => {
       [dispatch, email, password, navigate],
    )
 
-   // const handleKakaoLogin = (e) => {
-   //    e.preventDefault()
-   //    // e.stopPropagation()
-   //    window.location.href = KAKAO_REST_API
-   // }
+   const handleKakaoLogin = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      window.location.href = KAKAO_REST_API
+   }
 
-   // if (isProcessingCode) return <div></div>
+   if (isProcessingCode) return <div></div>
 
    return (
       <PageContainer>
@@ -310,7 +309,7 @@ const Login = () => {
 
                <Divider>또는</Divider>
 
-               <KakaoLoginBtn />
+               <KakaoLoginBtn onClick={handleKakaoLogin} />
 
                <HelpText>
                   계정이 없으세요?

@@ -47,7 +47,7 @@ export const checkAuthStatus = async (userData) => {
 //프로필 업데이트
 export const updateUserProfile = async (userData) => {
    try {
-      const response = await commonApi.put('/auth/profile', userData)
+      const response = await commonApi.patch('/auth/profile', userData)
       return response
    } catch (error) {
       console.error(`API Request 오류: ${error.message}`)
