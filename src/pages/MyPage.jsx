@@ -348,7 +348,7 @@ const MyPage = () => {
       }
 
       try {
-         await dispatch(updateProfileThunk({ nick: nickname })).unwrap()
+         await dispatch(updateProfileThunk({ nick: nickname, user })).unwrap()
          setSnackbar({
             open: true,
             message: '프로필이 성공적으로 업데이트되었습니다',

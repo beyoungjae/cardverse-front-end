@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import { checkAuthStatusThunk, logoutUserThunk } from '../../features/authSlice'
+import { useNavigate } from 'react-router-dom'
 
 const AuthChecker = ({ authData, isAuthenticated }) => {
    const dispatch = useDispatch()
+   const navigate = useNavigate()
    const timeoutRef = useRef(null)
 
    // 로그아웃 타이머 설정 함수
@@ -17,7 +19,11 @@ const AuthChecker = ({ authData, isAuthenticated }) => {
 
       timeoutRef.current = setTimeout(() => {
          dispatch(logoutUserThunk())
-      }, 60 * 10 * 1000) // 10분 후 자동 로그아웃 실행
+            .unwrap()
+            .then(() => {
+               navigate('/')
+            })
+      }, 30 * 60 * 1000) // 30분 후 자동 로그아웃 실행
    }
 
    useEffect(() => {

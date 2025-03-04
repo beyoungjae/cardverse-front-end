@@ -57,7 +57,7 @@ export const checkAuthStatusThunk = createAsyncThunk('auth/checkAuthStatus', asy
 export const updateProfileThunk = createAsyncThunk('auth/updateProfile', async (userData, { rejectWithValue }) => {
    try {
       const response = await updateUserProfile(userData)
-      return response.data.user
+      return response.data
    } catch (error) {
       return rejectWithValue(handleApiError(error, '프로필 업데이트'))
    }
@@ -67,13 +67,20 @@ const authSlice = createSlice({
    name: 'auth',
    initialState: {
       user: null,
-      isAuthenticated: false, 
+      isAuthenticated: false,
       loading: true,
       error: null,
       loginHistory: [],
       authData: {},
    },
-   reducers: {},
+   reducers: {
+      logout: (state) => {
+         state.isAuthenticated = false
+         state.authData = null
+         state.user = null
+         localStorage.removeItem('user')
+      },
+   },
    extraReducers: (builder) => {
       // 회원가입
       builder
@@ -101,6 +108,7 @@ const authSlice = createSlice({
             state.isAuthenticated = true
             state.user = action.payload.user
             state.authData = action.payload.authData
+            localStorage.setItem('user', JSON.stringify(action.payload.user))
          })
          .addCase(loginUserThunk.rejected, (state, action) => {
             state.loading = false
@@ -119,11 +127,12 @@ const authSlice = createSlice({
             state.user = action.payload.user
             state.authData = action.payload.authData
             state.token = action.payload.token
+            localStorage.setItem('user', JSON.stringify(action.payload.user))
          })
          .addCase(oauthLoginUserThunk.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload
-            localStorage.removeItem('persist:auth') 
+            localStorage.removeItem('persist:auth')
          })
 
       //로그아웃
@@ -135,9 +144,9 @@ const authSlice = createSlice({
          .addCase(logoutUserThunk.fulfilled, (state, action) => {
             state.loading = false
             state.isAuthenticated = false
-            state.user = null 
+            state.user = null
 
-            localStorage.removeItem('persist:auth') 
+            localStorage.removeItem('persist:auth')
          })
          .addCase(logoutUserThunk.rejected, (state, action) => {
             state.loading = false
@@ -162,8 +171,6 @@ const authSlice = createSlice({
 
             state.isAuthenticated = action.payload.isAuthenticated
             state.user = action.payload.user || null
-
-            // 인증 상태가 확인되면 로컬 스토리지에 loginType 저장
             if (action.payload.isAuthenticated) {
                localStorage.setItem('loginType', 'local')
             }
@@ -191,7 +198,8 @@ const authSlice = createSlice({
          })
          .addCase(updateProfileThunk.fulfilled, (state, action) => {
             state.loading = false
-            state.user = action.payload
+            state.user = action.payload.user
+            state.authData = { ...state.authData, ...action.payload.user }
          })
          .addCase(updateProfileThunk.rejected, (state, action) => {
             state.loading = false
@@ -200,4 +208,5 @@ const authSlice = createSlice({
    },
 })
 
+export const { logout } = authSlice.actions
 export default authSlice.reducer
