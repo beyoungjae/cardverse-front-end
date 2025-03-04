@@ -2,7 +2,7 @@ import React, { useState, useEffect, useLayoutEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { Container, Typography, Box, Button, Modal, IconButton, CircularProgress, MenuItem, TextField, Select } from '@mui/material'
+import { Container, Typography, Box, Button, Modal, IconButton, CircularProgress, MenuItem, TextField, Select, Snackbar, Alert } from '@mui/material'
 import ReactPlayer from 'react-player'
 import { styled as muiStyled, keyframes } from '@mui/material/styles'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
@@ -617,6 +617,25 @@ const TemplateDetail = () => {
       }
    }, [template, detailImages])
 
+   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
+
+   // 알림 표시 함수
+   const showNotification = (message, severity = 'success') => {
+      setNotification({
+         open: true,
+         message,
+         severity
+      });
+   };
+
+   // 알림 닫기 함수
+   const handleCloseNotification = (event, reason) => {
+      if (reason === 'clickaway') {
+         return;
+      }
+      setNotification({ ...notification, open: false });
+   };
+
    const handleBack = () => {
       navigate(`/template/${currentTab}`, {
          state: { currentTab },
@@ -871,8 +890,21 @@ const TemplateDetail = () => {
                onClose={() => setIsEditModalOpen(false)}
                template={template}
                templateId={templateId}
+               showNotification={showNotification}
             />
          )}
+
+         {/* 알림 스낵바 */}
+         <Snackbar 
+            open={notification.open} 
+            autoHideDuration={6000} 
+            onClose={handleCloseNotification}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+         >
+            <Alert onClose={handleCloseNotification} severity={notification.severity} sx={{ width: '100%' }}>
+               {notification.message}
+            </Alert>
+         </Snackbar>
       </>
    )
 }
