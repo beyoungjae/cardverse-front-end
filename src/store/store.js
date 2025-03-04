@@ -5,6 +5,7 @@ import sessionStorage from 'redux-persist/lib/storage/session' // 창 닫으면 
 import authReducer from '../features/authSlice'
 import templateReducer from '../features/templateSlice'
 import purchaseReducer from '../features/purchaseSlice'
+import reviewReducer from '../features/reviewSlice'
 
 const authPersistConfig = {
    key: 'auth',
@@ -27,6 +28,7 @@ const store = configureStore({
       templates: templateReducer,
       purchase: purchaseReducer,
       session: persistedSessionReducer, // 창 닫힘 감지용 추가
+      reviews: reviewReducer,
    },
    middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
