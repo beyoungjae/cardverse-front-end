@@ -10,6 +10,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 
 import { useDispatch } from 'react-redux'
 import { logoutUserThunk } from '../../features/authSlice'
+import { getUserData, removeUserData } from '../../utils/storages'
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
    backgroundColor: theme.palette.background.paper,
@@ -218,6 +219,8 @@ const Navbar = ({ isAuthenticated, user }) => {
    const [mobileOpen, setMobileOpen] = useState(false)
    const [expandedMenus, setExpandedMenus] = useState({})
 
+   console.log(user)
+
    const menuItems = {
       HOME: [
          { name: '메인', path: '/' },
@@ -244,8 +247,7 @@ const Navbar = ({ isAuthenticated, user }) => {
    }
 
    const handleLogout = useCallback(() => {
-      localStorage.removeItem('loginType')
-      dispatch(logoutUserThunk())
+      dispatch(logoutUserThunk({ user, provider: user.provider }))
          .unwrap()
          .then(() => {
             navigate('/')
