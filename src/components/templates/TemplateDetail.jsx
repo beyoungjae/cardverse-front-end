@@ -554,10 +554,12 @@ const TemplateDetail = () => {
    const [activeIndex, setActiveIndex] = useState(0)
    const [isPreviewOpen, setIsPreviewOpen] = useState(false)
    const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0)
+   const [imagesLoaded, setImagesLoaded] = useState(false)
 
    // 모달 오픈 상태 관리
    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
+   // 안전하게 detailImages 배열 가져오기
    const detailImages = template?.detailImages || []
 
    const currentTab = location.state?.currentTab || 'wedding'
@@ -584,6 +586,36 @@ const TemplateDetail = () => {
          dispatch(checkTemplatePurchased(templateId))
       }
    }, [dispatch, isAuthenticated, templateId])
+
+   // 이미지 로딩 상태 초기화
+   useEffect(() => {
+      if (template && detailImages.length > 0) {
+         setImagesLoaded(false)
+
+         // 모든 이미지 프리로드
+         const loadImages = async () => {
+            try {
+               const promises = detailImages.map(src => {
+                  return new Promise((resolve, reject) => {
+                     const img = new Image()
+                     img.src = src
+                     img.onload = resolve
+                     img.onerror = reject
+                  })
+               })
+
+               await Promise.all(promises)
+               setImagesLoaded(true)
+            } catch (error) {
+               console.error('이미지 로딩 중 오류:', error)
+               // 오류가 있어도 렌더링은 시도
+               setImagesLoaded(true)
+            }
+         }
+
+         loadImages()
+      }
+   }, [template, detailImages])
 
    const handleBack = () => {
       navigate(`/template/${currentTab}`, {
@@ -634,12 +666,15 @@ const TemplateDetail = () => {
    }
 
    useEffect(() => {
+      // detailImages가 비어있거나 로딩 중이면 인터벌 설정하지 않음
+      if (!detailImages.length) return
+
       const interval = setInterval(() => {
          setActiveIndex((prev) => (prev + 1) % detailImages.length)
       }, 3000) // 3초마다 이미지 전환
 
       return () => clearInterval(interval)
-   }, [])
+   }, [detailImages]) // detailImages가 변경될 때마다 인터벌 재설정
 
    const handlePreviewOpen = () => {
       setIsPreviewOpen(true)
@@ -743,9 +778,24 @@ const TemplateDetail = () => {
                <Box className="detail-images">
                   <img src="/images/iphone-mockup.png" alt="iPhone mockup" className="iphone-mockup" />
                   <Box className="screen-content">
-                     {detailImages.map((image, index) => (
-                        <img key={index} src={image} alt={`Detail ${index + 1}`} className={activeIndex === index ? 'active' : ''} />
-                     ))}
+                     {status === 'loading' ? (
+                        <CircularProgress size={40} />
+                     ) : detailImages.length > 0 ? (
+                        detailImages.map((image, index) => (
+                           <img 
+                              key={`detail-image-${index}`} 
+                              src={image} 
+                              alt={`Detail ${index + 1}`} 
+                              className={activeIndex === index ? 'active' : ''}
+                              onError={(e) => {
+                                 console.error(`이미지 로드 실패: ${image}`)
+                                 e.target.src = '/images/placeholder.png' // 대체 이미지
+                              }}
+                           />
+                        ))
+                     ) : (
+                        <Typography>이미지를 불러올 수 없습니다.</Typography>
+                     )}
                   </Box>
                </Box>
             </DetailSection>
@@ -786,7 +836,19 @@ const TemplateDetail = () => {
                   <IconButton className="nav-button prev-button" onClick={handlePrevImage}>
                      <NavigateBeforeIcon />
                   </IconButton>
-                  <img src={detailImages[currentPreviewIndex]} alt={`Preview ${currentPreviewIndex + 1}`} className="slide-image" />
+                  {detailImages.length > 0 ? (
+                     <img 
+                        src={detailImages[currentPreviewIndex]} 
+                        alt={`Preview ${currentPreviewIndex + 1}`} 
+                        className="slide-image"
+                        onError={(e) => {
+                           console.error(`미리보기 이미지 로드 실패: ${detailImages[currentPreviewIndex]}`)
+                           e.target.src = '/images/placeholder.png' // 대체 이미지
+                        }}
+                     />
+                  ) : (
+                     <Typography>이미지를 불러올 수 없습니다.</Typography>
+                  )}
                   <IconButton className="nav-button next-button" onClick={handleNextImage}>
                      <NavigateNextIcon />
                   </IconButton>
@@ -809,10 +871,6 @@ const TemplateDetail = () => {
                onClose={() => setIsEditModalOpen(false)}
                template={template}
                templateId={templateId}
-               showNotification={(msg, type = 'success') => {
-                  // 알림 처리 함수 (Snackbar 등 호출)
-                  console.log(msg, type)
-               }}
             />
          )}
       </>

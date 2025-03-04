@@ -90,7 +90,7 @@ const LocationSection = () => {
    const [selectedType, setSelectedType] = useState('wedding')
    const [openAddressModal, setOpenAddressModal] = useState(false)
 
-   // formData의 location 기본값
+   // formData의 location 기본값 - 명확한 초기값 설정
    const location = watch('location') || {
       name: '',
       address: '',
@@ -100,6 +100,23 @@ const LocationSection = () => {
       coordinates: null,
       url: '',
    }
+
+   // 컴포넌트 마운트 시 초기값 설정
+   useEffect(() => {
+      // 초기값이 없는 경우에만 설정
+      if (!watch('location')) {
+         setValue('location', {
+            name: '',
+            address: '',
+            detail: '',
+            guide: '',
+            showMap: true,
+            coordinates: null,
+            url: '',
+         });
+      }
+   }, [setValue, watch]);
+
    const currentType = invitationTypes.find((type) => type.id === selectedType)
 
    const kakao = window.kakao
@@ -314,6 +331,7 @@ useEffect(() => {
             <Controller
                name="location.name"
                control={control}
+               defaultValue=""
                rules={{ required: '장소명을 입력해주세요' }}
                render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="장소명" placeholder={currentType.placeholders.name} error={!!error} helperText={error?.message} fullWidth />}
             />
@@ -346,8 +364,8 @@ useEffect(() => {
             >
                주소 검색
             </Button>
-            <Controller name="location.detail" control={control} render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="상세 위치" placeholder={currentType.placeholders.detail} error={!!error} helperText={error?.message} fullWidth />} />
-            <Controller name="location.guide" control={control} render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="교통편 안내" placeholder={currentType.placeholders.guide} multiline rows={3} error={!!error} helperText={error?.message} fullWidth />} />
+            <Controller name="location.detail" control={control} defaultValue="" render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="상세 위치" placeholder={currentType.placeholders.detail} error={!!error} helperText={error?.message} fullWidth />} />
+            <Controller name="location.guide" control={control} defaultValue="" render={({ field, fieldState: { error } }) => <StyledTextField {...field} label="교통편 안내" placeholder={currentType.placeholders.guide} multiline rows={3} error={!!error} helperText={error?.message} fullWidth />} />
             <Controller
                name="location.showMap"
                control={control}

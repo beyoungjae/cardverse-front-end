@@ -278,7 +278,7 @@ const ModalTabPanel = ({ children, value, index }) => {
 const MyPage = () => {
    const navigate = useNavigate()
    const dispatch = useDispatch()
-   const user = useSelector((state) => state.auth.authData)
+   const user = useSelector((state) => state.auth.user)
    const { purchaseHistory, status } = useSelector((state) => state.purchase)
    const [tabValue, setTabValue] = useState(0)
 
@@ -344,6 +344,17 @@ const MyPage = () => {
             message: '유효한 닉네임을 입력해주세요',
             severity: 'error'
          })
+         return
+      }
+
+      // 로그인 상태 확인
+      if (!user) {
+         setSnackbar({
+            open: true,
+            message: '로그인이 필요합니다',
+            severity: 'error'
+         })
+         navigate('/login')
          return
       }
 

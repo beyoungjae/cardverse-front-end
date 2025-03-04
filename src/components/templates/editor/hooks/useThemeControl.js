@@ -47,21 +47,40 @@ const useThemeControl = () => {
    const [historyIndex, setHistoryIndex] = useState(0)
    const [templateId, setTemplateId] = useState(null)
 
-   // Get template ID from URL
    useEffect(() => {
       const path = window.location.pathname
       const match = path.match(/\/editor\/(\d+)/)
       if (match && match[1]) {
          const id = match[1]
          setTemplateId(id)
-         console.log('템플릿 ID 감지:', id)
       }
    }, [])
 
-   // Create storage key based on template ID
    const getStorageKey = useCallback(() => {
       return templateId ? `template_theme_${templateId}` : THEME_STORAGE_KEY
    }, [templateId])
+
+   // 폰트 동적 로드
+   const loadFont = useCallback(async (fontFamily) => {
+      try {
+         // 폰트 URL 인코딩
+         const encodedFont = encodeURIComponent(fontFamily.replace(/\s*,\s*serif$/, ''))
+         const fontUrl = `https://fonts.googleapis.com/css2?family=${encodedFont}&display=swap`
+
+         // 폰트 로드 전에 존재 여부 확인
+         const existingLink = document.querySelector(`link[href="${fontUrl}"]`)
+         if (existingLink) return
+
+         const link = document.createElement('link')
+         link.href = fontUrl
+         link.rel = 'stylesheet'
+         document.head.appendChild(link)
+
+         await document.fonts.load(`1em ${fontFamily}`)
+      } catch (error) {
+         console.warn(`Font loading warning: ${error.message}`)
+      }
+   }, [])
 
    // 테마 변경 핸들러 최적화
    const handleThemeChange = useCallback(
@@ -72,10 +91,13 @@ const useThemeControl = () => {
          }))
          updateStyle({ [key]: value })
 
-         // 테마 변경 로그 추가
-         console.log(`테마 속성 변경: ${key} = ${value}`)
+         // 폰트 변경 시 즉시 로드
+         if (key === 'fontFamily' && value) {
+            loadFont(value);
+         }
+
       },
-      [updateStyle]
+      [updateStyle, loadFont]
    )
 
    // 실행 취소
@@ -108,7 +130,6 @@ const useThemeControl = () => {
       if (templateId) {
          const storageKey = getStorageKey()
          localStorage.removeItem(storageKey)
-         console.log(`Removed theme from storage: ${storageKey}`)
       }
       localStorage.removeItem(THEME_STORAGE_KEY)
    }, [updateStyle, templateId, getStorageKey])
@@ -140,9 +161,7 @@ const useThemeControl = () => {
             updateStyle(parsedTheme)
             setHistory([parsedTheme])
             setHistoryIndex(0)
-            console.log(`Loaded theme from storage: ${storageKey}`, parsedTheme)
          } else {
-            // If no saved theme for this template, check for global theme
             const globalTheme = localStorage.getItem(THEME_STORAGE_KEY)
             if (globalTheme) {
                const parsedGlobalTheme = JSON.parse(globalTheme)
@@ -150,7 +169,6 @@ const useThemeControl = () => {
                updateStyle(parsedGlobalTheme)
                setHistory([parsedGlobalTheme])
                setHistoryIndex(0)
-               console.log('Loaded global theme', parsedGlobalTheme)
             }
          }
       } catch (error) {
@@ -164,33 +182,10 @@ const useThemeControl = () => {
       
       const storageKey = getStorageKey()
       localStorage.setItem(storageKey, JSON.stringify(theme))
-      console.log(`Saved theme to storage: ${storageKey}`, theme)
       
       // Also save to global theme storage for new templates
       localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme))
    }, [theme, templateId, getStorageKey])
-
-   // 폰트 동적 로드
-   const loadFont = async (fontFamily) => {
-      try {
-         // 폰트 URL 인코딩
-         const encodedFont = encodeURIComponent(fontFamily.replace(/\s*,\s*serif$/, ''))
-         const fontUrl = `https://fonts.googleapis.com/css2?family=${encodedFont}&display=swap`
-
-         // 폰트 로드 전에 존재 여부 확인
-         const existingLink = document.querySelector(`link[href="${fontUrl}"]`)
-         if (existingLink) return
-
-         const link = document.createElement('link')
-         link.href = fontUrl
-         link.rel = 'stylesheet'
-         document.head.appendChild(link)
-
-         await document.fonts.load(`1em ${fontFamily}`)
-      } catch (error) {
-         console.warn(`Font loading warning: ${error.message}`)
-      }
-   }
 
    // 테마 변경 시 필요한 폰트 로드
    useEffect(() => {
