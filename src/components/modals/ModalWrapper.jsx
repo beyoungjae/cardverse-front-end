@@ -62,8 +62,6 @@ const ModalWrap = styled('div')(({ theme, $modalType, $isClosing }) => ({
    display: 'flex',
    flexDirection: 'column',
    gap: '30px',
-   // maxHeight: '80vh', // ✅ 줌인 시 화면을 벗어나지 않도록 제한
-   // overflowY: 'auto',
 
    [theme.breakpoints.down(1920)]: {
       width: '35vw',
@@ -130,8 +128,6 @@ const ModalWrapper = ({ onClose }) => {
                <CloseButton onClick={handleClose}>
                   <CloseIcon />
                </CloseButton>
-               {/* {modalType === 'forgot' && <ForgotPasswordModal onVerifySuccess={handleVerifySuccess} />} */}
-               {/* {modalType === 'new' && <NewPasswordModal onGoBack={handleGoBack} />} */}
 
                {modalType === 'forgot' && <ForgotPasswordForm onVerifySuccess={handleVerifySuccess} />}
                {modalType === 'new' && <NewPasswordForm onGoBack={handleGoBack} />}

@@ -1,127 +1,366 @@
-import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { Box, IconButton, CircularProgress } from '@mui/material'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { useParams } from 'react-router-dom'
+import { Box, Typography, Container } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import CloseIcon from '@mui/icons-material/Close'
-import PreviewPanel from '../editor/preview/PreviewPanel'
+import { motion, AnimatePresence } from 'framer-motion'
 import PreviewLoading from '../editor/preview/PreviewLoading'
-import { templateApi } from '../../../api/templateApi'
+import PreviewPanel from '../editor/preview/PreviewPanel'
+import { userTemplateApi } from '../../../api/userTemplateApi'
 
-const PreviewContainer = styled(Box)(({ theme }) => ({
+const PreviewContainer = styled(Container)(({ theme }) => ({
+   margin: '0 auto !important',
+   padding: '0 !important',
+   maxWidth: '500px !important',
    position: 'relative',
-   width: '100%',
-   height: '100vh',
+   minHeight: '100vh',
+   zIndex: 100,
+}))
+
+const TopBar = styled(Box)(({ theme }) => ({
    display: 'flex',
    justifyContent: 'center',
    alignItems: 'center',
-   backgroundColor: '#f5f5f5',
-   padding: theme.spacing(2),
-}))
-
-const PreviewWrapper = styled(Box)(({ theme }) => ({
    width: '100%',
-   maxWidth: '430px',
-   height: '100%',
-   backgroundColor: '#ffffff',
-   borderRadius: theme.shape.borderRadius,
-   boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-   overflow: 'hidden',
-   position: 'relative',
+   height: '60px',
+   position: 'sticky',
+   top: 0,
+   backgroundColor: 'rgba(255, 255, 255, 0.7)',
+   backdropFilter: 'blur(8px)',
+   WebkitBackdropFilter: 'blur(8px)',
+   borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+   zIndex: 1000,
+   transition: 'all 0.3s ease',
 }))
 
-const CloseButton = styled(IconButton)(({ theme }) => ({
-   position: 'absolute',
-   top: theme.spacing(2),
-   right: theme.spacing(2),
-   backgroundColor: 'rgba(0,0,0,0.1)',
-   '&:hover': {
-      backgroundColor: 'rgba(0,0,0,0.2)',
+const TopBarTitle = styled(Typography)(({ theme }) => ({
+   zIndex: 1000,
+   fontFamily: "'Playfair Display', 'Noto Serif KR', serif",
+   fontWeight: 700,
+   fontSize: '1.4rem',
+   letterSpacing: '0.05em',
+   background: 'linear-gradient(45deg, #000000 30%, #333333 90%)',
+   WebkitBackgroundClip: 'text',
+   WebkitTextFillColor: 'transparent',
+   padding: '0.5rem 1rem',
+   position: 'relative',
+   opacity: 0.9,
+   filter: 'blur(0.5px)',
+   '&::after': {
+      content: '""',
+      position: 'absolute',
+      bottom: '0.2rem',
+      left: '50%',
+      width: '40px',
+      height: '2px',
+      background: 'linear-gradient(45deg, #000000 30%, #333333 90%)',
+      transform: 'translateX(-50%)',
+      transition: 'width 0.3s ease',
+      opacity: 0.7,
+   },
+   '&:hover::after': {
+      width: '80px',
+   },
+   animation: 'fadeIn 1s ease-in-out',
+   '@keyframes fadeIn': {
+      '0%': { opacity: 0, transform: 'translateY(-10px)' },
+      '100%': { opacity: 1, transform: 'translateY(0)' },
+   },
+   transition: 'all 0.3s ease',
+}))
+
+const PreviewContent = styled(motion.div)(({ backgroundColor }) => ({
+   width: '100%',
+   height: '100%',
+   overflowY: 'auto',
+   WebkitOverflowScrolling: 'touch',
+   backgroundColor: backgroundColor || '#FFFFFF',
+   position: 'relative',
+   '&::-webkit-scrollbar': {
+      display: 'none',
    },
 }))
 
-const TemplatePreviewer = () => {
-   const { templateId } = useParams()
-   const navigate = useNavigate()
-   const [isLoading, setIsLoading] = useState(true)
-   const [templateData, setTemplateData] = useState(null)
+const TemplatePreviewer = ({ userTemplateId: propUserTemplateId }) => {
+   const params = useParams()
+   const userTemplateId = propUserTemplateId || params.userTemplateId
+
+   const [userTemplate, setUserTemplate] = useState(null)
+   const [loading, setLoading] = useState(true)
    const [error, setError] = useState(null)
 
-   useEffect(() => {
-      const fetchTemplateData = async () => {
-         try {
-            setIsLoading(true)
-            const data = await templateApi.getTemplate(templateId)
+   // 인트로 및 애니메이션 상태
+   const [showInvitation, setShowInvitation] = useState(false)
+   const [showSections, setShowSections] = useState(false)
+   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+   const timerRef = useRef(null)
 
-            // 백엔드 데이터 구조를 프론트엔드 구조로 변환
-            const templateData = {
-               type: data.templateSet.intro.type,
-               title: data.templateSet.intro.title,
-               greeting: data.templateSet.greeting.content,
-               dateTime: data.templateSet.calendar.dateTime,
-               showCountdown: data.templateSet.calendar.showCountdown,
-               location: {
-                  name: data.templateSet.map.name,
-                  address: data.templateSet.map.address,
-                  detail: data.templateSet.map.detail,
-                  guide: data.templateSet.map.guide,
-                  showMap: data.templateSet.map.showMap,
-                  coordinates: data.templateSet.map.coordinates,
-               },
-               images: data.templateSet.gallery.images,
-               galleryLayout: data.templateSet.gallery.layout,
-               accounts: data.templateSet.bankAccount.accounts,
-               showAccounts: data.templateSet.bankAccount.showAccounts,
-               backgroundColor: data.templateSet.other.backgroundColor,
-               primaryColor: data.templateSet.other.primaryColor,
-               secondaryColor: data.templateSet.other.secondaryColor,
-               fontFamily: data.templateSet.other.fontFamily,
-               animation: data.templateSet.other.animation,
+   const fetchUserTemplate = useCallback(async () => {
+      try {
+         setLoading(true)
+         if (!userTemplateId) throw new Error('템플릿 ID가 없습니다.')
+
+         const response = await userTemplateApi.getUserTemplate(userTemplateId)
+         if (!response) throw new Error('서버에서 응답을 받지 못했습니다.')
+
+         let userTemplateData = response.userTemplate || response
+         let formData = userTemplateData.formData || userTemplateData.templateSet?.formData
+
+         if (!formData) {
+            if (userTemplateData.template?.data) {
+               formData = userTemplateData.template.data
+            } else if (userTemplateData.data) {
+               formData = userTemplateData.data
+            } else {
+               throw new Error('템플릿 데이터가 없습니다.')
             }
+         }
 
-            setTemplateData(templateData)
-         } catch (err) {
-            setError(err.message)
-         } finally {
-            setIsLoading(false)
+         if (typeof formData === 'string') {
+            formData = JSON.parse(formData)
+         }
+
+         setUserTemplate({
+            ...userTemplateData,
+            formData: {
+               ...formData,
+               setting: formData.setting || { animation: 'fade', images: formData.images || [] },
+            },
+         })
+      } catch (error) {
+         setError(error.message || '템플릿을 불러오는 중 오류가 발생했습니다.')
+      } finally {
+         setTimeout(() => setLoading(false), 1000)
+      }
+   }, [userTemplateId])
+
+   useEffect(() => {
+      fetchUserTemplate()
+   }, [fetchUserTemplate])
+
+   // 인트로 이미지 애니메이션 처리
+   useEffect(() => {
+      if (!loading && userTemplate) {
+         const { setting } = userTemplate.formData || {}
+         const introImages = setting?.images || []
+
+         if (introImages.length === 0) {
+            // 인트로 이미지가 없으면 바로 초대장으로
+            setShowInvitation(true)
+            return
+         }
+
+         // 인트로 이미지 슬라이드쇼 타이머 설정
+         timerRef.current = setInterval(() => {
+            setCurrentImageIndex((prev) => {
+               const nextIndex = prev + 1
+               if (nextIndex >= introImages.length) {
+                  clearInterval(timerRef.current)
+                  // 마지막 이미지 후 초대장 표시
+                  setTimeout(() => setShowInvitation(true), 1000)
+                  return prev
+               }
+               return nextIndex
+            })
+         }, 3000) // 3초마다 이미지 변경
+
+         return () => {
+            if (timerRef.current) {
+               clearInterval(timerRef.current)
+            }
          }
       }
+   }, [loading, userTemplate])
 
-      fetchTemplateData()
-   }, [templateId])
+   // 초대장 클릭 핸들러
+   const handleInvitationClick = () => {
+      setShowInvitation(false)
+      setShowSections(true)
+   }
 
-   const handleClose = () => {
-      navigate(-1)
+   if (loading) {
+      return <PreviewLoading />
    }
 
    if (error) {
       return (
-         <PreviewContainer>
-            <Box sx={{ textAlign: 'center', color: 'error.main' }}>{error}</Box>
-         </PreviewContainer>
+         <Box sx={{ textAlign: 'center', p: 3 }}>
+            <Typography variant="h6" color="error">
+               {error}
+            </Typography>
+         </Box>
       )
+   }
+
+   const { setting, thumbnail } = userTemplate?.formData || {}
+   const introImages = setting?.images || []
+   const animationType = setting?.animation || 'fade'
+
+   // 애니메이션 변형 정의
+   const variants = {
+      fade: {
+         enter: { opacity: 0 },
+         center: {
+            opacity: 1,
+            scale: [0.9, 1],
+            transition: { duration: 0.8, ease: 'easeInOut' },
+         },
+         exit: {
+            opacity: 0,
+            scale: [1, 1.1],
+            transition: { duration: 0.8, ease: 'easeOut' },
+         },
+      },
+      slide: {
+         enter: { x: '100%', opacity: 0 },
+         center: {
+            x: ['3%', 0],
+            opacity: 1,
+            transition: { duration: 0.8, ease: 'easeInOut' },
+         },
+         exit: {
+            x: [0, '-100%'],
+            opacity: 0,
+            transition: { duration: 0.8, ease: 'easeOut' },
+         },
+      },
    }
 
    return (
       <PreviewContainer>
-         <PreviewWrapper>
-            <CloseButton onClick={handleClose}>
-               <CloseIcon />
-            </CloseButton>
-            {isLoading ? (
-               <PreviewLoading />
-            ) : (
-               <PreviewPanel
-                  formData={templateData}
-                  theme={templateData?.theme}
-                  isPreview={true}
-                  previewState={{
-                     showInvitation: true,
-                     showSections: true,
-                     sectionAnimationIndex: -1,
-                  }}
-               />
-            )}
-         </PreviewWrapper>
+         <TopBar>
+            <TopBarTitle>From Cardverse</TopBarTitle>
+         </TopBar>
+
+         <PreviewContent>
+            <AnimatePresence mode="wait">
+               {!showInvitation && !showSections && introImages.length > 0 && (
+                  <motion.div key="setting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} style={{ width: '100%', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+                     <AnimatePresence mode="wait">
+                        {introImages[currentImageIndex] && (
+                           <motion.img
+                              key={`intro-image-${currentImageIndex}`}
+                              src={introImages[currentImageIndex].url}
+                              alt={`인트로 이미지 ${currentImageIndex + 1}`}
+                              variants={variants[animationType]}
+                              initial="enter"
+                              animate="center"
+                              exit="exit"
+                              style={{
+                                 position: 'absolute',
+                                 width: '100%',
+                                 height: '100%',
+                                 objectFit: 'contain',
+                                 borderRadius: '8px',
+                              }}
+                           />
+                        )}
+                     </AnimatePresence>
+                  </motion.div>
+               )}
+
+               {showInvitation && !showSections && (
+                  <motion.div
+                     key="invitation"
+                     onClick={handleInvitationClick}
+                     initial={{ opacity: 0, scale: 0.9 }}
+                     animate={{ opacity: 1, scale: 1 }}
+                     exit={{ opacity: 0 }}
+                     transition={{ duration: 0.5, ease: 'easeOut' }}
+                     style={{
+                        width: '100vw',
+                        height: '100vh',
+                        cursor: 'pointer',
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '20px',
+                        textAlign: 'center',
+                        background: 'rgba(0, 0, 0, 0.5)',
+                        color: 'white',
+                        padding: '20px',
+                        borderRadius: '8px',
+                        zIndex: 2000,
+                     }}
+                  >
+                     <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}>
+                        <Typography variant="h4" sx={{ fontWeight: 'bold', textShadow: '0px 2px 10px rgba(0,0,0,0.5)' }}>
+                           특별한 순간에 초대합니다
+                        </Typography>
+                        <Typography variant="subtitle1" sx={{ mt: 1, textShadow: '0px 1px 5px rgba(0,0,0,0.3)' }}>
+                           함께하는 이 순간이 더욱 빛나길 바랍니다.
+                        </Typography>
+                     </motion.div>
+
+                     <motion.button
+                        whileHover={{ scale: 1.1, backgroundColor: '#FFD700', color: '#333' }}
+                        whileTap={{ scale: 0.9 }}
+                        style={{
+                           padding: '12px 24px',
+                           fontSize: '18px',
+                           fontWeight: 'bold',
+                           backgroundColor: 'white',
+                           color: 'black',
+                           border: 'none',
+                           borderRadius: '30px',
+                           cursor: 'pointer',
+                           boxShadow: '0px 4px 10px rgba(0,0,0,0.3)',
+                           zIndex: 2100,
+                        }}
+                        onClick={handleInvitationClick}
+                     >
+                        초대장 확인하기
+                     </motion.button>
+
+                     {/* 썸네일 사진 */}
+                     <motion.img
+                        src={userTemplate?.formData?.thumbnail}
+                        alt="Invitation"
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                        style={{
+                           width: 'auto',
+                           maxWidth: '80vw',
+                           height: 'auto',
+                           maxHeight: '80vh',
+                           objectFit: 'contain',
+                           borderRadius: '12px',
+                           boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                        }}
+                     />
+                  </motion.div>
+               )}
+
+               {showSections && (
+                  <motion.div
+                     key="sections"
+                     initial={{ opacity: 0 }}
+                     animate={{ opacity: 1 }}
+                     exit={{ opacity: 0 }}
+                     transition={{ duration: 0.3 }}
+                     style={{
+                        width: '100%',
+                        minHeight: '100vh',
+                        pointerEvents: 'auto',
+                     }}
+                  >
+                     <PreviewPanel
+                        formData={userTemplate.formData}
+                        theme={{
+                           backgroundColor: userTemplate.formData.backgroundColor,
+                           fontFamily: userTemplate.formData.fontFamily,
+                           primaryColor: userTemplate.formData.primaryColor,
+                           secondaryColor: userTemplate.formData.secondaryColor,
+                        }}
+                     />
+                  </motion.div>
+               )}
+            </AnimatePresence>
+         </PreviewContent>
       </PreviewContainer>
    )
 }

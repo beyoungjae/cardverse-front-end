@@ -1,4 +1,3 @@
-// utils/handleApiError.js
 const handleApiError = (error, operation = '') => {
    const prefix = operation ? `${operation} 실패 => ` : ''
 

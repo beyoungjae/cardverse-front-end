@@ -1,9 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { signupUser, loginUser, logoutUser, checkAuthStatus } from '../api/authApi'
-import { kakaoLoginThunk } from './oauthSlice'
+import { signupUser, loginUser, logoutUser, checkAuthStatus, updateUserProfile } from '../api/authApi'
+import { oauthLoginUser } from '../api/oauthApi'
 import handleApiError from '../utils/errorHandler'
-
-// rejectWithValue: 서버에서 보낸 에러 메세지
 
 // 회원가입
 export const signupUserThunk = createAsyncThunk('auth/signupUser', async (userData, { rejectWithValue }) => {
@@ -19,27 +17,49 @@ export const signupUserThunk = createAsyncThunk('auth/signupUser', async (userDa
 export const loginUserThunk = createAsyncThunk('auth/loginUser', async (credentials, { rejectWithValue }) => {
    try {
       const response = await loginUser(credentials)
-      return response.data.user
+      return response.data
    } catch (error) {
       return rejectWithValue(handleApiError(error, '로그인'))
    }
 })
 
-export const logoutUserThunk = createAsyncThunk('auth/logoutUser', async (_, { rejectWithValue }) => {
+// oauth 로그인
+export const oauthLoginUserThunk = createAsyncThunk('oauth/oauthLoginUser', async (credentials, { rejectWithValue }) => {
    try {
-      const response = await logoutUser()
+      const response = await oauthLoginUser(credentials)
+      return response.data
+   } catch (error) {
+      return rejectWithValue(handleApiError(error, '카카오 로그인'))
+   }
+})
+
+// 로그아웃
+export const logoutUserThunk = createAsyncThunk('auth/logoutUser', async (removeUser, { rejectWithValue }) => {
+   try {
+      const response = await logoutUser(removeUser)
       return response.data
    } catch (error) {
       return rejectWithValue(handleApiError(error, '로그아웃'))
    }
 })
 
-export const checkAuthStatusThunk = createAsyncThunk('auth/checkAuthStatus', async (_, { rejectWithValue }) => {
+// 상태체크
+export const checkAuthStatusThunk = createAsyncThunk('auth/checkAuthStatus', async (userData, { rejectWithValue }) => {
    try {
-      const response = await checkAuthStatus()
+      const response = await checkAuthStatus(userData)
       return response.data
    } catch (error) {
       return rejectWithValue(handleApiError(error, '상태 확인'))
+   }
+})
+
+// 프로필 업데이트
+export const updateProfileThunk = createAsyncThunk('auth/updateProfile', async (userData, { rejectWithValue }) => {
+   try {
+      const response = await updateUserProfile(userData)
+      return response.data.user
+   } catch (error) {
+      return rejectWithValue(handleApiError(error, '프로필 업데이트'))
    }
 })
 
@@ -47,11 +67,20 @@ const authSlice = createSlice({
    name: 'auth',
    initialState: {
       user: null,
-      isAuthenticated: false, // ▶ true: 로그인 | ▶ false: 로그아웃
+      isAuthenticated: false,
       loading: true,
       error: null,
+      loginHistory: [],
+      authData: {},
    },
-   reducers: {},
+   reducers: {
+      logout: (state) => {
+         state.isAuthenticated = false
+         state.authData = null
+         state.user = null
+         localStorage.removeItem('user')
+      },
+   },
    extraReducers: (builder) => {
       // 회원가입
       builder
@@ -77,11 +106,33 @@ const authSlice = createSlice({
          .addCase(loginUserThunk.fulfilled, (state, action) => {
             state.loading = false
             state.isAuthenticated = true
-            state.user = action.payload
+            state.user = action.payload.user
+            state.authData = action.payload.authData
+            localStorage.setItem('user', JSON.stringify(action.payload.user))
          })
          .addCase(loginUserThunk.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload
+         })
+
+      // oauth로그인
+      builder
+         .addCase(oauthLoginUserThunk.pending, (state) => {
+            state.loading = true
+            state.error = null
+         })
+         .addCase(oauthLoginUserThunk.fulfilled, (state, action) => {
+            state.loading = false
+            state.isAuthenticated = true
+            state.user = action.payload.user
+            state.authData = action.payload.authData
+            state.token = action.payload.token
+            localStorage.setItem('user', JSON.stringify(action.payload.user))
+         })
+         .addCase(oauthLoginUserThunk.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload
+            localStorage.removeItem('persist:auth')
          })
 
       //로그아웃
@@ -93,7 +144,13 @@ const authSlice = createSlice({
          .addCase(logoutUserThunk.fulfilled, (state, action) => {
             state.loading = false
             state.isAuthenticated = false
-            state.user = null // 로그아웃 => 유저 정보 초기화
+            state.user = null
+            state.authData = null
+            
+            // 로컬 스토리지 데이터 완전히 제거
+            localStorage.removeItem('persist:auth')
+            localStorage.removeItem('user')
+            localStorage.removeItem('loginType')
          })
          .addCase(logoutUserThunk.rejected, (state, action) => {
             state.loading = false
@@ -108,32 +165,66 @@ const authSlice = createSlice({
          })
          .addCase(checkAuthStatusThunk.fulfilled, (state, action) => {
             state.loading = false
+
+            // 네트워크 오류로 인한 특수 케이스 처리
+            if (action.payload.error === 'network_error') {
+               // 네트워크 오류 시 현재 상태 유지
+               console.log('Network error detected, maintaining current auth state')
+               return
+            }
+
+            if (!action.payload.user) {
+               state.isAuthenticated = false
+               state.user = null
+               localStorage.removeItem('persist:auth')
+               return
+            }
+
             state.isAuthenticated = action.payload.isAuthenticated
             state.user = action.payload.user || null
+
+            // 인증 상태가 확인되면 로컬 스토리지에 loginType 저장
+            if (action.payload.isAuthenticated) {
+               localStorage.setItem('loginType', 'local')
+            }
          })
          .addCase(checkAuthStatusThunk.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload
+
+            // 네트워크 오류인 경우 현재 상태 유지
+            if (action.payload && action.payload.error === 'network_error') {
+               console.log('Network error in rejected case, maintaining current auth state')
+               return
+            }
+
             state.isAuthenticated = false
             state.user = null
+            localStorage.removeItem('persist:auth')
          })
 
-      // 카카오 로그인
+      // 프로필 업데이트
       builder
-         .addCase(kakaoLoginThunk.pending, (state) => {
+         .addCase(updateProfileThunk.pending, (state) => {
             state.loading = true
             state.error = null
          })
-         .addCase(kakaoLoginThunk.fulfilled, (state, action) => {
+         .addCase(updateProfileThunk.fulfilled, (state, action) => {
             state.loading = false
-            state.isAuthenticated = true
-            state.user = action.payload.user
+            state.user = action.payload
+            if (state.authData) {
+               state.authData = {
+                  ...state.authData,
+                  nick: action.payload.nick,
+               }
+            }
          })
-         .addCase(kakaoLoginThunk.rejected, (state, action) => {
+         .addCase(updateProfileThunk.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload
          })
    },
 })
 
+export const { logout } = authSlice.actions
 export default authSlice.reducer

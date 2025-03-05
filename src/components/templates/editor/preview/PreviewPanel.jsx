@@ -21,6 +21,10 @@ import AccountSection from './sections/AccountSection'
 import GallerySection from './sections/GallerySection'
 import SettingSection from './sections/SettingSection'
 
+import PreviewLoading from './PreviewLoading'
+
+import { useSelector } from 'react-redux'
+
 // dayjs 한글 설정
 dayjs.locale('ko')
 
@@ -28,7 +32,6 @@ const PreviewContent = styled(motion.div)(({ theme, backgroundColor }) => ({
    width: '100%',
    height: '100%',
    overflowY: 'auto',
-   padding: '24px',
    WebkitOverflowScrolling: 'touch', // iOS에서 부드러운 스크롤 적용
    backgroundColor: backgroundColor || '#FFFFFF',
    position: 'relative',
@@ -78,7 +81,7 @@ const InvitationType = {
          },
       },
    },
-   newYear: {
+   newyear: {
       galleryTitle: '지난 해 추억을 담은 갤러리',
       icon: <CelebrationIcon />,
       color: '#FFD700',
@@ -111,7 +114,7 @@ const InvitationType = {
          },
       },
    },
-   birthday: {
+   gohyeyon: {
       galleryTitle: '고희연 갤러리',
       icon: <CakeIcon />,
       color: '#9370DB',
@@ -181,18 +184,30 @@ const InvitationType = {
 
 const invitationTypes = [
    { id: 'wedding', label: '청첩장', icon: <FavoriteIcon />, format: '(신랑), (신부)의 결혼식이 (D-Day)일 남았습니다.' },
-   { id: 'newYear', label: '연하장', icon: <CelebrationIcon />, format: '새해 첫날까지 (D-Day)일 남았습니다.' },
-   { id: 'birthday', label: '고희연', icon: <CakeIcon />, format: '(이름)님의 칠순잔치가 (D-Day)일 남았습니다.' },
+   { id: 'newyear', label: '연하장', icon: <CelebrationIcon />, format: '새해 첫날까지 (D-Day)일 남았습니다.' },
+   { id: 'gohyeyon', label: '고희연', icon: <CakeIcon />, format: '(이름)님의 칠순잔치가 (D-Day)일 남았습니다.' },
    { id: 'invitation', label: '초빙장', icon: <EmojiEventsIcon />, format: '특별한 행사가 (D-Day)일 남았습니다.' },
 ]
 
-const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
-   const [loadedImages, setLoadedImages] = useState(new Set())
-   const [selectedType, setSelectedType] = useState('wedding')
+const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange, previewState, onSettingComplete, onInvitationClick }) => {
+   const { detail: template, status } = useSelector((state) => state.templates)
+
+   const [selectedType, setSelectedType] = useState(template?.data?.type || 'wedding')
    const [selectedImageIndex, setSelectedImageIndex] = useState(null)
-   const [showInvitation, setShowInvitation] = useState(false)
-   const [showSections, setShowSections] = useState(false)
-   const [sectionAnimationIndex, setSectionAnimationIndex] = useState(-1)
+
+   // 외부에서 상태를 받아오는 경우 내부 상태 대신 사용
+   const [showInvitation, setShowInvitation] = useState(previewState?.showInvitation ?? false)
+   const [showSections, setShowSections] = useState(previewState?.showSections ?? false)
+   const [sectionAnimationIndex, setSectionAnimationIndex] = useState(previewState?.sectionAnimationIndex ?? -1)
+
+   // 외부 상태가 변경되면 내부 상태도 업데이트
+   useEffect(() => {
+      if (previewState) {
+         setShowInvitation(previewState.showInvitation)
+         setShowSections(previewState.showSections)
+         setSectionAnimationIndex(previewState.sectionAnimationIndex)
+      }
+   }, [previewState])
 
    const sectionOrder = useMemo(() => ['title', 'profile', 'greeting', 'datetime', 'location', 'account', 'gallery'], [])
 
@@ -201,7 +216,7 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
       setting: { animation: null, imgs: [] },
       profiles: [],
       showProfiles: false,
-      type: 'wedding',
+      type: template?.data?.type || 'wedding',
       title: '',
       greeting: '',
       dateTime: null,
@@ -217,11 +232,11 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
       images: [],
       accounts: [],
       showAccounts: false,
-      backgroundColor: '#ffffff',
-      primaryColor: '#000000',
-      secondaryColor: '#666666',
-      fontFamily: 'Malgun Gothic',
-      animation: null,
+      backgroundColor: template?.data?.backgroundColor || '#ffffff',
+      primaryColor: template?.data?.primaryColor || '#000000',
+      secondaryColor: template?.data?.secondaryColor || '#666666',
+      fontFamily: template?.data?.fontFamily || 'Malgun Gothic',
+      animation: template?.data?.animation || null,
    }
 
    // formData와 defaultFormData 병합
@@ -235,6 +250,12 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
 
    // SettingSection 완료 핸들러
    const handleSettingComplete = useCallback(() => {
+      // 외부에서 제공된 핸들러가 있으면 사용
+      if (onSettingComplete) {
+         onSettingComplete()
+         return
+      }
+
       // 직접 상태를 변경
       setShowInvitation(true)
       setShowSections(false)
@@ -246,7 +267,7 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
          showSections: false,
          sectionAnimationIndex: -1,
       })
-   }, [onPreviewStateChange])
+   }, [onPreviewStateChange, onSettingComplete])
 
    const startSectionAnimations = useCallback(() => {
       let currentIndex = 0
@@ -270,6 +291,12 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
    }, [onPreviewStateChange, sectionOrder])
 
    const handleInvitationClick = useCallback(() => {
+      // 외부에서 제공된 핸들러가 있으면 사용
+      if (onInvitationClick) {
+         onInvitationClick()
+         return
+      }
+
       // 로컬 상태 변경
       setShowInvitation(false)
       setShowSections(true)
@@ -286,16 +313,22 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
       setTimeout(() => {
          startSectionAnimations()
       }, 300)
-   }, [onPreviewStateChange, startSectionAnimations])
+   }, [onPreviewStateChange, startSectionAnimations, onInvitationClick])
+
+   // useEffect(() => {
+   //    // formData.type이 있으면 해당 값을 사용, 없으면 프로필의 type 확인
+   //    if (mergedFormData.type) {
+   //       setSelectedType(mergedFormData.type)
+   //    } else if (mergedFormData.profiles?.[0]?.type) {
+   //       setSelectedType(mergedFormData.profiles[0].type)
+   //    }
+   // }, [mergedFormData.type, mergedFormData.profiles])
 
    useEffect(() => {
-      // formData.type이 있으면 해당 값을 사용, 없으면 프로필의 type 확인
-      if (mergedFormData.type) {
-         setSelectedType(mergedFormData.type)
-      } else if (mergedFormData.profiles?.[0]?.type) {
-         setSelectedType(mergedFormData.profiles[0].type)
+      if (template && template.data) {
+         setSelectedType(template?.data?.type)
       }
-   }, [mergedFormData.type, mergedFormData.profiles])
+   }, [template])
 
    // selectedType 대신 mergedFormData.type을 우선적으로 사용
    const type = mergedFormData.type || selectedType
@@ -324,19 +357,19 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
    // 텍스트 스타일 메모이제이션
    const textStyle = useMemo(
       () => ({
-         color: theme?.secondaryColor || typeStyle.color,
-         fontFamily: combinedStyle.fontFamily,
+         color: theme?.secondaryColor || typeStyle?.color,
+         fontFamily: combinedStyle?.fontFamily || typeStyle?.fontFamily,
       }),
-      [theme?.secondaryColor, combinedStyle.fontFamily, typeStyle.color]
+      [theme?.secondaryColor, combinedStyle?.fontFamily, typeStyle?.color]
    )
 
    // 섹션 스타일 메모이제이션
    const sectionStyle = useMemo(
       () => ({
          backgroundColor: `${theme?.backgroundColor || '#ffffff'}dd`,
-         borderColor: `${theme?.primaryColor || typeStyle.color}15`,
+         borderColor: `${theme?.primaryColor || typeStyle?.color}15`,
       }),
-      [theme?.backgroundColor, theme?.primaryColor, typeStyle.color]
+      [theme?.backgroundColor, theme?.primaryColor, typeStyle?.color]
    )
 
    // 프로필 섹션 스타일 메모이제이션
@@ -390,8 +423,8 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
       const type = mergedFormData.type || 'wedding'
       const labels = {
          wedding: ['신랑측', '신부측'],
-         newYear: ['보내는 분'],
-         birthday: ['자녀대표'],
+         newyear: ['보내는 분'],
+         gohyeyon: ['자녀대표'],
          invitation: ['대표계좌'],
       }
       return labels[type][index] || labels[type][0]
@@ -410,11 +443,11 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
          // 동적으로 포맷 문자열 치환
          if (type === 'wedding') {
             format = format.replace('(신랑)', mergedFormData?.profiles?.[0]?.name || '').replace('(신부)', mergedFormData?.profiles?.[1]?.name || '')
-         } else if (type === 'birthday') {
+         } else if (type === 'gohyeyon') {
             format = format.replace('(이름)', mergedFormData?.profiles?.[0]?.name || '')
          } else if (type === 'invitation') {
             format = format.replace('(이름)', mergedFormData?.profiles?.[0]?.name || '')
-         } else if (type === 'newYear') {
+         } else if (type === 'newyear') {
             format = format.replace('(이름)', mergedFormData?.profiles?.[0]?.name || '')
          }
 
@@ -533,6 +566,16 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
       },
    }
 
+   // 로딩 상태 처리
+   if (status === 'loading') {
+      return <PreviewLoading />
+   }
+
+   // template이 없는 경우 처리
+   if (!template && status === 'succeeded') {
+      return <Box>템플릿을 찾을 수 없습니다.</Box>
+   }
+
    // 조건부 렌더링 로직
    if (!isDrawer) {
       return (
@@ -565,11 +608,11 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                            layout={mergedFormData.galleryLayout}
                            style={galleryStyle}
                            typeStyle={typeStyle}
-                           selectedImageIndex={selectedImageIndex}
-                           onImageClick={handleImageClick}
-                           onCloseModal={handleCloseModal}
-                           onPrevImage={handlePrevImage}
-                           onNextImage={handleNextImage}
+                           // selectedImageIndex={selectedImageIndex}
+                           // onImageClick={handleImageClick}
+                           // onCloseModal={handleCloseModal}
+                           // onPrevImage={handlePrevImage}
+                           // onNextImage={handleNextImage}
                            combinedStyle={combinedStyle}
                         />
                      )
@@ -610,10 +653,10 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                   <motion.div
                      key="invitation"
                      onClick={handleInvitationClick}
-                     initial={{ opacity: 0 }}
-                     animate={{ opacity: 1 }}
+                     initial={{ opacity: 0, scale: 0.9 }}
+                     animate={{ opacity: 1, scale: 1 }}
                      exit={{ opacity: 0 }}
-                     transition={{ duration: 0.3 }}
+                     transition={{ duration: 0.5, ease: 'easeOut' }}
                      style={{
                         width: '100%',
                         height: '100%',
@@ -621,15 +664,61 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                         position: 'absolute',
                         top: 0,
                         left: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '20px',
+                        textAlign: 'center',
+                        background: 'rgba(0, 0, 0, 0.5)',
+                        color: 'white',
+                        padding: '20px',
+                        borderRadius: '8px',
                      }}
                   >
-                     <img
-                        src="/images/templates/sample00001.png"
+                     <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}>
+                        <Typography variant="h4" sx={{ fontWeight: 'bold', textShadow: '0px 2px 10px rgba(0,0,0,0.5)' }}>
+                           특별한 순간에 초대합니다
+                        </Typography>
+                        <Typography variant="subtitle1" sx={{ mt: 1, textShadow: '0px 1px 5px rgba(0,0,0,0.3)' }}>
+                           함께하는 이 순간이 더욱 빛나길 바랍니다.
+                        </Typography>
+                     </motion.div>
+
+                     <motion.button
+                        whileHover={{ scale: 1.1, backgroundColor: '#FFD700', color: '#333' }}
+                        whileTap={{ scale: 0.9 }}
+                        style={{
+                           padding: '12px 24px',
+                           fontSize: '18px',
+                           fontWeight: 'bold',
+                           backgroundColor: 'white',
+                           color: 'black',
+                           border: 'none',
+                           borderRadius: '30px',
+                           cursor: 'pointer',
+                           boxShadow: '0px 4px 10px rgba(0,0,0,0.3)',
+                        }}
+                     >
+                        초대장 확인하기
+                     </motion.button>
+
+                     {/* 썸네일 사진 */}
+                     <motion.img
+                        src={template?.thumbnail}
                         alt="Invitation"
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.8, ease: 'easeOut' }}
                         style={{
                            width: '100%',
                            height: '100%',
                            objectFit: 'contain',
+                           position: 'absolute',
+                           top: 0,
+                           left: 0,
+                           borderRadius: '8px',
+                           zIndex: -1,
                         }}
                      />
                   </motion.div>
@@ -648,6 +737,7 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '20px',
+                        padding: '24px',
                      }}
                   >
                      {sectionOrder.map((sectionId, index) => (
@@ -671,10 +761,10 @@ const PreviewPanel = ({ formData, theme, isDrawer, onPreviewStateChange }) => {
                                        style={galleryStyle}
                                        typeStyle={typeStyle}
                                        selectedImageIndex={selectedImageIndex}
-                                       onImageClick={handleImageClick}
-                                       onCloseModal={handleCloseModal}
-                                       onPrevImage={handlePrevImage}
-                                       onNextImage={handleNextImage}
+                                       // onImageClick={handleImageClick}
+                                       // onCloseModal={handleCloseModal}
+                                       // onPrevImage={handlePrevImage}
+                                       // onNextImage={handleNextImage}
                                        combinedStyle={combinedStyle}
                                     />
                                  )}

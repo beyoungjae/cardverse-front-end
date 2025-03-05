@@ -33,11 +33,6 @@ export const Title = styled(Typography)(({ theme }) => ({
    display: 'flex',
    alignItems: 'center',
    gap: '8px',
-   // border: '1px solid blue',
-
-   //    ...bps(theme, {
-   //       1600: { fontSize: '1.4rem' },
-   //    }),
 
    [theme.breakpoints.down('lg')]: { fontSize: '1.3rem' },
    [theme.breakpoints.down('md')]: {},
@@ -51,13 +46,11 @@ export const ButtonBox = styled(Box)(({ theme }) => ({
    display: 'flex',
    justifyContent: 'space-between',
    gap: '16px',
-   // border: '1px solid red',
    alignItems: 'stretch',
 }))
 
 export const StyledButton = styled(Button)(({ theme }) => ({
    border: '1px solid #dddddd',
-   // outline: '1px solid #dddddd',
    width: '100%',
    padding: '10px 0',
    height: 'auto',
@@ -79,8 +72,6 @@ export const StyledButton = styled(Button)(({ theme }) => ({
 }))
 
 export const Section = styled(Box)(({ theme }) => ({
-   // backgroundColor: 'hotpink',
-   // padding: '2px',
    display: 'flex',
    gap: '8px',
    flexDirection: 'column',
@@ -91,16 +82,12 @@ export const StyledBox = styled(Box)(({ theme }) => ({
    justifyContent: 'space-between',
    alignItems: 'stretch',
    gap: '8px',
-   // padding: '4px',
 }))
 
 export const StyledText = styled(Typography)(({ theme }) => ({
    width: '100%',
    textAlign: 'start',
-   // padding: '5px 16px',
-   // boxSizing: 'border-box',
    minWidth: 0,
-   // border: '1px solid black',
    fontSize: '1rem',
 
    '&.title': {
@@ -129,7 +116,6 @@ export const InputField = styled(TextField, {
    height: 'auto',
    display: 'flex',
    flex: 4,
-   // border: '1px solid #dddddd',
    borderRadius: '6px',
    outline: 'none',
 
@@ -137,13 +123,12 @@ export const InputField = styled(TextField, {
 
    '& .MuiInputLabel-root': {
       fontSize: '1rem',
-      // top: '-5px',
 
       ...bps(theme, {
          480: { top: '-5px' },
       }),
-   }, // ✅ 기본 상태
-   '& .MuiInputLabel-shrink': { fontSize: '1rem', top: '1px' }, // ✅ 포커스 시
+   }, // 기본 상태
+   '& .MuiInputLabel-shrink': { fontSize: '1rem', top: '1px' }, // 포커스 시
    '& .MuiInputBase-root': { border: 'none' },
 
    '& .MuiInputBase-input': {
@@ -172,23 +157,12 @@ export const InputField = styled(TextField, {
          600: { padding: '12px 10px' },
          480: { fontSize: '0.9rem', padding: '12px 10px' },
       }),
-      // [theme.breakpoints.down('sm')]: { padding: '8px' },
    },
 
    '& .MuiInputBase-input.Mui-disabled': {
-      // color: '#666',
-      // '-webkit-text-fill-color': '#666',
       cursor: 'not-allowed',
       backgroundColor: '#f5f5f5',
    },
-
-   // '& .MuiOutlinedInput-notchedOutline': {
-   // border: 'none', // ✅ `outlined` 테두리 제거
-   // },
-   // '&:hover .MuiOutlinedInput-notchedOutline': { outline: '1px solid white' }, //
-   // '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-   // border: $isDisabled ? 'none' : 'none',
-   // },
 }))
 
 export const StyledAlert = styled(Alert)(({ theme }) => ({

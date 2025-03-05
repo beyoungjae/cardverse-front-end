@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { useFormContext, Controller } from 'react-hook-form'
 import { motion } from 'framer-motion'
 import { Box, Button, Typography, Select, MenuItem, IconButton, LinearProgress, Grid, Tooltip } from '@mui/material'
@@ -8,6 +8,7 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { SectionContainer, SectionTitle, TitleText, IconButtonWrapper, fadeInUp, COLORS } from '../styles/commonStyles'
 import useImageUpload from '../hooks/useImageUpload'
+import { useSelector } from 'react-redux'
 
 // 사용할 애니메이션 옵션
 const animationOptions = [
@@ -16,14 +17,8 @@ const animationOptions = [
    { value: 'none', label: '없음' },
 ]
 
-// 샘플 이미지
-const sampleImages = [
-   { file: null, url: '/images/samples/wedding-sample1.png', name: 'wedding-sample1.png' },
-   { file: null, url: '/images/samples/wedding-sample2.png', name: 'wedding-sample2.png' },
-   { file: null, url: '/images/samples/wedding-sample3.png', name: 'wedding-sample3.png' },
-]
-
 const SettingSection = () => {
+   const { detail: template, status } = useSelector((state) => state.templates)
    const { control, watch, setValue } = useFormContext()
    const [uploadProgress, setUploadProgress] = useState(0)
    const setting = watch('setting') || { animation: 'fade', images: [] }
@@ -31,19 +26,31 @@ const SettingSection = () => {
    const animationType = setting.animation || 'fade'
    const { uploadImage, deleteUploadedImage, uploadMultipleImages } = useImageUpload()
 
+   // 샘플 이미지 설정을 template 데이터 유무에 따라 처리
+   const sampleImages = useMemo(() => {
+      if (template?.detailImages) {
+         return template.detailImages.slice(0, 3).map((url, index) => ({
+            file: null,
+            url,
+            name: `template-image-${index + 1}.png`,
+         }))
+      }
+      return []
+   }, [template])
+
    useEffect(() => {
-      if (!sessionStorage.getItem('userInitialized')) {
+      if (!sessionStorage.getItem('userInitialized') && template) {
          setValue(
             'setting',
             {
                images: sampleImages,
-               animation: 'fade',
+               animation: template.data?.animation || 'fade',
             },
             { shouldValidate: true }
          )
          sessionStorage.setItem('userInitialized', 'true')
       }
-   }, [setValue])
+   }, [setValue, template, sampleImages])
 
    const handleFileChange = useCallback(
       async (e) => {
@@ -58,6 +65,10 @@ const SettingSection = () => {
             const uploadPromises = files.map((file) => uploadImage(file, 'setting'))
             const uploadedImages = await Promise.all(uploadPromises)
             setUploadProgress(100)
+
+            setTimeout(() => {
+               setUploadProgress(0)
+            }, 1000)
 
             const validImages = uploadedImages.filter(Boolean)
             if (validImages.length > 0) {
@@ -103,10 +114,10 @@ const SettingSection = () => {
          <SectionTitle>
             <TitleText>
                <AutoFixHighIcon className="icon" />
-               <Box className="title">초기 이미지 & 애니메이션 설정</Box>
+               <Box className="title">인트로 이미지 & 애니메이션 설정</Box>
             </TitleText>
             <IconButtonWrapper>
-               <Tooltip title="초기 이미지 초기화">
+               <Tooltip title="인트로 이미지 기본설정">
                   <RestartAltIcon onClick={handleReset} />
                </Tooltip>
             </IconButtonWrapper>

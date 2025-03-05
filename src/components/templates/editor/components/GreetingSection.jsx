@@ -36,7 +36,7 @@ const greetingTemplates = {
          content: '서로가 서로에게\n가장 소중한 사람이 되었기에\n함께하길 약속했습니다.\n\n저희의 행복한 순간을\n함께 나누어주시면 좋겠습니다.',
       },
    ],
-   newYear: [
+   newyear: [
       {
          title: '새해 인사',
          content: '한 해의 끝자락에서\n지난 시간을 되돌아보며\n새로운 희망을 그려봅니다.\n\n다가오는 새해에도\n늘 건강하시고 행복하시길 바라며\n따뜻한 마음을 전합니다.',
@@ -50,7 +50,7 @@ const greetingTemplates = {
          content: '새로운 시작과 함께\n더 큰 꿈과 소망이 이뤄지길 바랍니다.\n\n한 해 동안 보내주신 격려에\n진심으로 감사드리며\n앞으로도 많은 관심 부탁드립니다.',
       },
    ],
-   birthday: [
+   gohyeyon: [
       {
          title: '감사와 축하',
          content: '칠순을 맞이하여\n그동안 베풀어주신 은혜에 감사드리며\n앞으로도 건강하고 행복한 날들이\n가득하시기를 기원합니다.\n\n오셔서 축하해 주시면\n더없는 기쁨이 되겠습니다.',
@@ -82,8 +82,8 @@ const greetingTemplates = {
 
 const invitationTypes = [
    { id: 'wedding', label: '청첩장', icon: <FavoriteIcon /> },
-   { id: 'newYear', label: '연하장', icon: <CelebrationIcon /> },
-   { id: 'birthday', label: '고희연', icon: <CakeIcon /> },
+   { id: 'newyear', label: '연하장', icon: <CelebrationIcon /> },
+   { id: 'gohyeyon', label: '고희연', icon: <CakeIcon /> },
    { id: 'invitation', label: '초빙장', icon: <EmojiEventsIcon /> },
 ]
 

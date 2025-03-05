@@ -1,13 +1,13 @@
 import { Box, Typography, FormControl, OutlinedInput, InputAdornment, Tab } from '@mui/material'
-import TabContext from '@mui/lab/TabContext'
-import TabList from '@mui/lab/TabList'
-import TabPanel from '@mui/lab/TabPanel'
+import { TabContext, TabList, TabPanel } from '@mui/lab'
 
 import { styled } from '@mui/material/styles'
 import SearchIcon from '@mui/icons-material/Search'
 import Top4Card from '../components/customer/Top4Card'
 import Board from '../components/customer/Board'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchPostsThunk } from '../features/postSlice'
 
 // 고객센터 페이지 컨테이너
 const CustomerContainer = styled(Box)(({ theme }) => ({
@@ -19,18 +19,24 @@ const CustomerContainer = styled(Box)(({ theme }) => ({
 // 배너 이미지
 const Bannerimg = styled(Box)(() => ({
    width: '100%',
-   height: '212px',
+   height: '240px',
    backgroundImage: "url('/images/home/login-background.png')",
    backgroundSize: 'cover',
    backgroundPosition: 'center',
    backgroundRepeat: 'no-repeat',
+   position: 'relative',
+   display: 'flex',
+   flexDirection: 'column',
 }))
 
 // 배너 타이틀
 const BannerTitle = styled(Typography)(({ theme }) => ({
    ...theme.typography.h1,
+   position: 'absolute',
+   top: '50%',
+   left: '50%',
    textAlign: 'center',
-   lineHeight: '185px',
+   transform: 'translateX(-50%) translateY(-50%)',
    color: theme.palette.text.primary,
    [theme.bps.md]: {
       fontSize: '2rem',
@@ -42,7 +48,11 @@ const BannerTitle = styled(Typography)(({ theme }) => ({
 
 // 검색창
 const SearchBox = styled(FormControl)(({ theme }) => ({
+   position: 'absolute',
+   bottom: '-25px',
+   left: '50%',
    width: '581px',
+   transform: 'translateX(-50%) ',
    backgroundColor: theme.palette.background.default,
    margin: '0 auto',
    display: 'flex',
@@ -96,7 +106,7 @@ const CustomTab = styled(Tab)(({ theme }) => ({
    color: '#A4A4A4',
    padding: '8px 16px',
    '&.Mui-selected': {
-      color: 'black',
+      color: '#000',
    },
    [theme.bps.md]: {
       fontSize: '1.3rem',
@@ -106,7 +116,7 @@ const CustomTab = styled(Tab)(({ theme }) => ({
    },
 }))
 
-//바텀 이미지
+//바텀 컬러
 const BottomImg = styled('div')(({ theme }) => ({
    width: '100%',
    height: '100px',
@@ -369,7 +379,14 @@ const dummyQNA = [
 ]
 
 const CustomerPage = () => {
+   const dispatch = useDispatch()
    const [value, setValue] = useState('notice')
+   const { posts } = useSelector((state) => state.posts)
+   console.log(posts)
+
+   useEffect(() => {
+      dispatch(fetchPostsThunk({ types: ['qna', 'notice'], limit: 10 }))
+   }, [dispatch])
 
    const handleChange = (event, newValue) => {
       setValue(newValue)
@@ -401,17 +418,17 @@ const CustomerPage = () => {
             {/* 공지사항, Q&A 탭 */}
             <Box sx={{ width: '100%', typography: 'body1', marginTop: '100px' }}>
                <TabContext value={value}>
-                  <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                  <Box sx={{ borderBottom: 1, borderColor: '#585858' }}>
                      <TabList onChange={handleChange} aria-label="lab API tabs example">
                         <CustomTab label="NOTICE" value="notice" />
                         <CustomTab label="Q&A" value="qna" />
                      </TabList>
                   </Box>
                   <TabPanel value="notice" sx={{ padding: 0 }}>
-                     <Board result={dummyNotice} />
+                     <Board result={posts?.notice || []} />
                   </TabPanel>
                   <TabPanel value="qna" sx={{ padding: 0 }}>
-                     <Board result={dummyQNA} />
+                     <Board result={posts.qna} />
                   </TabPanel>
                </TabContext>
             </Box>

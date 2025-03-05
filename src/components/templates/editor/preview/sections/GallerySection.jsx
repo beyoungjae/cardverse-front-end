@@ -183,7 +183,7 @@ const GallerySection = ({ images, layout, style, typeStyle, combinedStyle }) => 
             {layout === 'polaroid' ? renderPolaroid() : renderGridMasonry()}
          </Box>
 
-         <Dialog
+         {/* <Dialog
             open={isModalOpen}
             onClose={handleModalClose}
             maxWidth="lg"
@@ -250,7 +250,7 @@ const GallerySection = ({ images, layout, style, typeStyle, combinedStyle }) => 
                   }}
                />
             </DialogContent>
-         </Dialog>
+         </Dialog> */}
       </Section>
    )
 }

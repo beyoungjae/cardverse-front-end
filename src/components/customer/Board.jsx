@@ -1,59 +1,60 @@
 import React, { useState } from 'react'
 import { Box, Typography, Pagination } from '@mui/material'
 import { styled } from '@mui/material/styles'
+import LockIcon from '@mui/icons-material/Lock'
 
 // 보드 컨테이너
 const BoardContainer = styled(Box)(({ theme }) => ({
-   [theme.breakpoints.down('lg')]: {
+   [theme.bps.lg]: {
       fontSize: '1.3rem',
    },
-   [theme.breakpoints.down('md')]: {
+   [theme.bps.md]: {
       fontSize: '1.2rem',
    },
-   [theme.breakpoints.down('sm')]: {
+   [theme.bps.sm]: {
       fontSize: '1rem',
    },
 }))
 
 // 보드 아이템 컨테이너
 const BoardItemContainer = styled(Box)(({ theme }) => ({
-   borderBottom: `1px solid ${theme.palette.divider}`,
+   borderBottom: '1px solid #91a0a0',
 }))
 
 // 콘텐츠 박스
 const ContentBox = styled(Box)(({ theme, show }) => ({
    display: show ? 'block' : 'none',
    padding: '20px',
-   backgroundColor: '#FAFAFA',
+   borderTop: `1px solid #D9D9D9`,
 }))
 
 // 보드 타이틀
 const BoardTitle = styled(Box)(({ theme }) => ({
    fontWeight: 'bold',
    cursor: 'pointer',
-   paddingTop: '20px',
+   paddingTop: '15px',
    paddingLeft: '20px',
-   paddingBottom: '30px',
+   paddingBottom: '15px',
    alignItems: 'center',
-   [theme.breakpoints.down('lg')]: {
+   [theme.bps.lg]: {
       fontSize: '1.1rem',
    },
-   [theme.breakpoints.down('md')]: {
+   [theme.bps.md]: {
       fontSize: '1rem',
    },
-   [theme.breakpoints.down('sm')]: {
+   [theme.bps.sm]: {
       fontSize: '0.9rem',
    },
 }))
 
-// 페이지네이션 스타일
+// 페이지네이션
 const PaginationContent = styled(Box)(({ theme }) => ({
    display: 'flex',
    paddingTop: '50px',
    justifyContent: 'center',
    alignItems: 'center',
    textAlign: 'center',
-   [theme.breakpoints.down('sm')]: {
+   [theme.bps.sm]: {
       paddingTop: '30px',
    },
 }))
@@ -79,12 +80,14 @@ const Board = ({ result }) => {
       <BoardContainer>
          {currentItems.map((item) => (
             <BoardItemContainer key={item.id}>
-               <BoardTitle>
-                  <Typography variant="h6" onClick={() => handleTitleClick(item.id)} sx={{ fontSize: '15px' }}>
+               <BoardTitle onClick={item.isPrivate ? undefined : () => handleTitleClick(item.id)} sx={{ cursor: item.isPrivate ? 'not-allowed' : 'pointer' }}>
+                  {/* <BoardTitle onClick={() => handleTitleClick(item.id)}> */}
+                  <Typography variant="h6" sx={{ fontSize: '15px', display: 'flex', alignItems: 'center' }}>
                      {item.title}
+                     {item.isPrivate ? <LockIcon /> : undefined}
                   </Typography>
                </BoardTitle>
-               <ContentBox show={openItemId === item.id}>
+               <ContentBox show={openItemId === item.id ? 'true' : undefined}>
                   <Typography variant="body2">{item.content} </Typography>
                </ContentBox>
             </BoardItemContainer>
@@ -92,7 +95,7 @@ const Board = ({ result }) => {
 
          {/* 페이지네이션 */}
          <PaginationContent>
-            <Pagination count={Math.ceil(result.length / itemsPerPage)} page={currentPage} onChange={handlePageChange} shape="rounded" color="#EEEEEE" />
+            <Pagination count={Math.ceil(result.length / itemsPerPage)} page={currentPage} onChange={handlePageChange} color="primary" />
          </PaginationContent>
       </BoardContainer>
    )

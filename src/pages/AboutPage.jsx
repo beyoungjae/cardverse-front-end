@@ -53,7 +53,7 @@ const HeroTitle = styled(Typography)(({ theme }) => ({
    ...theme.typography.h1,
    fontSize: '4.5rem',
    marginBottom: '2rem',
-   color: theme.palette.text.primary,
+   color: '#eee',
    fontWeight: 600,
    [theme.breakpoints.down('lg')]: {
       fontSize: '3.5rem',

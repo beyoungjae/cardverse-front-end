@@ -27,7 +27,7 @@ const invitationTypes = [
       ],
    },
    {
-      id: 'newYear',
+      id: 'newyear',
       label: '연하장',
       icon: <CelebrationIcon />,
       title: '새해 선물 전하실 곳',
@@ -35,7 +35,7 @@ const invitationTypes = [
       accounts: [{ label: '보내는 분', placeholder: '계좌번호를 입력해주세요' }],
    },
    {
-      id: 'birthday',
+      id: 'gohyeyon',
       label: '고희연',
       icon: <CakeIcon />,
       title: '축하의 마음 전하실 곳',
@@ -95,8 +95,8 @@ const AccountSection = () => {
    const getAccountLabel = (index) => {
       const labels = {
          wedding: ['신랑측', '신부측'],
-         newYear: ['보내는 분'],
-         birthday: ['자녀대표'],
+         newyear: ['보내는 분'],
+         gohyeyon: ['자녀대표'],
          invitation: ['대표계좌'],
       }[selectedType]
       return labels[index] || labels[0]

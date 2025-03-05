@@ -57,11 +57,7 @@ const NewPasswordModal = () => {
             비밀번호 재설정
          </StyledText>
 
-         <TextField
-            label="이름" // Floating Label 적용
-            variant="outlined"
-            fullWidth
-         />
+         <TextField label="이름" variant="outlined" fullWidth />
 
          <Wrappepr>
             <IconBox>

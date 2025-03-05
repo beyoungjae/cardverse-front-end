@@ -1,34 +1,32 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { styled } from '@mui/material/styles'
-import { Box, Typography, Container } from '@mui/material'
-import { motion } from 'framer-motion'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Navigation } from 'swiper/modules'
-import { useLocation, useParams, useNavigate } from 'react-router-dom'
-
-import 'swiper/css'
-import 'swiper/css/navigation'
+import { Box, Typography, Container, Button } from '@mui/material'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { fetchTemplates } from '../../features/templateSlice'
 
 // 배너 영역
 const BannerContainer = styled(Box)(({ theme }) => ({
    width: '100%',
-   height: '400px',
+   height: '450px',
    position: 'relative',
    overflow: 'hidden',
-   backgroundColor: '#101010',
-   boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
+   backgroundColor: '#0a0a0a',
+   boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
    [theme.breakpoints.down('md')]: {
-      height: '300px',
+      height: '350px',
    },
    [theme.breakpoints.down('sm')]: {
-      height: '180px',
+      height: '220px',
    },
 }))
 
-const BannerImage = styled('img')(({ theme }) => ({
+const BannerImage = styled(motion.img)(({ theme }) => ({
    width: '100%',
    height: '100%',
    objectFit: 'cover',
+   filter: 'brightness(0.85)',
 }))
 
 const BannerOverlay = styled(Box)(({ theme }) => ({
@@ -37,351 +35,314 @@ const BannerOverlay = styled(Box)(({ theme }) => ({
    left: 0,
    width: '100%',
    height: '100%',
-   background: 'linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2))',
+   background: 'linear-gradient(135deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.5) 100%)',
    display: 'flex',
    alignItems: 'center',
    justifyContent: 'center',
+   flexDirection: 'column',
 }))
 
-const BannerTitle = styled(Typography)(({ theme }) => ({
+const BannerTitle = styled(motion.div)(({ theme }) => ({
    color: '#fff',
-   fontSize: '3.2rem',
-   fontWeight: theme.typography.fontWeightRegular,
-   letterSpacing: '0.35em',
+   fontSize: '3.8rem',
+   letterSpacing: '0.4em',
+   fontFamily: theme.typography.h1.fontFamily,
+   fontWeight: theme.typography.h1.fontWeight,
    textAlign: 'center',
-   textShadow: '3px 3px 6px rgba(0,0,0,0.4)',
+   textShadow: '3px 3px 8px rgba(0,0,0,0.5)',
    [theme.breakpoints.down('md')]: {
-      fontSize: '2.6rem',
+      fontSize: '3rem',
    },
    [theme.breakpoints.down('sm')]: {
-      fontSize: '1.9rem',
+      fontSize: '2.2rem',
    },
 }))
 
 // TOTAL 텍스트 (상단 카운트 영역)
-const TotalText = styled(Typography)(({ theme }) => ({
-   fontSize: '1rem',
+const TotalText = styled(motion.div)(({ theme }) => ({
+   fontSize: '1.1rem',
    color: theme.palette.text.secondary,
-   letterSpacing: '0.3rem',
-   lineHeight: '1.5',
-   marginBottom: '3rem',
+   letterSpacing: '0.35rem',
+   lineHeight: '1.6',
+   marginBottom: '4rem',
    textAlign: 'center',
    fontWeight: 500,
    position: 'relative',
+   paddingBottom: '20px',
    '&::after': {
       content: '""',
       position: 'absolute',
-      bottom: '-10px',
+      bottom: '0',
       left: '50%',
       transform: 'translateX(-50%)',
-      width: '40px',
-      height: '0.1px',
-      background: theme.palette.primary.light,
+      width: '60px',
+      height: '2px',
+      background: 'linear-gradient(to right, rgba(0,0,0,0.1), rgba(0,0,0,0.3), rgba(0,0,0,0.1))',
+      borderRadius: '2px',
    },
 }))
 
-// 탭 영역 및 좌우 네비게이션 버튼
+// 탭 영역
 const TabContainer = styled(Box)(({ theme }) => ({
    position: 'relative',
-   marginBottom: '4rem',
+   marginBottom: '5rem',
+   padding: '2.5rem 0',
+   maxWidth: '900px',
+   margin: '0 auto',
    '&::before': {
       content: '""',
       position: 'absolute',
       bottom: 0,
-      left: 0,
-      right: 0,
+      left: '15%',
+      right: '15%',
       height: '1px',
-      backgroundColor: '#ddd',
-   },
-   '.swiper': {
-      padding: '2rem 0',
-      maxWidth: '800px',
-      margin: '0 auto',
-      [theme.breakpoints.down('sm')]: {
-         maxWidth: '100%',
-         padding: '1rem 0',
-      },
-   },
-   '.swiper-button-prev, .swiper-button-next': {
-      width: '45px',
-      height: '45px',
-      borderRadius: '50%',
-      backgroundColor: '#fff',
-      border: '2px solid #ececec',
-      boxShadow: '0 3px 8px rgba(0,0,0,0.2)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      transition: 'all 0.3s ease',
-      cursor: 'pointer',
-   },
-   '.swiper-button-prev::after': {
-      content: '"⟨"',
-      fontSize: '1.4rem',
-      color: '#444',
-      fontWeight: 'bold',
-   },
-   '.swiper-button-next::after': {
-      content: '"⟩"',
-      fontSize: '1.4rem',
-      color: '#444',
-      fontWeight: 'bold',
-   },
-   '.swiper-button-prev:hover, .swiper-button-next:hover': {
-      transform: 'scale(1.15)',
-      background: 'linear-gradient(135deg, #fff, #f0f0f0)',
-   },
-   [theme.breakpoints.down('md')]: {
-      '.swiper-button-prev, .swiper-button-next': {
-         display: 'none',
-      },
+      backgroundColor: 'rgba(0,0,0,0.08)',
+      borderRadius: '1px',
    },
    [theme.breakpoints.down('sm')]: {
-      '.swiper-button-prev, .swiper-button-next': {
-         display: 'none',
-      },
+      maxWidth: '100%',
+      padding: '1.5rem 0',
+   },
+}))
+
+// 탭 메뉴 컨테이너
+const TabsWrapper = styled(Box)(({ theme }) => ({
+   display: 'flex',
+   justifyContent: 'center',
+   alignItems: 'center',
+   gap: theme.spacing(1),
+   position: 'relative',
+   [theme.breakpoints.down('sm')]: {
+      gap: theme.spacing(0.5),
    },
 }))
 
 // 탭 버튼 스타일
-const StyledTab = styled('div')(({ theme, $selected, $isAdjacent }) => ({
+const TabButton = styled(motion.button)(({ theme }) => ({
    position: 'relative',
-   padding: '1rem 2rem',
+   padding: '1.2rem 2.5rem',
    cursor: 'pointer',
-   fontSize: $selected ? '1.1rem' : $isAdjacent ? '1rem' : '0.9rem',
-   fontWeight: $selected ? '600' : '400',
-   color: $selected ? theme.palette.primary.main : $isAdjacent ? '#555' : '#777',
-   transition: 'all 0.3s ease',
+   background: 'transparent',
+   border: 'none',
+   outline: 'none',
    textAlign: 'center',
    whiteSpace: 'nowrap',
-   opacity: $selected ? 1 : $isAdjacent ? 0.9 : 0.8,
-   transform: $selected ? 'scale(1)' : $isAdjacent ? 'scale(0.95)' : 'scale(0.9)',
+   transition: 'all 0.3s ease',
    '&::after': {
       content: '""',
       position: 'absolute',
-      bottom: '-5px',
+      bottom: '-8px',
       left: '50%',
       transform: 'translateX(-50%)',
-      width: $selected ? '60%' : '0%',
-      height: '2px',
-      borderRadius: '2px',
-      background: `linear-gradient(to right, ${theme.palette.primary.light}, ${theme.palette.primary.dark})`,
-      transition: 'width 0.3s ease',
+      width: '0%',
+      height: '3px',
+      borderRadius: '3px',
+      background: `linear-gradient(to right, ${theme.palette.primary.light}, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
+      transition: 'width 0.4s cubic-bezier(0.25, 0.8, 0.5, 1), opacity 0.4s ease',
+      opacity: 0,
    },
-   '&:hover': {
-      backgroundColor: 'rgba(0, 0, 0, 0.05)',
+   '&.selected': {
+      color: theme.palette.primary.main,
+      fontSize: '1.2rem',
+      fontWeight: 600,
+      opacity: 1,
+      transform: 'scale(1.05)',
+      '&::after': {
+         width: '70%',
+         opacity: 1,
+         boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+      },
    },
    [theme.breakpoints.down('sm')]: {
-      padding: '0.8rem 1.5rem',
-      fontSize: $selected ? '0.95rem' : $isAdjacent ? '0.85rem' : '0.8rem',
+      padding: '1rem 1.8rem',
+      '&.selected': { fontSize: '1rem' },
+      '&:not(.selected)': { fontSize: '0.9rem' },
    },
 }))
 
 // 리스트 영역
-const ListSection = styled(Box)(({ theme }) => ({
+const ListSection = styled(motion.div)(({ theme }) => ({
    backgroundColor: '#ffffff',
-   padding: theme.spacing(4),
-   borderRadius: '16px',
-   boxShadow: '0 6px 20px rgba(0,0,0,0.12)',
-   marginTop: theme.spacing(4),
-   animation: 'fadeInUp 0.8s ease-out',
-   '@keyframes fadeInUp': {
-      '0%': { opacity: 0, transform: 'translateY(30px)' },
-      '100%': { opacity: 1, transform: 'translateY(0)' },
+   padding: theme.spacing(5),
+   borderRadius: '20px',
+   boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
+   marginTop: theme.spacing(5),
+   overflow: 'hidden',
+   [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing(3),
+      borderRadius: '16px',
    },
 }))
 
 // 템플릿 카드 및 이미지 영역
 const TemplateGrid = styled(Box)(({ theme }) => ({
    display: 'grid',
-   gridTemplateColumns: 'repeat(3, 1fr)',
-   gap: '2rem',
-   [theme.breakpoints.down('md')]: {
-      gridTemplateColumns: 'repeat(2, 1fr)',
-   },
+   gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+   gap: theme.spacing(4),
+   marginBottom: theme.spacing(5),
    [theme.breakpoints.down('sm')]: {
-      gridTemplateColumns: '1fr',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+      gap: theme.spacing(3),
    },
 }))
 
 const TemplateCard = styled(motion.div)(({ theme }) => ({
    position: 'relative',
+   borderRadius: theme.spacing(2.5),
+   overflow: 'hidden',
    cursor: 'pointer',
-   padding: '1rem',
-   borderRadius: '12px',
-   overflow: 'hidden',
-   backgroundColor: '#fff',
+   boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
+   display: 'block',
+   textAlign: 'left',
+}))
+
+const TemplateTitle = styled(Typography)(({ theme }) => ({
+   position: 'absolute',
+   bottom: theme.spacing(2.5),
+   left: theme.spacing(2.5),
+   textAlign: 'center',
+   fontSize: '1.25rem',
+   fontWeight: 600,
+   color: theme.palette.primary.main,
+   backgroundColor: 'rgba(255, 255, 255, 0.92)',
+   padding: theme.spacing(1.2, 2.2),
+   borderRadius: theme.spacing(1.5),
    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-   transition: 'all 0.05s ease',
+   backdropFilter: 'blur(4px)',
+   transition: 'all 0.3s ease',
    '&:hover': {
-      transform: 'translateY(-8px) scale(1.02)',
-      boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
-   },
-   '&:hover img': {
-      transform: 'scale(1.1)',
+      backgroundColor: 'rgba(255, 255, 255, 0.97)',
    },
 }))
 
-const ImageWrapper = styled(Box)(({ theme }) => ({
+const ImageWrapper = styled(Box)({
    position: 'relative',
-   width: '100%',
-   paddingTop: '100%',
+   paddingTop: '133.33%', // 3:4 비율
    overflow: 'hidden',
-}))
+})
 
-const TemplateImage = styled('img')(({ theme }) => ({
+const TemplateImage = styled(motion.img)({
    position: 'absolute',
    top: 0,
    left: 0,
    width: '100%',
    height: '100%',
-   objectFit: 'contain',
-   transition: 'transform 0.3s ease',
-}))
+   objectFit: 'cover',
+   transition: 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)',
+})
 
 const PriceInfo = styled(Typography)(({ theme }) => ({
-   marginTop: '0.5rem',
-   fontSize: '1rem',
-   fontWeight: 500,
-   textAlign: 'center',
-   color: theme.palette.text.primary,
+   position: 'absolute',
+   top: theme.spacing(2.5),
+   right: theme.spacing(2.5),
+   padding: theme.spacing(1, 2),
+   backgroundColor: 'rgba(255, 255, 255, 0.92)',
+   borderRadius: theme.spacing(1.5),
+   fontWeight: 600,
+   boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+   backdropFilter: 'blur(4px)',
 }))
 
 // More 버튼
-const MoreButton = styled(Box)(({ theme }) => ({
-   display: 'flex',
-   flexDirection: 'column',
-   alignItems: 'center',
-   cursor: 'pointer',
-   marginTop: theme.spacing(3),
-   color: theme.palette.primary.main,
-   fontWeight: 600,
+const MoreButton = styled(Button)(({ theme }) => ({
+   display: 'block',
+   margin: '3rem auto 1rem',
+   padding: theme.spacing(1.2, 5),
+   borderRadius: '30px',
+   fontSize: '1rem',
+   fontWeight: 500,
+   letterSpacing: '0.1em',
+   boxShadow: '0 6px 15px rgba(0,0,0,0.1)',
+   transition: 'all 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
    '& .arrow': {
-      animation: 'bounce 2s infinite',
-      fontSize: '1rem',
+      transition: 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
+      display: 'inline-block',
+      marginLeft: '8px',
    },
-   '@keyframes bounce': {
-      '0%, 20%, 50%, 80%, 100%': { transform: 'translateY(0)' },
-      '40%': { transform: 'translateY(-10px)' },
-      '60%': { transform: 'translateY(-5px)' },
+   '&:hover': {
+      transform: 'translateY(-3px)',
+      boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+   },
+   '&:hover .arrow': {
+      transform: 'translateY(-3px)',
    },
 }))
 
-// 템플릿 데이터 가라데이터
-const templates = {
-   invitation: [
-      { id: 1, image: '/images/templates/sample00007.png', price: '23,000' },
-      { id: 2, image: '/images/templates/sample00008.png', price: '15,000' },
-      { id: 3, image: '/images/templates/sample00009.png', price: '5,000' },
-      { id: 4, image: '/images/templates/sample00010.png', price: '10,000' },
-      { id: 5, image: '/images/templates/sample00006.png', price: '30,000' },
-   ],
-   wedding: [
-      { id: 7, image: '/images/templates/sample00001.png', price: '25,000' },
-      { id: 8, image: '/images/templates/sample00002.png', price: '20,000' },
-      { id: 9, image: '/images/templates/sample00003.png', price: '35,000' },
-      { id: 10, image: '/images/templates/sample00004.png', price: '10,000' },
-      { id: 11, image: '/images/templates/sample00005.png', price: '30,000' },
-      { id: 12, image: '/images/templates/sample00006.png', price: '45,000' },
-      { id: 13, image: '/images/templates/sample00007.png', price: '25,000' },
-      { id: 14, image: '/images/templates/sample00008.png', price: '20,000' },
-      { id: 15, image: '/images/templates/sample00009.png', price: '35,000' },
-   ],
-   newyear: [
-      { id: 10, image: '/images/templates/sample00010.png', price: '15,000' },
-      { id: 11, image: '/images/templates/sample00006.png', price: '18,000' },
-      { id: 12, image: '/images/templates/sample00007.png', price: '22,000' },
-   ],
-   gohyeon: [
-      { id: 13, image: '/images/templates/sample00007.png', price: '15,000' },
-      { id: 14, image: '/images/templates/sample00006.png', price: '18,000' },
-      { id: 15, image: '/images/templates/sample00009.png', price: '22,000' },
-   ],
-}
+const CreateTemplateButton = styled(Button)(({ theme }) => ({
+   minWidth: 220,
+   padding: theme.spacing(1.3, 4),
+   borderRadius: '30px',
+   fontSize: '1.05rem',
+   fontWeight: 500,
+   boxShadow: '0 8px 16px rgba(0,0,0,0.12)',
+   transition: 'all 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
+   '&:hover': {
+      transform: 'translateY(-4px)',
+      boxShadow: '0 12px 24px rgba(0,0,0,0.18)',
+   },
+}))
 
 const TemplateList = () => {
-   const location = useLocation()
    const { tab: urlTab } = useParams()
    const navigate = useNavigate()
+   const dispatch = useDispatch()
+   const { data: templates, status, error } = useSelector((state) => state.templates)
+   const { isAuthenticated, user } = useSelector((state) => state.auth)
+   const isAdmin = user?.role === 'admin'
 
    // 탭 순서 배열
    const tabOrder = ['wedding', 'invitation', 'newyear', 'gohyeon']
-   const L = tabOrder.length
    const initialTab = urlTab && tabOrder.includes(urlTab) ? urlTab : 'wedding'
 
-   // 상태 및 ref
+   // 상태
    const [currentTab, setCurrentTab] = useState(initialTab)
-   const [desiredTab, setDesiredTab] = useState(initialTab)
    const [showMore, setShowMore] = useState(false)
-   const swiperRef = useRef(null)
-   const animatingRef = useRef(false)
-
-   useLayoutEffect(() => {
-      const isMobile = window.innerWidth <= 768
-      window.scrollTo({ top: 0, left: 0, behavior: isMobile ? 'smooth' : 'auto' })
-   }, [location.pathname])
+   const [direction, setDirection] = useState(null)
+   const [isTransitioning, setIsTransitioning] = useState(false)
+   const [hoveredTab, setHoveredTab] = useState(null)
 
    useEffect(() => {
       if (urlTab && tabOrder.includes(urlTab)) {
          setCurrentTab(urlTab)
-         setDesiredTab(urlTab)
       }
-   }, [urlTab])
+   }, [urlTab, tabOrder])
+
+   useEffect(() => {
+      dispatch(fetchTemplates(currentTab))
+   }, [dispatch, currentTab])
 
    // 탭 변경 handler
    const handleTabChange = (newValue) => {
-      if (newValue !== desiredTab) {
-         setDesiredTab(newValue)
-         setShowMore(false)
-      }
-   }
+      if (currentTab === newValue || isTransitioning) return
 
-   // 좌우 버튼 handler
-   const handlePrevClick = () => {
+      // 방향 계산
       const currentIndex = tabOrder.indexOf(currentTab)
-      const prevIndex = (currentIndex - 1 + L) % L
-      setDesiredTab(tabOrder[prevIndex])
-   }
-   const handleNextClick = () => {
-      const currentIndex = tabOrder.indexOf(currentTab)
-      const nextIndex = (currentIndex + 1) % L
-      setDesiredTab(tabOrder[nextIndex])
-   }
+      const newIndex = tabOrder.indexOf(newValue)
 
-   useEffect(() => {
-      const swiper = swiperRef.current?.swiper
-      if (swiper && desiredTab !== currentTab && !animatingRef.current) {
-         const currentIndex = tabOrder.indexOf(currentTab)
-         const targetIndex = tabOrder.indexOf(desiredTab)
-         let diff = targetIndex - currentIndex
-         if (diff > L / 2) {
-            diff -= L
-         } else if (diff < -L / 2) {
-            diff += L
-         }
-         animatingRef.current = true
-         if (diff > 0) {
-            swiper.slideNext(300)
-         } else if (diff < 0) {
-            swiper.slidePrev(300)
-         }
+      // 일반적인 방향 계산
+      let newDirection
+      if (Math.abs(newIndex - currentIndex) > tabOrder.length / 2) {
+         // 순환 케이스 (첫 탭 <-> 마지막 탭)
+         newDirection = newIndex < currentIndex ? 'right' : 'left'
+      } else {
+         newDirection = newIndex > currentIndex ? 'right' : 'left'
       }
-   }, [desiredTab, currentTab, L])
 
-   // 슬라이드 전환 완료 handler
-   const handleTransitionEnd = (swiper) => {
-      const newIndex = swiper.realIndex % L
-      setCurrentTab(tabOrder[newIndex])
-      animatingRef.current = false
-   }
+      setDirection(newDirection)
+      setIsTransitioning(true)
 
-   // 사용자가 직접 슬라이드한 경우 동기화
-   const handleSlideChange = (swiper) => {
-      if (!animatingRef.current) {
-         const newIndex = swiper.realIndex % L
-         setCurrentTab(tabOrder[newIndex])
-         setDesiredTab(tabOrder[newIndex])
-      }
+      // 약간의 지연 후 탭 변경 및 URL 업데이트
+      setTimeout(() => {
+         setCurrentTab(newValue)
+         navigate(`/template/${newValue}`, {
+            state: { currentTab: newValue },
+         })
+
+         // 트랜지션 상태 초기화
+         setTimeout(() => {
+            setIsTransitioning(false)
+         }, 500)
+      }, 50)
    }
 
    // 현재 탭의 인접성 판단 (디자인 조절용)
@@ -389,85 +350,237 @@ const TemplateList = () => {
       const currentIndex = tabOrder.indexOf(currentTab)
       const tabIndex = tabOrder.indexOf(tabName)
       const diff = Math.abs(currentIndex - tabIndex)
-      return diff === 1 || diff === L - 1
+      return diff === 1 || diff === tabOrder.length - 1
    }
 
-   const currentTemplates = templates[currentTab] || []
+   const currentTemplates = templates?.filter((template) => template.category === currentTab) || []
    const displayedTemplates = showMore ? currentTemplates : currentTemplates.slice(0, 6)
 
+   // 템플릿 클릭 핸들러
    const handleTemplateClick = (templateId) => {
-      navigate(`/template/${currentTab}/${templateId}`, { state: { currentTab } })
+      navigate(`/template/${currentTab}/detail/${templateId}`, {
+         state: { currentTab },
+      })
+   }
+
+   // 템플릿 생성 핸들러
+   const handleCreateTemplate = () => {
+      navigate(`/template/${currentTab}/edit`, {
+         state: { currentTab },
+      })
+   }
+
+   if (status === 'failed') return <p>에러 발생: {error}</p>
+
+   // 애니메이션 변수
+   const containerVariants = {
+      hidden: { opacity: 0 },
+      visible: {
+         opacity: 1,
+         transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2,
+         },
+      },
+   }
+
+   const itemVariants = {
+      hidden: { y: 30, opacity: 0 },
+      visible: {
+         y: 0,
+         opacity: 1,
+         transition: {
+            type: 'spring',
+            stiffness: 300,
+            damping: 24,
+         },
+      },
+   }
+
+   const bannerVariants = {
+      hidden: { scale: 1.1, opacity: 0.7 },
+      visible: {
+         scale: 1,
+         opacity: 1,
+         transition: {
+            duration: 1.2,
+            ease: 'easeOut',
+         },
+      },
+   }
+
+   const titleVariants = {
+      hidden: { y: -20, opacity: 0 },
+      visible: {
+         y: 0,
+         opacity: 1,
+         transition: {
+            delay: 0.3,
+            duration: 0.8,
+            ease: 'easeOut',
+         },
+      },
+   }
+
+   // 탭 콘텐츠 전환 애니메이션
+   const contentVariants = {
+      enter: (direction) => ({
+         x: direction === 'right' ? 30 : -30,
+         opacity: 0,
+      }),
+      center: {
+         x: 0,
+         opacity: 1,
+         transition: {
+            x: { type: 'spring', stiffness: 300, damping: 25 },
+            opacity: { duration: 0.4 },
+         },
+      },
+      exit: (direction) => ({
+         x: direction === 'right' ? -30 : 30,
+         opacity: 0,
+         transition: {
+            x: { type: 'spring', stiffness: 300, damping: 25 },
+            opacity: { duration: 0.4 },
+         },
+      }),
+   }
+
+   // 탭 이름 변환 함수
+   const getTabName = (tabValue) => {
+      switch (tabValue) {
+         case 'wedding':
+            return '청첩장'
+         case 'newyear':
+            return '연하장'
+         case 'gohyeon':
+            return '고희연'
+         case 'invitation':
+            return '초빙장'
+         default:
+            return tabValue
+      }
+   }
+
+   // 탭 클래스 결정 함수
+   const getTabClass = (tabName) => {
+      if (currentTab === tabName) return 'selected'
+      if (isAdjacentTab(tabName)) return 'adjacent'
+      return ''
    }
 
    return (
       <>
          <BannerContainer>
-            <BannerImage src="/images/home/background4.png" alt="Template Banner" />
+            <BannerImage src="/images/home/background4.png" alt="Template Banner" initial="hidden" animate="visible" variants={bannerVariants} />
             <BannerOverlay>
-               <BannerTitle>TEMPLATE VOWEL</BannerTitle>
+               <BannerTitle initial="hidden" animate="visible" variants={titleVariants}>
+                  TEMPLATE VOWEL
+               </BannerTitle>
             </BannerOverlay>
          </BannerContainer>
 
-         <Container maxWidth="lg" sx={{ py: 8 }}>
-            <TotalText>T O T A L</TotalText>
+         <Container maxWidth="lg" sx={{ py: 10 }}>
+            <TotalText initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.6 }}>
+               T O T A L
+            </TotalText>
 
             <TabContainer>
-               <div className="swiper-button-prev" onClick={handlePrevClick} style={{ cursor: 'pointer' }}></div>
-               <Swiper
-                  ref={swiperRef}
-                  modules={[Navigation]}
-                  slidesPerView={3}
-                  centeredSlides
-                  initialSlide={tabOrder.indexOf(currentTab) + L}
-                  speed={300}
-                  loop
-                  observer
-                  observeParents
-                  watchSlidesProgress
-                  allowTouchMove={false}
-                  navigation={false}
-                  onTransitionEnd={handleTransitionEnd}
-                  onSlideChange={handleSlideChange}
-                  breakpoints={{
-                     320: { slidesPerView: 3, spaceBetween: 10 },
-                     768: { slidesPerView: 3, spaceBetween: 20 },
-                     1024: { slidesPerView: 3, spaceBetween: 30 },
-                  }}
-               >
-                  {[...Array(3)].map((_, i) => (
-                     <React.Fragment key={i}>
-                        {tabOrder.map((tabName) => (
-                           <SwiperSlide key={`${tabName}-${i}`}>
-                              <StyledTab $selected={currentTab === tabName} $isAdjacent={isAdjacentTab(tabName)} onClick={() => handleTabChange(tabName)}>
-                                 {tabName === 'wedding' && '청첩장'}
-                                 {tabName === 'newyear' && '연하장'}
-                                 {tabName === 'gohyeon' && '고희연'}
-                                 {tabName === 'invitation' && '초빙장'}
-                              </StyledTab>
-                           </SwiperSlide>
-                        ))}
-                     </React.Fragment>
+               <TabsWrapper>
+                  {tabOrder.map((tabName) => (
+                     <TabButton
+                        key={tabName}
+                        className={getTabClass(tabName)}
+                        onClick={() => handleTabChange(tabName)}
+                        disabled={isTransitioning}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{
+                           opacity: currentTab === tabName ? 1 : isAdjacentTab(tabName) ? 0.9 : 0.75,
+                           scale: currentTab === tabName ? 1.05 : isAdjacentTab(tabName) ? 0.95 : 0.9,
+                           y: 0,
+                        }}
+                        transition={{ duration: 0.4, ease: [0.25, 0.8, 0.5, 1] }}
+                        whileHover={{
+                           backgroundColor: hoveredTab === tabName ? 'rgba(0, 0, 0, 0.03)' : 'transparent',
+                           scale: 1.05,
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        onHoverStart={() => setHoveredTab(tabName)}
+                        onHoverEnd={() => setHoveredTab(null)}
+                     >
+                        {getTabName(tabName)}
+                     </TabButton>
                   ))}
-               </Swiper>
-               <div className="swiper-button-next" onClick={handleNextClick} style={{ cursor: 'pointer' }}></div>
+               </TabsWrapper>
             </TabContainer>
 
-            <ListSection>
-               <TemplateGrid>
-                  {displayedTemplates.map((template, index) => (
-                     <TemplateCard key={template.id} onClick={() => handleTemplateClick(template.id)} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
-                        <ImageWrapper>
-                           <TemplateImage src={template.image} alt={`Template ${template.id}`} />
-                        </ImageWrapper>
-                        <PriceInfo onClick={(e) => e.stopPropagation()}>₩ {template.price}</PriceInfo>
-                     </TemplateCard>
-                  ))}
-               </TemplateGrid>
+            <ListSection initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }}>
+               <AnimatePresence mode="wait" custom={direction}>
+                  <motion.div key={currentTab} custom={direction} variants={contentVariants} initial="enter" animate="center" exit="exit">
+                     <TemplateGrid as={motion.div} variants={containerVariants} initial="hidden" animate="visible">
+                        {displayedTemplates.map((template, index) => (
+                           <TemplateCard
+                              key={template.id}
+                              onClick={() => handleTemplateClick(template.id)}
+                              whileHover={{
+                                 y: -12,
+                                 boxShadow: '0 14px 28px rgba(0,0,0,0.15)',
+                                 transition: { duration: 0.3 },
+                              }}
+                              whileTap={{ scale: 0.98 }}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.5, delay: index * 0.1 }}
+                           >
+                              <ImageWrapper>
+                                 <TemplateImage src={template.thumbnail || '/images/default-template.png'} alt={template.title} whileHover={{ scale: 1.05 }} />
+                              </ImageWrapper>
+                              <PriceInfo>₩ {Number(template.price).toLocaleString()}</PriceInfo>
+                              <TemplateTitle>{template.title}</TemplateTitle>
+                           </TemplateCard>
+                        ))}
+                     </TemplateGrid>
+                  </motion.div>
+               </AnimatePresence>
 
-               <MoreButton onClick={() => setShowMore(!showMore)}>
-                  <Typography className="arrow">{showMore ? 'Less' : 'More'}</Typography>
+               <MoreButton onClick={() => setShowMore(!showMore)} component={motion.button} whileHover={{ y: -3, boxShadow: '0 8px 20px rgba(0,0,0,0.15)' }} whileTap={{ scale: 0.98 }}>
+                  <Typography>
+                     {showMore ? 'Less' : 'More'}
+                     <motion.span
+                        className="arrow"
+                        initial={{ y: 0 }}
+                        animate={{ y: showMore ? 3 : 0 }}
+                        transition={{
+                           repeat: Infinity,
+                           repeatType: 'reverse',
+                           duration: 0.6,
+                        }}
+                     >
+                        {showMore ? ' ↑' : ' ↓'}
+                     </motion.span>
+                  </Typography>
                </MoreButton>
             </ListSection>
+
+            {isAdmin && (
+               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+                  <CreateTemplateButton
+                     variant="contained"
+                     onClick={handleCreateTemplate}
+                     component={motion.button}
+                     whileHover={{
+                        y: -4,
+                        boxShadow: '0 12px 24px rgba(0,0,0,0.18)',
+                     }}
+                     whileTap={{ scale: 0.98 }}
+                     initial={{ opacity: 0, y: 20 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     transition={{ delay: 0.8, duration: 0.5 }}
+                  >
+                     새 템플릿 만들기
+                  </CreateTemplateButton>
+               </Box>
+            )}
          </Container>
       </>
    )

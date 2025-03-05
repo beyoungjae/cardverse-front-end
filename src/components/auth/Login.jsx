@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { useInView } from 'react-intersection-observer'
 
-import ForgotPasswordModal from '../modals/ForgotPasswordModal'
+import { KAKAO_REST_API } from '../../api/oauthApi'
+import { oauthLoginUserThunk } from '../../features/authSlice'
+
 import ModalWrapper from '../modals/ModalWrapper'
 
 // mui
@@ -10,198 +14,185 @@ import { styled } from '@mui/system'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 
-import { loginUserThunk } from '../../features/authSlice'
-import { useDispatch, useSelector } from 'react-redux'
-// import { handleKakaoLogin } from '../../api/oauthApi'
-import { initiateKakaoLogin } from '../../features/oauthSlice'
+import { loginUserThunk, logoutUserThunk } from '../../features/authSlice'
+import { useDispatch } from 'react-redux'
 import KakaoLoginBtn from '../button/KakaoLoginBtn'
 
-const Container = styled(Box)(({ theme }) => ({
-   padding: '60px 64px',
-   width: '100%',
-   maxWidth: '500px',
-   margin: '0 auto',
-   border: '1px solid #bbbbbb',
-   borderRadius: '8px',
-   minWidth: '300px',
-   display: 'flex',
-   flexDirection: 'column',
-   alignItems: 'center',
-   gap: '60px',
-   backgroundColor: '#fcfcfc',
-
-   '& > *': {
-      width: '100%',
-      textAlign: 'center',
-   },
-
-   [theme.breakpoints.down('md')]: {},
-   [theme.breakpoints.down('sm')]: {
-      gap: '60px',
-      padding: '40px',
-      margin: '0 auto',
-      border: 'none',
-      borderRadius: 0,
-      backgroundColor: 'transparent',
-      height: '100%',
-      // border: '1px solid green',
-   },
-}))
-
-const InputField = styled(TextField)(({ theme }) => ({
-   '& .MuiInputBase-input': {
-      fontSize: '1rem', // 기본 폰트 크기
-      padding: '12px',
-
-      [theme.breakpoints.down('md')]: {
-         fontSize: '0.9rem', // md 이하에서는 작게
-      },
-      [theme.breakpoints.down('sm')]: {
-         fontSize: '0.8rem', // sm 이하에서는 더 작게
-         padding: '13px',
-         backgroundColor: 'white',
-         borderRadius: '4px',
-      },
-      [theme.breakpoints.down(480)]: {
-         fontSize: '0.7rem', // 480px 이하에서는 12px
-         padding: '12px',
-      },
-   },
-   '&:first-of-type': {
-      paddingBottom: '16px',
-      [theme.breakpoints.down('sm')]: {
-         paddingBottom: '0px',
-      },
-   },
-
-   [theme.breakpoints.down('md')]: {},
-   [theme.breakpoints.down('sm')]: {
-      backgroundColor: 'white',
-      borderRadius: '4px',
-   },
-}))
-
-const Button = styled('button')(({ theme }) => ({
-   backgroundColor: '#B699BB',
-   color: '#000',
-   border: 'none',
-   borderRadius: '4px',
-   padding: '15px 15px',
-   fontSize: '1rem',
-   fontWeight: 'bold',
-   cursor: 'pointer',
+// 페이지 컨테이너
+const PageContainer = styled(Box)(({ theme }) => ({
    display: 'flex',
    alignItems: 'center',
    justifyContent: 'center',
-   gap: '8px',
+   padding: '40px 20px',
+}))
+
+// 로그인 컨테이너
+const LoginContainer = styled(motion.div)(({ theme }) => ({
    width: '100%',
+   maxWidth: '500px',
+   margin: '0 auto',
+   borderRadius: '16px',
+   overflow: 'hidden',
+   boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+   backgroundColor: '#ffffff',
 
-   '&:hover': {
-      backgroundColor: '#a98bae',
-   },
-   '&.kakao-login-btn': {
-      backgroundColor: '#ffe812',
-   },
-
-   '&.signup-btn': {
-      backgroundColor: '#ffffff',
-      border: '1px solid #cccccc',
-   },
-   '&.signup-btn:hover': {
-      backgroundColor: '#f5f5f5',
-   },
-
-   [theme.breakpoints.down('md')]: {
-      padding: '8px 12px',
-
-      fontSize: '0.85rem',
-   },
    [theme.breakpoints.down('sm')]: {
-      padding: '8px 10px',
-      fontSize: '0.7rem',
+      borderRadius: '12px',
    },
 }))
 
-const Form = styled('form')(({ theme }) => ({
-   display: 'flex',
-   flexDirection: 'column',
-   gap: '20px',
-   [theme.breakpoints.down('md')]: {
-      gap: '12px',
-   },
-   [theme.breakpoints.down('sm')]: {
-      // border: '1px solid pink',
-      justifyContent: 'space-between',
-   },
-}))
+// 로그인 헤더
+const LoginHeader = styled(Box)(({ theme }) => ({
+   position: 'relative',
+   padding: '40px 0',
+   textAlign: 'center',
+   backgroundColor: '#B699BB',
+   overflow: 'hidden',
 
-const FormContainer = styled(Box)(({ theme }) => ({
-   display: 'flex',
-   flexDirection: 'column',
-
-   '&.Form-btn': {
-      gap: '0px',
-      [theme.breakpoints.down('md')]: { gap: '8px' },
-      [theme.breakpoints.down('sm')]: { gap: '12px' },
-   },
-   [theme.breakpoints.down('md')]: { gap: '8px' },
-   [theme.breakpoints.down('sm')]: { gap: '12px' },
-}))
-
-const LoginWrapper = styled(Box)(({ theme }) => ({
-   display: 'flex',
-   flexDirection: 'column',
-   gap: '12px',
-
-   [theme.breakpoints.down('sm')]: {
-      gap: 'initial',
-      justifyContent: 'space-between',
+   '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
       height: '100%',
-      // border: '1px solid red',
+      backgroundImage: 'url("/images/home/banner.png")',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      opacity: 0.2,
+      zIndex: 0,
    },
 }))
 
-// ━━━━━━ TEXT
-const StyledLink = styled(Link)(({ theme }) => ({
-   display: 'inline',
-   textDecoration: 'none',
-   fontSize: '0.89rem',
-   color: 'blue',
+// 로그인 타이틀
+const LoginTitle = styled(Typography)(({ theme }) => ({
+   fontSize: '1.8rem',
+   fontWeight: 600,
+   color: '#ffffff',
+   marginBottom: '5px',
+   position: 'relative',
+   zIndex: 1,
 
-   [theme.breakpoints.down('md')]: {
-      fontSize: '0.79rem',
-   },
    [theme.breakpoints.down('sm')]: {
-      fontSize: '0.69rem',
+      fontSize: '1.5rem',
    },
 }))
 
-const StyledTypography = styled(Typography)(({ theme }) => ({
-   fontSize: '0.9rem',
-   textAlign: 'end',
-   padding: '2px 5px',
+// 로그인 서브타이틀
+const LoginSubtitle = styled(Typography)(({ theme }) => ({
+   fontSize: '1rem',
+   color: 'rgba(255, 255, 255, 0.8)',
+   position: 'relative',
+   zIndex: 1,
 
-   '&.kakao-comment': {
-      textAlign: 'center',
-      [theme.breakpoints.down('sm')]: {
-         display: 'none',
+   [theme.breakpoints.down('sm')]: {
+      fontSize: '0.9rem',
+   },
+}))
+
+// 로그인 폼
+const LoginForm = styled(Box)(({ theme }) => ({
+   padding: '40px',
+
+   [theme.breakpoints.down('sm')]: {
+      padding: '30px 20px',
+   },
+}))
+
+// 입력필드
+const InputField = styled(TextField)(({ theme }) => ({
+   marginBottom: '20px',
+   '& .MuiOutlinedInput-root': {
+      borderRadius: '8px',
+      '&:hover .MuiOutlinedInput-notchedOutline': {
+         borderColor: '#B699BB',
+      },
+      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+         borderColor: '#B699BB',
       },
    },
-   '&.modal': {
-      display: 'inline',
-      padding: '0px 5px',
-      textDecoration: 'none',
-      cursor: 'pointer',
-      color: 'blue',
+   '& .MuiInputLabel-root.Mui-focused': {
+      color: '#B699BB',
+   },
+   '& .MuiInputBase-input': {
+      padding: '15px',
+      fontSize: '1rem',
+
+      [theme.breakpoints.down('sm')]: {
+         padding: '12px',
+         fontSize: '0.9rem',
+      },
+   },
+}))
+
+// 로그인 버튼
+const LoginButton = styled(motion.button)(({ theme }) => ({
+   width: '100%',
+   padding: '15px',
+   backgroundColor: '#B699BB',
+   color: '#ffffff',
+   border: 'none',
+   borderRadius: '8px',
+   fontSize: '1rem',
+   fontWeight: 600,
+   cursor: 'pointer',
+   marginBottom: '20px',
+   transition: 'background-color 0.3s ease',
+
+   '&:hover': {
+      backgroundColor: '#a589aa',
    },
 
-   [theme.breakpoints.down('md')]: {
-      padding: '3px 5px',
-      fontSize: '0.8rem',
-   },
    [theme.breakpoints.down('sm')]: {
-      padding: '1px 5px',
-      fontSize: '0.7rem',
+      padding: '12px',
+      fontSize: '0.9rem',
+   },
+}))
+
+// 분리선
+const Divider = styled(Box)(({ theme }) => ({
+   display: 'flex',
+   alignItems: 'center',
+   margin: '20px 0',
+   color: '#aaa',
+   fontSize: '0.9rem',
+
+   '&::before, &::after': {
+      content: '""',
+      flex: 1,
+      borderBottom: '1px solid #ddd',
+   },
+   '&::before': {
+      marginRight: '10px',
+   },
+   '&::after': {
+      marginLeft: '10px',
+   },
+}))
+
+// 텍스트 링크
+const TextLink = styled(Typography)(({ theme }) => ({
+   color: '#B699BB',
+   cursor: 'pointer',
+   fontWeight: 500,
+   display: 'inline',
+   marginLeft: '5px',
+   marginRight: '5px',
+
+   '&:hover': {
+      textDecoration: 'underline',
+   },
+}))
+
+// 도움말
+const HelpText = styled(Typography)(({ theme }) => ({
+   textAlign: 'center',
+   fontSize: '0.9rem',
+   color: '#666',
+   marginTop: '20px',
+
+   [theme.breakpoints.down('sm')]: {
+      fontSize: '0.8rem',
    },
 }))
 
@@ -210,103 +201,51 @@ const Login = () => {
    const [password, setPassword] = useState('')
    const [showPassword, setShowPassword] = useState(false)
    const [showModal, setShowModal] = useState(false)
+   const [isProcessingCode, setIsProcessingCode] = useState(false)
    const navigate = useNavigate()
    const dispatch = useDispatch()
+   const [ref, inView] = useInView({
+      threshold: 0.1,
+      triggerOnce: true,
+   })
 
-   // const handleKakaoLogin = useCallback(() => {
-   //    window.Kakao.Auth.authorize({
-   //       redirectUri: `${process.env.REACT_APP_API_URL}/oauth/kakao`,
-   //       // clientId: process.env.REACT_APP_KAKAO_REST_KEY,
-   //       // scope: 'profile_nickname profile_image account_email',
-   //    })
-   // }, [])
+   useEffect(() => {
+      if (isProcessingCode) return
 
-   const handleKakaoLogin = () => {
-      dispatch(initiateKakaoLogin())
-   }
+      const search = new URLSearchParams(window.location.search)
+      const code = search.get('code')
 
-   // const handleKakaoLogin = () => {
-   //    window.Kakao.Auth.loginForm({
-   //       success: async function (authObj) {
-   //          const response = await commonApi.post('/oauth/kakao/callback', {
-   //             accessToken: authObj.access_token,
-   //          })
-   //       },
-   //       fail: function (err) {
-   //          console.error('카카오 로그인 실패:', err)
-   //       },
-   //    })
-   // }
+      // 카카오로 리다이렉트 될 경우 code가 존재
+      if (code) {
+         setIsProcessingCode(true)
+         localStorage.setItem('loginType', 'kakao')
 
-   // useEffect(() => {
-   //    if (window.Kakao) {
-   //       window.Kakao.init('YOUR_KAKAO_JAVASCRIPT_KEY')
-   //       console.log('✅ Kakao SDK initialized')
-   //    } else {
-   //       console.error('❌ Kakao SDK is not loaded')
-   //    }
-   // }, [])
+         // 코드 파라미터를 URL에서 제거하기 위한 처리
+         const cleanUrl = window.location.pathname
+         window.history.replaceState({}, document.title, cleanUrl)
 
-   // const handleKakaoLogin = useCallback(() => {
-   //    kakaoLogin()
-   // }, [])
-
-   // const KakaoLogin = () => {
-   //    useEffect(() => {
-   //       if (!window.Kakao.isInitialized()) {
-   //          window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY)
-   //       }
-   //    }, [])
-
-   //    const handleKakaoLogin = useCallback(() => {
-   //       window.Kakao.Auth.authorize({
-   //          redirectUri: `${process.env.REACT_APP_BASE_URL}/auth/kakao/callback`,
-   //       })
-   //    }, []) // 의존성 배열이 비어있음 (redirectUri가 상수이므로)
-
-   //    return <button onClick={handleKakaoLogin}>카카오 로그인</button>
-   // }
-
-   // const handleKakaoLogin = useCallback(() => {
-   //    const Kakao = window.Kakao
-
-   //    if (!Kakao) {
-   //       console.error('❌ Kakao is not loaded')
-   //       return
-   //    }
-
-   //    Kakao.Auth.login({
-   //       success: (response) => {
-   //          console.log('✅ 카카오 로그인 성공!')
-   //          console.log('🔹 access_token:', response.access_token)
-
-   //          Kakao.API.request({
-   //             url: '/v2/user/me',
-   //             success: (userResponse) => {
-   //                console.log('🔹 카카오 사용자 정보:', userResponse)
-   //                alert(`카카오 로그인 성공!\n닉네임: ${userResponse.kakao_account.profile.nickname}`)
-   //                navigate('/home')
-   //             },
-   //             fail: (error) => {
-   //                console.error('❌ 사용자 정보 요청 실패:', error)
-   //             },
-   //          })
-   //       },
-   //       fail: (error) => {
-   //          console.error('❌ 카카오 로그인 실패:', error)
-   //       },
-   //    })
-   // }, [navigate])
+         dispatch(oauthLoginUserThunk({ code, provider: 'kakao' }))
+            .unwrap()
+            .then(() => {
+               navigate('/')
+            })
+            .catch((error) => {
+               console.error('로그인 실패:', error)
+               alert('로그인에 실패하셨습니다.')
+            })
+            .finally(() => {
+               setIsProcessingCode(false)
+            })
+      }
+   }, [dispatch, navigate, isProcessingCode])
 
    const handleLogin = useCallback(
       async (e) => {
          try {
             e.preventDefault()
             if (email.trim() && password.trim()) {
-               const result = await dispatch(loginUserThunk({ email, password })).unwrap()
-               if (result.id) {
-                  navigate('/')
-               }
+               await dispatch(loginUserThunk({ email, password })).unwrap()
+               navigate('/')
             } else {
                alert('이메일과 비밀번호를 입력해주세요.')
             }
@@ -317,74 +256,74 @@ const Login = () => {
       [dispatch, email, password, navigate],
    )
 
+   const handleKakaoLogin = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      window.location.href = KAKAO_REST_API
+   }
+
+   if (isProcessingCode) return <div></div>
+
    return (
-      <Container>
-         <LoginWrapper>
-            <Form onSubmit={handleLogin}>
-               <FormContainer>
-                  <InputField
-                     // 인풋 필드
-                     placeholder="이메일을 입력해 주세요."
-                     name="email"
-                     fullWidth
-                     autoComplete="email"
-                     value={email}
-                     onChange={(e) => setEmail(e.target.value)}
-                  />
-                  <InputField
-                     // 인풋 필드
-                     placeholder="비밀번호를 입력해 주세요."
-                     type={showPassword ? 'text' : 'password'}
-                     name="password"
-                     fullWidth
-                     autoComplete="none"
-                     value={password}
-                     onChange={(e) => setPassword(e.target.value)}
-                     InputProps={{
-                        endAdornment: (
-                           <InputAdornment position="end">
-                              <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                                 {showPassword ? <VisibilityOff /> : <Visibility />}
-                              </IconButton>
-                           </InputAdornment>
-                        ),
-                     }}
-                  />
-                  <StyledTypography>
-                     비밀번호가 기억나지 않으세요?
-                     <StyledTypography className="modal" component="span" onClick={() => setShowModal(true)}>
-                        비밀번호
-                     </StyledTypography>
-                     찾기
-                  </StyledTypography>
-               </FormContainer>
+      <PageContainer>
+         <LoginContainer ref={ref} initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6, ease: 'easeOut' }}>
+            <LoginHeader>
+               <LoginTitle variant="h4">로그인</LoginTitle>
+               <LoginSubtitle variant="body1">CardVerse에 오신 것을 환영합니다</LoginSubtitle>
+            </LoginHeader>
 
-               <FormContainer className="Form-btn">
-                  <Button fullWidth type="submit">
-                     로그인
-                  </Button>
-                  <StyledTypography>
-                     계정이 없으세요?
-                     <StyledLink to="/signup"> 회원가입 </StyledLink>하기
-                  </StyledTypography>
-               </FormContainer>
-            </Form>
-            <StyledTypography className="kakao-comment" sx={{ marginBottom: '16px', color: '#cccccc' }}>
-               ─────────── or ───────────
-            </StyledTypography>
-            <KakaoLoginBtn />
-            {/* <Button
-               // 브레이크 포인트
+            <LoginForm component="form" onSubmit={handleLogin}>
+               <InputField label="이메일" placeholder="이메일을 입력해 주세요" name="email" fullWidth autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} variant="outlined" />
 
-               className="kakao-login-btn"
-               onClick={handleKakaoLogin}>
-               <img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="kakao" style={{ width: '20px', height: '20px' }} />
-               카카오로 간편 로그인
-            </Button> */}
-            {/* {showModal && <ForgotPasswordModal onClose={() => setShowModal(false)} />} */}
+               <InputField
+                  label="비밀번호"
+                  placeholder="비밀번호를 입력해 주세요"
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  fullWidth
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  variant="outlined"
+                  InputProps={{
+                     endAdornment: (
+                        <InputAdornment position="end">
+                           <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                           </IconButton>
+                        </InputAdornment>
+                     ),
+                  }}
+               />
+
+               {/* 추후 구현 */}
+               {/* <Typography variant="body2" align="right" sx={{ mb: 2 }}>
+                  비밀번호가 기억나지 않으신가요?
+                  <TextLink component="span" onClick={() => setShowModal(true)}>
+                     비밀번호 찾기
+                  </TextLink>
+               </Typography> */}
+
+               <LoginButton type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  로그인
+               </LoginButton>
+
+               <Divider>또는</Divider>
+
+               <KakaoLoginBtn onClick={handleKakaoLogin} />
+
+               <HelpText>
+                  계정이 없으신가요?
+                  <TextLink component={Link} to="/signup">
+                     회원가입
+                  </TextLink>
+                  하기
+               </HelpText>
+            </LoginForm>
+
             {showModal && <ModalWrapper onClose={() => setShowModal(false)} />}
-         </LoginWrapper>
-      </Container>
+         </LoginContainer>
+      </PageContainer>
    )
 }
 

@@ -136,7 +136,7 @@ const PreviewLoading = () => {
             </LoadingIcon>
 
             <LoadingText component={motion.div} variants={textVariants}>
-               미리보기를 생성하고 있습니다
+               로딩중 입니다.
             </LoadingText>
             <SubText component={motion.div} variants={textVariants}>
                잠시만 기다려주세요

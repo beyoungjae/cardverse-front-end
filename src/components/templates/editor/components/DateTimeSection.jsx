@@ -28,8 +28,8 @@ dayjs.extend(isoWeek)
 
 const invitationTypes = [
    { id: 'wedding', label: '청첩장', icon: <FavoriteIcon />, format: '(신랑), (신부)의 결혼식이 (D-Day)일 남았습니다.' },
-   { id: 'newYear', label: '연하장', icon: <CelebrationIcon />, format: '새해 첫날까지 (D-Day)일 남았습니다.' },
-   { id: 'birthday', label: '고희연', icon: <CakeIcon />, format: '(이름)님의 칠순잔치가 (D-Day)일 남았습니다.' },
+   { id: 'newyear', label: '연하장', icon: <CelebrationIcon />, format: '새해 첫날까지 (D-Day)일 남았습니다.' },
+   { id: 'gohyeyon', label: '고희연', icon: <CakeIcon />, format: '(이름)님의 칠순잔치가 (D-Day)일 남았습니다.' },
    { id: 'invitation', label: '초빙장', icon: <EmojiEventsIcon />, format: '특별한 행사가 (D-Day)일 남았습니다.' },
 ]
 
@@ -297,7 +297,7 @@ const DateTimeSection = () => {
                   rules={{ required: '날짜와 시간을 선택해주세요' }}
                   render={({ field: { onChange, value }, fieldState: { error } }) => (
                      <StyledDateTimePicker
-                        value={value}
+                        value={value ? dayjs(value) : null}
                         onChange={onChange}
                         format="YYYY년 MM월 DD일 dddd A hh:mm"
                         ampm

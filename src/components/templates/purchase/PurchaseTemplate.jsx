@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react'
 import { Box, Container, Typography, Button, Stepper, Step, StepLabel, Paper, Divider, TextField, FormControl, RadioGroup, FormControlLabel, Radio, CircularProgress } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import PaymentIcon from '@mui/icons-material/Payment'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CreditCard from '@mui/icons-material/CreditCard'
 import AccountBalance from '@mui/icons-material/AccountBalance'
+import { useSelector, useDispatch } from 'react-redux'
+import { fetchTemplateDetail } from '../../../features/templateSlice'
+import { processPurchaseTemplate, resetPurchaseStatus } from '../../../features/purchaseSlice'
 
 // 컨테이너 스타일링
 const PurchaseContainer = styled(Container)(({ theme }) => ({
@@ -155,9 +158,8 @@ const MOCK_COUPONS = {
 const steps = ['상품 확인', '결제 정보', '결제 완료']
 
 const PurchaseTemplate = () => {
-   const location = useLocation()
-   const navigate = useNavigate()
-   const [activeStep, setActiveStep] = useState(0)
+   // 상태 관리
+   const [currentStep, setCurrentStep] = useState(0)
    const [paymentInfo, setPaymentInfo] = useState({
       cardNumber: '',
       expiry: '',
@@ -169,17 +171,94 @@ const PurchaseTemplate = () => {
    const [isProcessing, setIsProcessing] = useState(false)
    const [appliedCoupon, setAppliedCoupon] = useState(null)
    const [couponError, setCouponError] = useState('')
+   const [currentTemplate, setCurrentTemplate] = useState(null)
 
-   // location.state에서 templateData 가져오기
-   // 추후 데이터 연동 필요
-   const templateData = location.state?.templateData || {
-      mainImage: '/images/templates/card1.svg',
-      title: '웨딩 카드',
-      description: '웨딩 카드 템플릿입니다.',
-      price: '23,000',
+   // 계산 함수들을 먼저 정의
+   const calculateDiscount = () => {
+      if (!appliedCoupon) return 0
+      const price = parseInt(currentTemplate?.price?.replace(/,/g, ''))
+      return Math.floor(price * appliedCoupon.discount)
    }
 
-   // 카드 번호 포맷팅 함수
+   const calculateTotal = () => {
+      const price = parseInt(currentTemplate?.price?.replace(/,/g, ''))
+      const discount = calculateDiscount()
+      return price - discount
+   }
+
+   // 나머지 상태 및 훅들
+   const { authData } = useSelector((state) => state.auth)
+   const { detail: template, status } = useSelector((state) => state.templates)
+   const { templateId } = useParams()
+   const navigate = useNavigate()
+   const location = useLocation()
+   const dispatch = useDispatch()
+   const { status: purchaseStatus, error: purchaseError } = useSelector((state) => state.purchase)
+
+   useEffect(() => {
+      if (templateId) {
+         dispatch(fetchTemplateDetail(templateId))
+      }
+   }, [dispatch, templateId])
+
+   useEffect(() => {
+      if (template) {
+         setCurrentTemplate(template)
+      } else if (location.state?.templateData) {
+         setCurrentTemplate(location.state.templateData)
+      }
+   }, [template, location.state])
+
+   useEffect(() => {
+      if (calculateTotal() === 0) {
+         setPaymentMethod('free')
+      }
+   }, [appliedCoupon])
+
+   // 컴포넌트 마운트 시 구매 상태 초기화
+   useEffect(() => {
+      // 컴포넌트 마운트 시 구매 상태 초기화
+      dispatch(resetPurchaseStatus())
+
+      // 컴포넌트 언마운트 시에도 초기화
+      return () => {
+         dispatch(resetPurchaseStatus())
+      }
+   }, [dispatch])
+
+   useEffect(() => {
+      // 결제 처리 중인 경우에만 상태 변경을 감시
+      if (isProcessing) {
+         if (purchaseStatus === 'succeeded') {
+            // 결제 성공 시에만 결제 완료 단계로 이동
+            setCurrentStep(2)
+            setIsProcessing(false)
+         } else if (purchaseStatus === 'failed') {
+            alert(purchaseError || '결제 처리 중 오류가 발생했습니다.')
+            setIsProcessing(false)
+         }
+      }
+   }, [purchaseStatus, purchaseError, isProcessing])
+
+   if (status === 'loading') {
+      return (
+         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            <CircularProgress />
+         </Box>
+      )
+   }
+
+   if (!currentTemplate && status !== 'loading') {
+      return (
+         <Box sx={{ textAlign: 'center', p: 3 }}>
+            <Typography variant="h6" color="error">
+               템플릿 정보를 찾을 수 없습니다.
+            </Typography>
+         </Box>
+      )
+   }
+
+   // 카드 번호 포맷팅
    const formatCardNumber = (value) => {
       const numbers = value.replace(/[^\d]/g, '')
       const groups = numbers.match(/.{1,4}/g)
@@ -221,43 +300,70 @@ const PurchaseTemplate = () => {
 
    // 결제 처리 함수
    const handleNext = async () => {
-      if (activeStep === 1) {
-         if (calculateTotal() === 0) {
-            setActiveStep((prev) => prev + 1)
-            return
-         }
+      if (!authData || !authData.id) {
+         alert('로그인이 필요한 서비스입니다.')
+         navigate('/login', {
+            state: {
+               from: location.pathname,
+               templateId: template.id,
+            },
+         })
+         return
+      }
 
+      // 현재 단계에 따라 다른 처리
+      if (currentStep === 0) {
+         // 상품 확인 단계에서 결제 정보 단계로 이동
+         setCurrentStep(1)
+      } else if (currentStep === 1) {
+         // 결제 정보 단계에서 결제 처리 진행
+
+         // 카드 결제인 경우 카드 정보 검증
          if (paymentMethod === 'card') {
-            const isCardValid = paymentInfo.cardNumber.replace(/-/g, '').length === 16
-            const isExpiryValid = /^\d{2}\/\d{2}$/.test(paymentInfo.expiry)
-            const isCvvValid = /^\d{3}$/.test(paymentInfo.cvv)
-
-            if (!isCardValid || !isExpiryValid || !isCvvValid) {
-               alert('카드 정보를 올바르게 입력해주세요.')
+            // 간단한 유효성 검사
+            if (!paymentInfo.cardNumber || paymentInfo.cardNumber.length < 16) {
+               alert('유효한 카드 번호를 입력해주세요.')
+               return
+            }
+            if (!paymentInfo.expiry || paymentInfo.expiry.length < 5) {
+               alert('유효한 유효기간을 입력해주세요.')
+               return
+            }
+            if (!paymentInfo.cvv || paymentInfo.cvv.length < 3) {
+               alert('유효한 CVV를 입력해주세요.')
                return
             }
          }
 
          setIsProcessing(true)
          try {
-            await new Promise((resolve) => setTimeout(resolve, 2000))
-            setActiveStep((prev) => prev + 1)
+            const purchaseData = {
+               templateId: template.id,
+               paymentInfo: {
+                  method: paymentMethod,
+                  ...paymentInfo,
+               },
+               totalAmount: calculateTotal(),
+            }
+
+            await dispatch(processPurchaseTemplate(purchaseData)).unwrap()
+            // 결제 성공 시 다음 단계로 이동 (useEffect에서 처리)
          } catch (error) {
-            alert('결제 처리 중 오류가 발생했습니다.')
-         } finally {
             setIsProcessing(false)
+            if (error.response?.status === 401) {
+               alert('로그인이 만료되었습니다. 다시 로그인해주세요.')
+               navigate('/login', {
+                  state: {
+                     from: location.pathname,
+                     templateId: template.id,
+                  },
+               })
+            } else {
+               alert(error.message || '결제 처리 중 오류가 발생했습니다.')
+            }
          }
-      } else {
-         setActiveStep((prev) => prev + 1)
       }
    }
-
-   // 결제 수단 변경 시 자동 처리
-   useEffect(() => {
-      if (calculateTotal() === 0) {
-         setPaymentMethod('free')
-      }
-   }, [appliedCoupon])
 
    // 쿠폰 적용 함수
    const handleApplyCoupon = () => {
@@ -277,32 +383,20 @@ const PurchaseTemplate = () => {
       }
    }
 
-   // 할인 금액 계산 함수
-   const calculateDiscount = () => {
-      if (!appliedCoupon) return 0
-      const price = parseInt(templateData.price.replace(/,/g, ''))
-      return Math.floor(price * appliedCoupon.discount)
-   }
-
-   // 총 금액 계산 함수
-   const calculateTotal = () => {
-      const price = parseInt(templateData.price.replace(/,/g, ''))
-      const discount = calculateDiscount()
-      return price - discount
-   }
-
    // 결제 버튼 렌더링
    const renderPaymentButton = () => {
+      const isLoading = purchaseStatus === 'loading'
+
       if (calculateTotal() === 0) {
          return (
-            <PurchaseButton fullWidth variant="contained" onClick={handleNext} sx={{ mt: 3 }}>
+            <PurchaseButton fullWidth variant="contained" onClick={handleNext} disabled={isLoading} sx={{ mt: 3 }}>
                무료 결제하기
             </PurchaseButton>
          )
       }
       return (
-         <PurchaseButton fullWidth variant="contained" startIcon={isProcessing ? <CircularProgress size={24} color="inherit" /> : <PaymentIcon />} onClick={handleNext} disabled={isProcessing} sx={{ mt: 3 }}>
-            {isProcessing ? '결제 처리 중...' : '결제하기'}
+         <PurchaseButton fullWidth variant="contained" startIcon={isLoading ? <CircularProgress size={24} color="inherit" /> : <PaymentIcon />} onClick={handleNext} disabled={isLoading} sx={{ mt: 3 }}>
+            {isLoading ? '결제 처리 중...' : '결제하기'}
          </PurchaseButton>
       )
    }
@@ -316,7 +410,7 @@ const PurchaseTemplate = () => {
 
    return (
       <PurchaseContainer>
-         <StyledStepper activeStep={activeStep} alternativeLabel>
+         <StyledStepper activeStep={currentStep} alternativeLabel>
             {steps.map((label) => (
                <Step key={label}>
                   <StepLabel>{label}</StepLabel>
@@ -325,20 +419,20 @@ const PurchaseTemplate = () => {
          </StyledStepper>
 
          <AnimatePresence mode="wait">
-            {activeStep === 0 && (
+            {currentStep === 0 && template && (
                <ProductPreview key="product" initial="initial" animate="animate" exit="exit" variants={pageVariants} transition={{ duration: 0.5 }}>
                   <ImageSection>
-                     <img src={templateData.mainImage} alt="Template Preview" />
+                     <img src={template?.thumbnail} alt="Template Preview" />
                   </ImageSection>
 
                   <ProductInfo>
                      <Typography variant="h4" gutterBottom>
-                        {templateData.title}
+                        {template.title}
                      </Typography>
                      <Typography variant="body1" color="text.secondary" paragraph>
-                        {templateData.description}
+                        {template.description}
                      </Typography>
-                     <PriceTag>₩{templateData.price}</PriceTag>
+                     <PriceTag>₩{Number(template.price)?.toLocaleString() || '0'}</PriceTag>
 
                      <Box sx={{ mt: 'auto' }}>
                         <PurchaseButton fullWidth variant="contained" startIcon={<ShoppingCartIcon />} onClick={handleNext}>
@@ -349,7 +443,7 @@ const PurchaseTemplate = () => {
                </ProductPreview>
             )}
 
-            {activeStep === 1 && (
+            {currentStep === 1 && (
                <PaymentSection component={motion.div} key="payment" initial="initial" animate="animate" exit="exit" variants={pageVariants} transition={{ duration: 0.5 }}>
                   <Typography variant="h6" gutterBottom>
                      쿠폰
@@ -414,7 +508,7 @@ const PurchaseTemplate = () => {
                            label={
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                  <CreditCard />
-                                 <span>신용/체크카드 (현재 모의결제 중)</span>
+                                 <span>신용/체크카드 (실제 결제 처리 미구현)</span>
                               </Box>
                            }
                         />
@@ -445,29 +539,32 @@ const PurchaseTemplate = () => {
                                  maxLength: 19,
                               }}
                            />
-                           <Box sx={{ display: 'flex', gap: 2 }}>
-                              <TextField
-                                 label="유효기간"
-                                 value={paymentInfo.expiry}
-                                 onChange={handlePaymentInfoChange('expiry')}
-                                 placeholder="MM/YY"
-                                 fullWidth
-                                 inputProps={{
-                                    maxLength: 5,
-                                 }}
-                              />
-                              <TextField
-                                 label="CVV"
-                                 value={paymentInfo.cvv}
-                                 onChange={handlePaymentInfoChange('cvv')}
-                                 type="password"
-                                 placeholder="000"
-                                 fullWidth
-                                 inputProps={{
-                                    maxLength: 3,
-                                 }}
-                              />
-                           </Box>
+                           <form onSubmit={(e) => e.preventDefault()}>
+                              <Box sx={{ display: 'flex', gap: 2 }}>
+                                 <TextField
+                                    label="유효기간"
+                                    value={paymentInfo.expiry}
+                                    onChange={handlePaymentInfoChange('expiry')}
+                                    placeholder="MM/YY"
+                                    fullWidth
+                                    inputProps={{
+                                       maxLength: 5,
+                                    }}
+                                 />
+                                 <TextField
+                                    label="CVV"
+                                    value={paymentInfo.cvv}
+                                    onChange={handlePaymentInfoChange('cvv')}
+                                    type="password"
+                                    placeholder="000"
+                                    fullWidth
+                                    inputProps={{
+                                       maxLength: 3,
+                                    }}
+                                    autoComplete="off"
+                                 />
+                              </Box>
+                           </form>
                         </Box>
                      </Box>
                   )}
@@ -478,15 +575,13 @@ const PurchaseTemplate = () => {
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                            아래 계좌로 후원해 주세요.
                            <br />
-                           개발 팀에 후원해 주시면 감사하겠습니다.
+                           개발팀에 후원해 주시면 감사하겠습니다.
                         </Typography>
                         <Box sx={{ bgcolor: 'background.paper', p: 2, borderRadius: 1 }}>
                            <Typography variant="body2">
                               은행명: 카카오뱅크
                               <br />
                               계좌번호: 3333067590933
-                              <br />
-                              예금주: 정병재
                            </Typography>
                         </Box>
                      </Box>
@@ -495,7 +590,7 @@ const PurchaseTemplate = () => {
                   <PriceBreakdown>
                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography color="text.secondary">상품 금액</Typography>
-                        <Typography>₩{templateData.price}</Typography>
+                        <Typography>₩{Number(template.price)?.toLocaleString() || '0'}</Typography>
                      </Box>
                      {appliedCoupon && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -514,7 +609,7 @@ const PurchaseTemplate = () => {
                </PaymentSection>
             )}
 
-            {activeStep === 2 && (
+            {currentStep === 2 && (
                <Box
                   component={motion.div}
                   key="complete"

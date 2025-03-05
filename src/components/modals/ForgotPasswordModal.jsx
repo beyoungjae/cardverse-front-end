@@ -152,9 +152,6 @@ const ForgotPasswordModal = ({ onVerifySuccess }) => {
    const { errorMessage, successMessage, setError, setSuccess, clearMessages } = useMessage()
    const [isClosing, setIsClosing] = useState(false)
 
-   // const [errorMessage, setErrorMessage] = useState('')
-   // const [successMessage, setSuccessMessage] = useState('')
-
    const [email, setEmail] = useState('')
    const [emailStatus, setEmailStatus] = useState('메일을 인증해주세요') // 이메일 인증 상태
    const [emailConfirmed, setEmailConfirmed] = useState(false)
@@ -166,12 +163,6 @@ const ForgotPasswordModal = ({ onVerifySuccess }) => {
 
    const navigate = useNavigate()
 
-   // const handleSendCode = () => {
-   //     console.log('이메일로 인증 코드 전송:', email)
-   //     // 서버에 인증번호 요청 API 호출
-   //     setStep(2) // 다음 단계로 이동 (인증번호 입력)
-   // }
-
    useEffect(() => {
       if (isTimerActive && timer > 0) {
          const interval = setInterval(() => {
@@ -182,39 +173,25 @@ const ForgotPasswordModal = ({ onVerifySuccess }) => {
    }, [isTimerActive, timer])
 
    const handleWrapper = () => {
-      console.log('입력한 인증번호:', code)
-      // 서버에서 인증번호 확인 API 호출 후 성공 시:
-      //   onClose() // 모달 닫기
       navigate('/reset-password') // 비밀번호 변경 페이지로 이동
    }
 
-   // const handleEmailCheck = () => {
-   //     // 이메일이 가입되어 있는지 확인하는 API 호출 (예제에서는 바로 true)
-   //     setEmailConfirmed(true)
-   // }
-
    const handleEmailCheck = () => {
-      // 실제 API로 가입된 이메일 확인하는 로직을 넣을 것
-      const isRegistered = email === 'test@example.com' // 예제
+      const isRegistered = email === 'test@example.com'
 
       if (isEmailValid(email)) {
          setSuccess('메일이 인증에 성공했습니다!')
          setEmailConfirmed(true)
       } else {
          setError('메일이 존재하지 않습니다!')
-         // setEmailConfirmed(false)
-         // setSuccessMessage('')
       }
 
       if (isRegistered) {
          setSuccess('메일이 인증에 성공했습니다!')
          setEmailConfirmed(true)
-         // setSuccessMessage('메일 인증에 성공했습니다!')
       } else {
          setError('메일이 존재하지 않습니다!')
          setEmailConfirmed(false)
-         //  setErrorMessage('메일이 존재하지 않습니다!')
-         // setSuccess('')
       }
    }
 
@@ -230,10 +207,6 @@ const ForgotPasswordModal = ({ onVerifySuccess }) => {
 
    return (
       <>
-         {/* <CloseButton onClick={handleClose}>
-                  <CloseIcon />
-               </CloseButton> */}
-
          <StyledText className="title" variant="h2">
             비밀번호 찾기
          </StyledText>
@@ -241,19 +214,7 @@ const ForgotPasswordModal = ({ onVerifySuccess }) => {
          <Section>
             <SubTitle>1. 이메일 인증하기</SubTitle>
             <Wrapper className="email-wrap">
-               <InputField
-                  // 인풋 필드
-                  //   label="이메일을 입력해 주세요"
-                  placeholder="이메일을 입력해 주세요."
-                  name="email"
-                  //   variant="standard" // 아래쪽 라인만 생김
-                  fullWidth
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={emailConfirmed}
-                  $isDisabled={emailConfirmed}
-               />
+               <InputField placeholder="이메일을 입력해 주세요." name="email" fullWidth autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={emailConfirmed} $isDisabled={emailConfirmed} />
                <StyledButton onClick={handleEmailCheck} disabled={emailConfirmed}>
                   확인
                </StyledButton>
@@ -298,17 +259,3 @@ const ForgotPasswordModal = ({ onVerifySuccess }) => {
 }
 
 export default ForgotPasswordModal
-
-/* 
-
-         <Section>
-            <SubTitle>3. 인증 확인하기</SubTitle>
-            <Wrapper className="verify-code-wrap">
-               <InputField className="verify-code-input" />
-               <TimerBox>
-                  {Math.floor(timer / 60)}:{('0' + (timer % 60)).slice(-2)}
-               </TimerBox>
-               <StyledButton onClick={handleCheckVerify}>인증확인</StyledButton>
-            </Wrapper>
-         </Section>
-*/

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { checkAuthStatusThunk } from './features/authSlice'
+import { checkAuthStatusThunk, logoutUserThunk } from './features/authSlice'
 
 // style 세팅
 import CssBaseline from '@mui/material/CssBaseline'
@@ -11,13 +11,14 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 // 컴포넌트 import
 import Navbar from './components/shared/Navbar'
-import { Home, MyPage, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, AdminPage, CreatePostPage, AboutPage } from './pages'
+import { Home, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, AdminPage, CreatePostPage, AboutPage, QnaPage, FaqPage, EventPage, TemplatePreviewPage, MyPage, QnaPostPage, NotFoundPage } from './pages'
 import Footer from './components/shared/Footer'
 import { Login } from './components/auth'
 import ReviewEditor from './components/review/ReviewEditor'
-
+import LoginRoute from './components/redirect/LoginRoute'
 // 라우트 세팅
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom'
+import AuthChecker from './components/auth/AuthChecker'
 
 // 네비바 아래 컨텐츠를 위한 컨테이너
 const MainContent = muiStyled('div')(({ theme, $hideLayout }) => ({
@@ -74,72 +75,91 @@ const GlobalStyle = createGlobalStyle`
 function App() {
    const location = useLocation()
    const dispatch = useDispatch()
-   const { isAuthenticated, user } = useSelector((state) => state.auth)
-   const [sdkLoaded, setSdkLoaded] = useState(false)
+   const { isAuthenticated, user, authData, loading } = useSelector((state) => state.auth)
 
    useEffect(() => {
-      dispatch(checkAuthStatusThunk())
+      dispatch(checkAuthStatusThunk(authData))
    }, [dispatch])
 
-   // useEffect(() => {
-   //    if (!window.Kakao.isInitialized()) {
-   //       window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY)
-   //       console.log('Kakao SDK 초기화 완료')
-   //    }
-   // }, [])
+   useEffect(() => {
+      if (location.pathname !== '/login' && location.pathname !== '/signup') {
+         sessionStorage.setItem('lastVisited', location.pathname)
+      }
+   }, [location.pathname])
 
-   // useEffect(() => {
-   //    if (!window.Kakao.isInitialized()) {
-   //       window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY, {
-   //          throughTalk: false, // 카카오톡 간편로그인 사용 여부
-   //       })
-   //       console.log('Kakao SDK 초기화 완료')
-   //    }
-   // }, [])
-
-   // useEffect(() => {
-   //    // 이미 로드되었다면 스킵
-   //    if (sdkLoaded) return
-   //    //       <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.4.0/kakao.min.js" integrity="sha384-mXVrIX2T/Kszp6Z0aEWaA8Nm7J6/ZeWXbL8UpGRjKwWe56Srd/iyNmWMBhcItAjH" crossorigin="anonymous"></script>
-   //    const script = document.createElement('script')
-   //    script.src = 'https://developers.kakao.com/sdk/js/kakao.js'
-   //    script.async = true
-   //    script.onload = () => {
-   //       if (window.Kakao && !window.Kakao.isInitialized()) {
-   //          window.Kakao.init(process.env.REACT_APP_KAKAO_JS_KEY)
-   //          console.log('카카오 SDK 초기화 성공')
-   //       }
-   //       setSdkLoaded(true)
-   //    }
-   //    document.head.appendChild(script)
-
-   //    return () => {
-   //       document.head.removeChild(script)
-   //    }
-   // }, [sdkLoaded])
-
-   const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname.startsWith('/admin')
+   const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/template/preview/') || location.pathname.startsWith('/preview/')
 
    return (
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
          <GlobalStyle />
          <CssBaseline />
+         <AuthChecker authData={authData} isAuthenticated={isAuthenticated} />
 
-         {!hideLayout && <Navbar isAuthenticated={isAuthenticated} user={user} />}
+         {!loading && !hideLayout && <Navbar isAuthenticated={isAuthenticated} user={user} />}
 
          <MainContent $hideLayout={hideLayout}>
             <Routes>
                <Route path="/" element={<Home />} />
                <Route path="/about" element={<AboutPage />} />
-               <Route path="/my/*" element={<MyPage />} />
-               <Route path="/signup" element={<SignupPage />} />
+               <Route
+                  path="/signup"
+                  element={
+                     <LoginRoute>
+                        <SignupPage />
+                     </LoginRoute>
+                  }
+               />
                <Route path="/support" element={<CustomerPage />} />
+               {/* <Route path="/qna" element={<QnaPage />} /> */}
+               {/* <Route path="/qna" element={<QnaPage />} /> */}
+               <Route path="/post/new" element={<QnaPostPage />} />
+               <Route path="/faq" element={<FaqPage />} />
+               {/* <Route path="/event" element={<EventPage />} /> */}
                <Route path="/template">
                   {/* /template 접근 시 기본 탭으로 리다이렉트 */}
                   <Route index element={<Navigate to="/template/wedding" replace />} />
                   <Route path=":tab/*" element={<TemplatePage key={window.location.pathname} />} />
                </Route>
-               <Route path="/login" element={<LoginPage />}>
+
+               {/* 독립적인 미리보기 페이지 라우트 */}
+               <Route path="/preview/:userTemplateId" element={<TemplatePreviewPage />} />
+
+               {/* /templates/preview/ 경로에 대한 리다이렉트 */}
+               <Route
+                  path="/templates/preview/:userTemplateId"
+                  element={
+                     <Navigate
+                        replace
+                        to={(location) => {
+                           const userTemplateId = decodeURIComponent(location.pathname.split('/').pop())
+                           return `/preview/${userTemplateId}`
+                        }}
+                     />
+                  }
+               />
+
+               {/* 기존 /template/preview/ 경로에 대한 리다이렉트 */}
+               <Route
+                  path="/template/preview/:userTemplateId"
+                  element={
+                     <Navigate
+                        replace
+                        to={(location) => {
+                           const userTemplateId = decodeURIComponent(location.pathname.split('/').pop())
+                           return `/preview/${userTemplateId}`
+                        }}
+                     />
+                  }
+               />
+
+               <Route
+                  path="/login"
+                  element={
+                     <LoginRoute>
+                        <LoginPage />
+                     </LoginRoute>
+                  }
+               >
                   <Route index element={<Login />} />
                   <Route path="*" element={<Navigate to="/login" replace />} />
                </Route>
@@ -151,6 +171,11 @@ function App() {
                {/* 관리자 페이지 */}
                <Route path="/admin" element={<Navigate to="/admin/analytics" replace />} />
                <Route path="/admin/:id/*" element={<AdminPage />} />
+               {/* 마이페이지 */}
+               <Route path="/my" element={<MyPage />} />
+
+               {/* 404 NotFound 페이지*/}
+               <Route path="*" element={<NotFoundPage />} />
             </Routes>
          </MainContent>
 

@@ -8,7 +8,17 @@ import { COLORS } from '../../styles/commonStyles'
 const KAKAO_SDK_URL = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REACT_APP_KAKAO_JS_KEY}&autoload=false`
 
 const LocationSection = ({ formData, style, textStyle, combinedStyle, isDrawer }) => {
-   const { name, address, detail, guide, showMap, coordinates } = formData.location || {}
+   // formData.location이 없을 경우 기본값 제공
+   const locationData = formData.location || {
+      name: '',
+      address: '',
+      detail: '',
+      guide: '',
+      showMap: false,
+      coordinates: null
+   };
+
+   const { name, address, detail, guide, showMap, coordinates } = locationData
 
    // 드로어와 일반 미리보기를 구분하는 고유 ID 생성
    const mapId = `preview-kakao-map-${isDrawer ? 'drawer' : 'main'}`
@@ -123,11 +133,11 @@ const LocationSection = ({ formData, style, textStyle, combinedStyle, isDrawer }
                </Box>
 
                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Typography sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1, color: textStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>{address}</Typography>
+                  <Typography sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, color: textStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>{address}</Typography>
 
                   {detail && (
                      <Box sx={{ p: 2, borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.7)', border: `1px solid ${COLORS.accent.main}15` }}>
-                        <Typography sx={{ color: textStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit', fontSize: '0.95rem', whiteSpace: 'pre-line' }}>{detail}</Typography>
+                        <Typography sx={{ color: textStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit', fontSize: '0.95rem', whiteSpace: 'pre-line', textAlign: 'center' }}>{detail}</Typography>
                      </Box>
                   )}
 
@@ -135,9 +145,9 @@ const LocationSection = ({ formData, style, textStyle, combinedStyle, isDrawer }
                      <Box sx={{ p: 2, borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.7)', border: `1px solid ${COLORS.accent.main}15` }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, color: combinedStyle?.color || 'inherit' }}>
                            <DirectionsIcon fontSize="small" />
-                           <Typography sx={{ fontWeight: 500, fontSize: '0.9rem', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>교통편 안내</Typography>
+                           <Typography sx={{ fontWeight: 'bold', fontSize: '1.2rem', fontFamily: combinedStyle?.fontFamily || 'inherit' }}>교통편 안내</Typography>
                         </Box>
-                        <Typography sx={{ color: textStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit', fontSize: '0.95rem', whiteSpace: 'pre-line' }}>{guide}</Typography>
+                        <Typography sx={{ color: textStyle?.color || 'inherit', fontFamily: combinedStyle?.fontFamily || 'inherit', fontSize: '0.95rem', whiteSpace: 'pre-line', textAlign: 'center' }}>{guide}</Typography>
                      </Box>
                   )}
 
