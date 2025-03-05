@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Box, Typography, Pagination } from '@mui/material'
 import { styled } from '@mui/material/styles'
+import LockIcon from '@mui/icons-material/Lock'
 
 // 보드 컨테이너
 const BoardContainer = styled(Box)(({ theme }) => ({
@@ -79,9 +80,11 @@ const Board = ({ result }) => {
       <BoardContainer>
          {currentItems.map((item) => (
             <BoardItemContainer key={item.id}>
-               <BoardTitle onClick={() => handleTitleClick(item.id)}>
-                  <Typography variant="h6" sx={{ fontSize: '15px' }}>
+               <BoardTitle onClick={item.isPrivate ? undefined : () => handleTitleClick(item.id)} sx={{ cursor: item.isPrivate ? 'not-allowed' : 'pointer' }}>
+                  {/* <BoardTitle onClick={() => handleTitleClick(item.id)}> */}
+                  <Typography variant="h6" sx={{ fontSize: '15px', display: 'flex', alignItems: 'center' }}>
                      {item.title}
+                     {item.isPrivate ? <LockIcon /> : undefined}
                   </Typography>
                </BoardTitle>
                <ContentBox show={openItemId === item.id ? 'true' : undefined}>

@@ -126,7 +126,9 @@ const QnaPostPage = () => {
       category: '',
       title: '',
       content: '',
+      isPrivate: false,
    })
+   console.log(formData)
 
    const [error, setError] = useState('')
    const [successMessage, setSuccessMessage] = useState('')
@@ -136,15 +138,26 @@ const QnaPostPage = () => {
    }
 
    const handleChange = (e) => {
-      const { name, value } = e.target
+      const { name, value, type, checked } = e.target
 
-      const processedValue = typeof value === 'object' && value !== null ? (value.val ? value.val.toString() : JSON.stringify(value)) : value
+      // 🛠️ 체크박스일 경우 `checked` 값을 사용
+      const processedValue = type === 'checkbox' ? checked : typeof value === 'object' && value !== null ? (value.val ? value.val.toString() : JSON.stringify(value)) : value
 
       setFormData((prevData) => ({
          ...prevData, // 기존 데이터 유지
          [name]: processedValue, // 변경된 값 업데이트
       }))
    }
+   //    const handleChange = (e) => {
+   //       const { name, value } = e.target
+
+   //       const processedValue = typeof value === 'object' && value !== null ? (value.val ? value.val.toString() : JSON.stringify(value)) : value
+
+   //       setFormData((prevData) => ({
+   //          ...prevData, // 기존 데이터 유지
+   //          [name]: processedValue, // 변경된 값 업데이트
+   //       }))
+   //    }
 
    const handleSubmit = async (e) => {
       e.preventDefault()
@@ -172,6 +185,7 @@ const QnaPostPage = () => {
                title: String(formData.title),
                content: String(formData.content),
                category: String(formData.category),
+               isPrivate: formData.isPrivate,
             },
          }
 
@@ -216,7 +230,7 @@ const QnaPostPage = () => {
             </FormField>
 
             <FormField>
-               <FormControlLabel control={<Checkbox checked={isPrivate} onChange={handleCheckboxChange} />} label="비공개로 등록" />
+               <FormControlLabel control={<Checkbox name="isPrivate" checked={formData.isPrivate} onChange={handleChange} />} label="비공개로 등록" />
             </FormField>
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>

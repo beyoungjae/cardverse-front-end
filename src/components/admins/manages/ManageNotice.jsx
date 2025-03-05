@@ -22,7 +22,7 @@ const ManageNotice = () => {
    return (
       <Container>
          <TitleContainer title="공지사항" />
-         <MainContainer type="accordion" itemData={items}></MainContainer>
+         <MainContainer type="accordion" itemData={items ? items : []}></MainContainer>
       </Container>
    )
 }
