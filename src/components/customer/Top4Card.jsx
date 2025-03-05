@@ -1,7 +1,12 @@
+import React from 'react'
 import { Box, Typography, Card as MuiCard, CardContent, Button } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import { Link } from 'react-router-dom'
+import VpnKeyIcon from '@mui/icons-material/VpnKey'
+import PersonIcon from '@mui/icons-material/Person'
+import EmailIcon from '@mui/icons-material/Email'
+import AccessTimeIcon from '@mui/icons-material/AccessTime'
 
 // 카드 페이지 컨테이너
 const Top4CardContainer = styled(Box)(({ theme }) => ({
@@ -77,8 +82,18 @@ const CustomerButton = styled(Button)(({ theme }) => ({
    fontSize: '0.8rem',
 }))
 
+// 아이콘
+const ViewIcon = styled(Typography)(({ theme }) => ({
+   display: 'flex',
+   justifyContent: 'center',
+   color: '#93cacc', // 아이콘 색상
+}))
+
 // 더미 데이터
 const dummyCards = [{ title: 'Q. 로그인  해결방법 ' }, { title: 'Q. 회원가입 해결방법' }, { title: 'Q. 모바일청첩장 이용방법' }, { title: 'Q. 모바일청첩장 사용기간' }]
+
+// 더미 카드 데이터 예시
+const dummyCardsIcon = [<VpnKeyIcon />, <PersonIcon />, <EmailIcon />, <AccessTimeIcon />]
 
 const Top4Card = () => {
    return (
@@ -93,6 +108,7 @@ const Top4Card = () => {
                {dummyCards.map((card, index) => (
                   <Card key={index}>
                      <CardContent>
+                        <ViewIcon>{React.cloneElement(dummyCardsIcon[index], { sx: { fontSize: 40 } })}</ViewIcon>
                         <Cardtitle variant="h6">{card.title}</Cardtitle>
                      </CardContent>
                   </Card>
