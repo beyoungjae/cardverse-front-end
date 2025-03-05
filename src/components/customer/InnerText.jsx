@@ -6,6 +6,7 @@ import { styled } from '@mui/material/styles'
 const InnerContainer = styled(Box)(({ theme }) => ({
    width: '100%',
    backgroundColor: theme.palette.background.default,
+   paddingTop: '30px',
 }))
 
 //내부 텍스트

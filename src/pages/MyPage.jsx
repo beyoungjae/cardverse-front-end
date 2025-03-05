@@ -167,11 +167,7 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
 }))
 
 const TabPanel = ({ children }) => {
-   return (
-      <Box sx={{ py: 3 }}>
-         {children}
-      </Box>
-   )
+   return <Box sx={{ py: 3 }}>{children}</Box>
 }
 
 const ContentCard = styled(Paper)(({ theme }) => ({
@@ -266,11 +262,7 @@ const ModalTitle = styled(Typography)(({ theme }) => ({
 const ModalTabPanel = ({ children, value, index }) => {
    return (
       <div role="tabpanel" hidden={value !== index} id={`modal-tabpanel-${index}`}>
-         {value === index && (
-            <Box sx={{ pt: 2 }}>
-               {children}
-            </Box>
-         )}
+         {value === index && <Box sx={{ pt: 2 }}>{children}</Box>}
       </div>
    )
 }
@@ -290,7 +282,7 @@ const MyPage = () => {
    const [snackbar, setSnackbar] = useState({
       open: false,
       message: '',
-      severity: 'success'
+      severity: 'success',
    })
    const updateLoading = useSelector((state) => state.auth.loading)
 
@@ -342,7 +334,7 @@ const MyPage = () => {
          setSnackbar({
             open: true,
             message: '유효한 닉네임을 입력해주세요',
-            severity: 'error'
+            severity: 'error',
          })
          return
       }
@@ -352,14 +344,14 @@ const MyPage = () => {
          setSnackbar({
             open: true,
             message: '프로필이 성공적으로 업데이트되었습니다',
-            severity: 'success'
+            severity: 'success',
          })
          handleCloseModal()
       } catch (error) {
          setSnackbar({
             open: true,
             message: error?.message || '프로필 업데이트 중 오류가 발생했습니다',
-            severity: 'error'
+            severity: 'error',
          })
       }
    }
@@ -368,7 +360,7 @@ const MyPage = () => {
    const handleCloseSnackbar = () => {
       setSnackbar({
          ...snackbar,
-         open: false
+         open: false,
       })
    }
 
@@ -438,36 +430,21 @@ const MyPage = () => {
                <Box>
                   {/* 구매한 템플릿 */}
                   {tabValue === 0 && (
-                     <motion.div
-                        key="tab-0"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                     >
+                     <motion.div key="tab-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
                         <TabPanel>
                            <Grid container spacing={3}>
                               {purchaseHistory && purchaseHistory.length > 0 ? (
                                  purchaseHistory.map((purchase, index) => (
                                     <Grid item xs={12} sm={6} key={purchase.id || `purchase-template-${purchase.templateId}-${index}`}>
                                        <ContentCard>
-                                          <ThumbnailImage 
-                                             src={purchase.template?.thumbnail || '/images/placeholder-image.jpg'} 
-                                             alt={purchase.template?.title || '템플릿'} 
-                                          />
+                                          <ThumbnailImage src={purchase.template?.thumbnail || '/images/placeholder-image.jpg'} alt={purchase.template?.title || '템플릿'} />
                                           <Typography variant="h6" fontWeight={600} gutterBottom>
                                              {purchase.template?.title || '템플릿'}
                                           </Typography>
                                           <Typography variant="body2" color="textSecondary" gutterBottom>
                                              구매일: {purchase.createdAt ? new Date(purchase.createdAt).toLocaleDateString() : '날짜 정보 없음'}
                                           </Typography>
-                                          <ActionButton 
-                                             variant="contained" 
-                                             color="primary" 
-                                             fullWidth
-                                             sx={{ mt: 2 }} 
-                                             onClick={() => handleEditorClick(purchase.template)}
-                                          >
+                                          <ActionButton variant="contained" color="primary" fullWidth sx={{ mt: 2 }} onClick={() => handleEditorClick(purchase.template)}>
                                              에디터로 이동
                                           </ActionButton>
                                        </ContentCard>
@@ -482,11 +459,7 @@ const MyPage = () => {
                                        <Typography variant="body2" color="textSecondary" paragraph>
                                           다양한 템플릿을 구매하고 사용해보세요
                                        </Typography>
-                                       <ActionButton 
-                                          variant="contained" 
-                                          color="primary"
-                                          onClick={() => navigate('/template')}
-                                       >
+                                       <ActionButton variant="contained" color="primary" onClick={() => navigate('/template')}>
                                           템플릿 둘러보기
                                        </ActionButton>
                                     </EmptyStateBox>
@@ -499,26 +472,14 @@ const MyPage = () => {
 
                   {/* 결제 내역 */}
                   {tabValue === 1 && (
-                     <motion.div
-                        key="tab-1"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                     >
+                     <motion.div key="tab-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
                         <TabPanel>
                            {purchaseHistory && purchaseHistory.length > 0 ? (
                               purchaseHistory.map((purchase, index) => (
-                                 <ContentCard 
-                                    key={purchase.id || `purchase-payment-${purchase.templateId}-${index}`}
-                                 >
+                                 <ContentCard key={purchase.id || `purchase-payment-${purchase.templateId}-${index}`}>
                                     <Grid container spacing={2} alignItems="center">
                                        <Grid item xs={12} sm={4}>
-                                          <ThumbnailImage 
-                                             src={purchase.template?.thumbnail || '/images/placeholder-image.jpg'} 
-                                             alt={purchase.template?.title || '템플릿'} 
-                                             style={{ height: '120px' }}
-                                          />
+                                          <ThumbnailImage src={purchase.template?.thumbnail || '/images/placeholder-image.jpg'} alt={purchase.template?.title || '템플릿'} style={{ height: '120px' }} />
                                        </Grid>
                                        <Grid item xs={12} sm={8}>
                                           <Typography variant="h6" fontWeight={600}>
@@ -550,19 +511,11 @@ const MyPage = () => {
 
                   {/* 알림 */}
                   {tabValue === 2 && (
-                     <motion.div
-                        key="tab-2"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                     >
+                     <motion.div key="tab-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
                         <TabPanel>
                            {(user?.notifications || []).length > 0 ? (
                               (user?.notifications || []).map((notification, index) => (
-                                 <ContentCard 
-                                    key={notification?.id || `notification-${index}`}
-                                 >
+                                 <ContentCard key={notification?.id || `notification-${index}`}>
                                     <Typography variant="h6" fontWeight={600} gutterBottom>
                                        {notification?.title || '알림'}
                                     </Typography>
@@ -582,12 +535,7 @@ const MyPage = () => {
                                  <Typography variant="body2" color="textSecondary" gutterBottom>
                                     새로운 알림이 도착하면 이곳에 표시됩니다
                                  </Typography>
-                                 <ActionButton
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={() => navigate('/template')}
-                                    sx={{ mt: 2 }}
-                                 >
+                                 <ActionButton variant="contained" color="primary" onClick={() => navigate('/template')} sx={{ mt: 2 }}>
                                     템플릿 둘러보기
                                  </ActionButton>
                               </EmptyStateBox>
@@ -612,17 +560,11 @@ const MyPage = () => {
             </BannerOverlay>
          </BannerSection>
          <PageContainer>
-            <MainContent>
-               {renderContent()}
-            </MainContent>
+            <MainContent>{renderContent()}</MainContent>
          </PageContainer>
 
          {/* 프로필 수정 모달 */}
-         <Modal
-            open={openModal}
-            onClose={handleCloseModal}
-            aria-labelledby="profile-edit-modal"
-         >
+         <Modal open={openModal} onClose={handleCloseModal} aria-labelledby="profile-edit-modal">
             <ModalContainer>
                <ModalHeader>
                   <ModalTitle id="profile-edit-modal">프로필 설정</ModalTitle>
@@ -641,31 +583,12 @@ const MyPage = () => {
 
                {/* 기본 정보 탭 */}
                <ModalTabPanel value={modalTabValue} index={0}>
-                  <TextField
-                     fullWidth
-                     label="닉네임"
-                     variant="outlined"
-                     value={nickname}
-                     onChange={handleNicknameChange}
-                     error={!!nicknameError}
-                     helperText={nicknameError}
-                     margin="normal"
-                  />
+                  <TextField fullWidth label="닉네임" variant="outlined" value={nickname} onChange={handleNicknameChange} error={!!nicknameError} helperText={nicknameError} margin="normal" />
                   <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-                     <Button
-                        variant="outlined"
-                        color="inherit"
-                        onClick={handleCloseModal}
-                        sx={{ mr: 2 }}
-                     >
+                     <Button variant="outlined" color="inherit" onClick={handleCloseModal} sx={{ mr: 2 }}>
                         취소
                      </Button>
-                     <ActionButton
-                        variant="contained"
-                        color="primary"
-                        onClick={handleUpdateProfile}
-                        disabled={updateLoading || !!nicknameError}
-                     >
+                     <ActionButton variant="contained" color="primary" onClick={handleUpdateProfile} disabled={updateLoading || !!nicknameError}>
                         {updateLoading ? '저장 중...' : '저장'}
                      </ActionButton>
                   </Box>
@@ -684,12 +607,7 @@ const MyPage = () => {
          </Modal>
 
          {/* 알림 스낵바 */}
-         <Snackbar
-            open={snackbar.open}
-            autoHideDuration={6000}
-            onClose={handleCloseSnackbar}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-         >
+         <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
             <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
                {snackbar.message}
             </Alert>
