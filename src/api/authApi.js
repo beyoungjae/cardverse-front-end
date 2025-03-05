@@ -25,7 +25,9 @@ export const loginUser = async (credentials) => {
 //로그아웃
 export const logoutUser = async (removeUser) => {
    try {
-      const response = await commonApi.get('/auth/logout', removeUser)
+      const response = await commonApi.get('/auth/logout', { 
+         params: removeUser 
+      })
       return response
    } catch (error) {
       console.error(`API Request 오류: ${error.message}`)
@@ -36,7 +38,7 @@ export const logoutUser = async (removeUser) => {
 //로그인 상태 확인
 export const checkAuthStatus = async (userData) => {
    try {
-      const response = await commonApi.post('/auth/status', userData)
+      const response = await commonApi.post('/auth/status', userData ?? {})
       return response
    } catch (error) {
       console.error(`API Request 오류: ${error.message}`)

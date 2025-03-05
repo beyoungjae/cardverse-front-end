@@ -145,8 +145,12 @@ const authSlice = createSlice({
             state.loading = false
             state.isAuthenticated = false
             state.user = null
-
+            state.authData = null
+            
+            // 로컬 스토리지 데이터 완전히 제거
             localStorage.removeItem('persist:auth')
+            localStorage.removeItem('user')
+            localStorage.removeItem('loginType')
          })
          .addCase(logoutUserThunk.rejected, (state, action) => {
             state.loading = false
@@ -166,6 +170,13 @@ const authSlice = createSlice({
             if (action.payload.error === 'network_error') {
                // 네트워크 오류 시 현재 상태 유지
                console.log('Network error detected, maintaining current auth state')
+               return
+            }
+
+            if (!action.payload.user) {
+               state.isAuthenticated = false
+               state.user = null
+               localStorage.removeItem('persist:auth')
                return
             }
 
