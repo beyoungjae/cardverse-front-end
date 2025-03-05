@@ -76,6 +76,9 @@ export const SectionContainer = styled(Box)(({ theme }) => ({
       transform: 'translateY(-2px)',
       boxShadow: `0 8px 24px ${COLORS.accent.main}15`,
    },
+   [theme.breakpoints.down('400')]: {
+      width: '120%',
+   },
 }))
 
 export const SectionContent = styled(Box)(({ theme }) => ({

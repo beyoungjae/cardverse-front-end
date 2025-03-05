@@ -19,5 +19,3 @@ export const INITIAL_FORM_DATA = {
 }
 
 export const ITEMS_PER_PAGE = 6
-
-// const categories = ['--선택--', '청첩장', '초빙장', '연회장', '고희연']

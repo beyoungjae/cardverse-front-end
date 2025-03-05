@@ -1,11 +1,9 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Box, Typography, Grid, Chip } from '@mui/material'
 import { motion, AnimatePresence } from 'framer-motion'
 import { styled } from '@mui/material/styles'
-import { useFormContext } from 'react-hook-form'
 import PaletteIcon from '@mui/icons-material/Palette'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
-import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import FormatColorFillIcon from '@mui/icons-material/FormatColorFill'
 import TextFormatIcon from '@mui/icons-material/TextFormat'
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
@@ -248,7 +246,6 @@ const ThemeSection = ({ control, onThemeChange, theme, handleThemeChange, resetT
       if (templateId) {
          const templateSpecificKey = `template_theme_${templateId}`;
          localStorage.setItem(templateSpecificKey, JSON.stringify(themeSettings));
-         console.log(`템플릿별 테마 설정 저장 (${templateId}):`, themeSettings);
       }
       
       // 글로벌 테마 설정도 함께 저장
@@ -285,7 +282,25 @@ const ThemeSection = ({ control, onThemeChange, theme, handleThemeChange, resetT
       // 부모 컴포넌트에 테마 변경 알림
       onThemeChange('fontFamily', selectedFont);
       
-   }, [selectedFont, onThemeChange, theme]);
+      // 테마 설정 객체 생성
+      const themeSettings = {
+         primaryColor: customColors.primary,
+         secondaryColor: customColors.secondary,
+         backgroundColor: customColors.background,
+         fontFamily: selectedFont,
+         animation: theme.animation || 'fade',
+      };
+      
+      // 템플릿별 테마 설정 저장
+      if (templateId) {
+         const templateSpecificKey = `template_theme_${templateId}`;
+         localStorage.setItem(templateSpecificKey, JSON.stringify(themeSettings));
+      }
+      
+      // 글로벌 테마 설정도 함께 저장
+      localStorage.setItem('template_theme_draft', JSON.stringify(themeSettings));
+       
+    }, [selectedFont, onThemeChange, theme, customColors, templateId]);
    
    return (
       <SectionContainer component={motion.div} variants={fadeInUp} initial="initial" animate="animate" exit="exit" transition={easeTransition}>

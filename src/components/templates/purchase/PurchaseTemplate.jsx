@@ -187,7 +187,7 @@ const PurchaseTemplate = () => {
    }
 
    // 나머지 상태 및 훅들
-   const { user } = useSelector((state) => state.auth)
+   const { authData } = useSelector((state) => state.auth)
    const { detail: template, status } = useSelector((state) => state.templates)
    const { templateId } = useParams()
    const navigate = useNavigate()
@@ -300,7 +300,7 @@ const PurchaseTemplate = () => {
 
    // 결제 처리 함수
    const handleNext = async () => {
-      if (!user || !user.id) {
+      if (!authData || !authData.id) {
          alert('로그인이 필요한 서비스입니다.')
          navigate('/login', {
             state: {

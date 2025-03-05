@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 
+import { KAKAO_REST_API } from '../../api/oauthApi'
+import { oauthLoginUserThunk } from '../../features/authSlice'
+
 import ModalWrapper from '../modals/ModalWrapper'
 
 // mui
@@ -32,7 +35,7 @@ const LoginContainer = styled(motion.div)(({ theme }) => ({
    overflow: 'hidden',
    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
    backgroundColor: '#ffffff',
-   
+
    [theme.breakpoints.down('sm')]: {
       borderRadius: '12px',
    },
@@ -45,7 +48,7 @@ const LoginHeader = styled(Box)(({ theme }) => ({
    textAlign: 'center',
    backgroundColor: '#B699BB',
    overflow: 'hidden',
-   
+
    '&::before': {
       content: '""',
       position: 'absolute',
@@ -69,7 +72,7 @@ const LoginTitle = styled(Typography)(({ theme }) => ({
    marginBottom: '5px',
    position: 'relative',
    zIndex: 1,
-   
+
    [theme.breakpoints.down('sm')]: {
       fontSize: '1.5rem',
    },
@@ -81,7 +84,7 @@ const LoginSubtitle = styled(Typography)(({ theme }) => ({
    color: 'rgba(255, 255, 255, 0.8)',
    position: 'relative',
    zIndex: 1,
-   
+
    [theme.breakpoints.down('sm')]: {
       fontSize: '0.9rem',
    },
@@ -90,7 +93,7 @@ const LoginSubtitle = styled(Typography)(({ theme }) => ({
 // 로그인 폼
 const LoginForm = styled(Box)(({ theme }) => ({
    padding: '40px',
-   
+
    [theme.breakpoints.down('sm')]: {
       padding: '30px 20px',
    },
@@ -114,7 +117,7 @@ const InputField = styled(TextField)(({ theme }) => ({
    '& .MuiInputBase-input': {
       padding: '15px',
       fontSize: '1rem',
-      
+
       [theme.breakpoints.down('sm')]: {
          padding: '12px',
          fontSize: '0.9rem',
@@ -135,11 +138,11 @@ const LoginButton = styled(motion.button)(({ theme }) => ({
    cursor: 'pointer',
    marginBottom: '20px',
    transition: 'background-color 0.3s ease',
-   
+
    '&:hover': {
       backgroundColor: '#a589aa',
    },
-   
+
    [theme.breakpoints.down('sm')]: {
       padding: '12px',
       fontSize: '0.9rem',
@@ -153,7 +156,7 @@ const Divider = styled(Box)(({ theme }) => ({
    margin: '20px 0',
    color: '#aaa',
    fontSize: '0.9rem',
-   
+
    '&::before, &::after': {
       content: '""',
       flex: 1,
@@ -175,7 +178,7 @@ const TextLink = styled(Typography)(({ theme }) => ({
    display: 'inline',
    marginLeft: '5px',
    marginRight: '5px',
-   
+
    '&:hover': {
       textDecoration: 'underline',
    },
@@ -187,7 +190,7 @@ const HelpText = styled(Typography)(({ theme }) => ({
    fontSize: '0.9rem',
    color: '#666',
    marginTop: '20px',
-   
+
    [theme.breakpoints.down('sm')]: {
       fontSize: '0.8rem',
    },
@@ -198,6 +201,7 @@ const Login = () => {
    const [password, setPassword] = useState('')
    const [showPassword, setShowPassword] = useState(false)
    const [showModal, setShowModal] = useState(false)
+   const [isProcessingCode, setIsProcessingCode] = useState(false)
    const navigate = useNavigate()
    const dispatch = useDispatch()
    const [ref, inView] = useInView({
@@ -205,92 +209,72 @@ const Login = () => {
       triggerOnce: true,
    })
 
+   useEffect(() => {
+      if (isProcessingCode) return
+
+      const search = new URLSearchParams(window.location.search)
+      const code = search.get('code')
+
+      // 카카오로 리다이렉트 될 경우 code가 존재
+      if (code) {
+         setIsProcessingCode(true)
+         localStorage.setItem('loginType', 'kakao')
+
+         // 코드 파라미터를 URL에서 제거하기 위한 처리
+         const cleanUrl = window.location.pathname
+         window.history.replaceState({}, document.title, cleanUrl)
+
+         dispatch(oauthLoginUserThunk({ code, provider: 'kakao' }))
+            .unwrap()
+            .then(() => {
+               navigate('/')
+            })
+            .catch((error) => {
+               console.error('로그인 실패:', error)
+               alert('로그인에 실패하셨습니다.')
+            })
+            .finally(() => {
+               setIsProcessingCode(false)
+            })
+      }
+   }, [dispatch, navigate, isProcessingCode])
+
    const handleLogin = useCallback(
       async (e) => {
-         e.preventDefault()
          try {
-            if (email && password) {
-               localStorage.setItem('loginType', 'local')
-               
-               // 로그인 시도
-               const result = await dispatch(loginUserThunk({ 
-                  email, 
-                  password,
-                  forceLogin: true // 강제 로그인 옵션 추가
-               })).unwrap()
-               
-               if (result.id) {
-                  navigate('/')
-               }
+            e.preventDefault()
+            if (email.trim() && password.trim()) {
+               await dispatch(loginUserThunk({ email, password })).unwrap()
+               navigate('/')
             } else {
                alert('이메일과 비밀번호를 입력해주세요.')
             }
          } catch (error) {
             console.error('로그인 에러:', error)
-            
-            // 에러 메시지에 따른 처리
-            if (error && typeof error === 'string') {
-               if (error.includes('이미 로그인되어 있습니다')) {
-                  // 자동으로 로그아웃 후 다시 로그인 시도
-                  try {
-                     await dispatch(logoutUserThunk()).unwrap()
-                     
-                     // 세션 스토리지와 로컬 스토리지 초기화
-                     sessionStorage.removeItem('statusCheckFlag')
-                     
-                     // 로그아웃 성공 후 다시 로그인 시도
-                     const result = await dispatch(loginUserThunk({ 
-                        email, 
-                        password,
-                        forceLogin: true
-                     })).unwrap()
-                     
-                     if (result.id) {
-                        navigate('/')
-                     }
-                  } catch (secondError) {
-                     console.error('두 번째 로그인 시도 에러:', secondError)
-                     alert('로그인에 실패했습니다. 페이지를 새로고침한 후 다시 시도해주세요.')
-                     // 페이지 새로고침
-                     window.location.reload()
-                  }
-               } else {
-                  // 다른 로그인 에러 처리
-                  alert(`로그인에 실패했습니다: ${error}`)
-               }
-            } else {
-               alert('로그인에 실패했습니다. 다시 시도해주세요.')
-            }
          }
       },
-      [dispatch, email, password, navigate]
+      [dispatch, email, password, navigate],
    )
+
+   const handleKakaoLogin = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      window.location.href = KAKAO_REST_API
+   }
+
+   if (isProcessingCode) return <div></div>
 
    return (
       <PageContainer>
-         <LoginContainer 
-            ref={ref}
-            initial={{ opacity: 0, y: 30 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-         >
+         <LoginContainer ref={ref} initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6, ease: 'easeOut' }}>
             <LoginHeader>
                <LoginTitle variant="h4">로그인</LoginTitle>
                <LoginSubtitle variant="body1">CardVerse에 오신 것을 환영합니다</LoginSubtitle>
             </LoginHeader>
-            
+
             <LoginForm component="form" onSubmit={handleLogin}>
-               <InputField
-                  label="이메일"
-                  placeholder="이메일을 입력해 주세요"
-                  name="email"
-                  fullWidth
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  variant="outlined"
-               />
-               
+               <InputField label="이메일" placeholder="이메일을 입력해 주세요" name="email" fullWidth autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} variant="outlined" />
+
                <InputField
                   label="비밀번호"
                   placeholder="비밀번호를 입력해 주세요"
@@ -311,26 +295,22 @@ const Login = () => {
                      ),
                   }}
                />
-               
+
                <Typography variant="body2" align="right" sx={{ mb: 2 }}>
                   비밀번호가 기억나지 않으세요?
                   <TextLink component="span" onClick={() => setShowModal(true)}>
                      비밀번호 찾기
                   </TextLink>
                </Typography>
-               
-               <LoginButton 
-                  type="submit"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-               >
+
+               <LoginButton type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   로그인
                </LoginButton>
-               
+
                <Divider>또는</Divider>
-               
-               <KakaoLoginBtn />
-               
+
+               <KakaoLoginBtn onClick={handleKakaoLogin} />
+
                <HelpText>
                   계정이 없으세요?
                   <TextLink component={Link} to="/signup">
@@ -339,7 +319,7 @@ const Login = () => {
                   하기
                </HelpText>
             </LoginForm>
-            
+
             {showModal && <ModalWrapper onClose={() => setShowModal(false)} />}
          </LoginContainer>
       </PageContainer>

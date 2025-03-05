@@ -41,7 +41,6 @@ export const templateApi = {
    getTemplate: async (templateId) => {
       try {
          const response = await commonApi.get(`/templates/${templateId}`)
-         console.log('템플릿 상세 조회 응답:', response.data)
          return response.data
       } catch (error) {
          throw error

@@ -8,7 +8,17 @@ import { COLORS } from '../../styles/commonStyles'
 const KAKAO_SDK_URL = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REACT_APP_KAKAO_JS_KEY}&autoload=false`
 
 const LocationSection = ({ formData, style, textStyle, combinedStyle, isDrawer }) => {
-   const { name, address, detail, guide, showMap, coordinates } = formData.location || {}
+   // formData.location이 없을 경우 기본값 제공
+   const locationData = formData.location || {
+      name: '',
+      address: '',
+      detail: '',
+      guide: '',
+      showMap: false,
+      coordinates: null
+   };
+
+   const { name, address, detail, guide, showMap, coordinates } = locationData
 
    // 드로어와 일반 미리보기를 구분하는 고유 ID 생성
    const mapId = `preview-kakao-map-${isDrawer ? 'drawer' : 'main'}`

@@ -509,8 +509,8 @@ const TemplateEditor = () => {
    const userTemplateIdFromUrl = queryParams.get('userTemplateId')
 
    const { detail: template } = useSelector((state) => state.templates)
-   const { isAuthenticated, user } = useSelector((state) => state.auth)
-   const isAdmin = user?.role === 'admin'
+   const { isAuthenticated, user, authData } = useSelector((state) => state.auth)
+   const isAdmin = authData.role === 'admin'
 
    // 강제 리렌더링을 위한 상태
    const [, setForceRender] = useState(0)

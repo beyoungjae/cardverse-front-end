@@ -13,7 +13,6 @@ import { bps } from '../../styles/responsiveStyles'
 import { Title, ButtonBox, StyledButton } from '.'
 
 const StyledForm = styled('form')(({ theme }) => ({
-   //    all: 'inherit',
    display: 'flex',
    flexDirection: 'column',
    gap: '30px',

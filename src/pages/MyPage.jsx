@@ -270,7 +270,7 @@ const ModalTabPanel = ({ children, value, index }) => {
 const MyPage = () => {
    const navigate = useNavigate()
    const dispatch = useDispatch()
-   const user = useSelector((state) => state.auth.user)
+   const { user, isAuthenticated } = useSelector((state) => state.auth)
    const { purchaseHistory, status } = useSelector((state) => state.purchase)
    const [tabValue, setTabValue] = useState(0)
 
@@ -288,13 +288,13 @@ const MyPage = () => {
 
    // 로그인 상태 체크 및 구매 내역 로드
    useEffect(() => {
-      if (!user) {
+      if (!user && !isAuthenticated) {
          navigate('/login')
          return
       }
 
       dispatch(fetchPurchaseHistory())
-   }, [dispatch, navigate, user])
+   }, [dispatch, navigate, user, isAuthenticated])
 
    // 모달 열기/닫기 핸들러
    const handleOpenModal = () => {
@@ -336,6 +336,17 @@ const MyPage = () => {
             message: '유효한 닉네임을 입력해주세요',
             severity: 'error',
          })
+         return
+      }
+
+      // 로그인 상태 확인
+      if (!user) {
+         setSnackbar({
+            open: true,
+            message: '로그인이 필요합니다',
+            severity: 'error',
+         })
+         navigate('/login')
          return
       }
 

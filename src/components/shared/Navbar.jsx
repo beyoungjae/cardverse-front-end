@@ -244,8 +244,7 @@ const Navbar = ({ isAuthenticated, user }) => {
    }
 
    const handleLogout = useCallback(() => {
-      localStorage.removeItem('loginType')
-      dispatch(logoutUserThunk())
+      dispatch(logoutUserThunk({ user, provider: user.provider }))
          .unwrap()
          .then(() => {
             navigate('/')
@@ -305,12 +304,6 @@ const Navbar = ({ isAuthenticated, user }) => {
                </DrawerItem>
             </>
          )}
-         {/* <DrawerItem component={Link} to="/signup" onClick={handleDrawerToggle}>
-            <ListItemText primary="회원가입" />
-         </DrawerItem>
-         <DrawerItem component={Link} to="/login" onClick={handleDrawerToggle}>
-            <ListItemText primary="로그인" />
-         </DrawerItem> */}
       </List>
    )
 
@@ -342,7 +335,6 @@ const Navbar = ({ isAuthenticated, user }) => {
                      {user.role === 'admin' && <Link to="/admin">관리자</Link>}
                      <Link to="/support">고객센터</Link>
                      <Link to="/my">마이페이지</Link>
-                     {/* <Link to="/logout">로그아웃</Link> */}
                      <Link
                         component="span"
                         onClick={handleLogout}
@@ -359,13 +351,6 @@ const Navbar = ({ isAuthenticated, user }) => {
                      <Link to="/login">로그인</Link>
                   </NavLinks>
                )}
-               {/* <NavLinks>
-                  <Link to="/admin">관리자</Link>
-                  <Link to="/support">고객센터</Link>
-                  <Link to="/my">마이페이지</Link>
-                  <Link to="/signup">회원가입</Link>
-                  <Link to="/login">로그인</Link>
-               </NavLinks> */}
             </Toolbar>
          </StyledAppBar>
          <BottomNav>

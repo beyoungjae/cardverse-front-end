@@ -603,28 +603,28 @@ const ReadMore = styled(Link)(({ theme }) => ({
 const galleryItems = [
    {
       id: 1,
-      title: '청첩장 갤러리',
+      title: '청첩장 템플릿',
       image: '/images/home/weddinggallery.png',
       description: '사랑의 이야기를 디지털에 담아내는 특별한 청첩장입니다. 세련된 디자인과 손쉬운 전달로, 결혼식의 설렘과 기쁨을 더 많은 이들과 나눌 수 있습니다. 당신만의 독특한 스타일로 완성되는 모바일 청첩장으로, 새로운 시작을 알려보세요.',
       path: '/template/wedding',
    },
    {
       id: 2,
-      title: '연하장 갤러리',
+      title: '연하장 템플릿',
       image: '/images/home/newyeargallery.png',
       description: '새해의 따뜻한 마음을 전하는 디지털 연하장입니다. 다양한 디자인과 개성 있는 템플릿으로, 새해 인사를 특별하게 전달하세요. 간편한 제작과 전송으로, 소중한 이들에게 정성 가득한 새해 축복을 나눌 수 있습니다.',
       path: '/template/newyear',
    },
    {
       id: 3,
-      title: '고희연 갤러리',
+      title: '고희연 템플릿',
       image: '/images/home/gohyeongallery.png',
       description: '일흔 번째 봄을 맞이하는 특별한 순간을 위한 초대장입니다. 품격 있는 디자인과 정성스러운 구성으로, 감사와 축하의 마음을 전하세요. 소중한 분의 인생을 기념하는 뜻깊은 자리에 가족과 친지를 모십니다.',
       path: '/template/gohyeon',
    },
    {
       id: 4,
-      title: '초빙장 갤러리',
+      title: '초빙장 템플릿',
       image: '/images/home/invitationgallery.png',
       description: '비즈니스부터 문화행사까지, 모든 순간을 위한 프로페셔널한 초대장입니다. 목적에 맞는 맞춤형 디자인과 간편한 참석 관리로, 성공적인 행사를 준비하세요. 세련된 디지털 초빙장으로 당신의 특별한 순간에 품격을 더합니다.',
       path: '/template/invitation',
