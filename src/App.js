@@ -15,7 +15,7 @@ import { Home, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, Ad
 import Footer from './components/shared/Footer'
 import { Login } from './components/auth'
 import ReviewEditor from './components/review/ReviewEditor'
-
+import LoginRoute from './components/redirect/LoginRoute'
 // 라우트 세팅
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom'
 import AuthChecker from './components/auth/AuthChecker'
@@ -81,6 +81,12 @@ function App() {
       dispatch(checkAuthStatusThunk(authData))
    }, [dispatch])
 
+   useEffect(() => {
+      if (location.pathname !== '/login' && location.pathname !== '/signup') {
+         sessionStorage.setItem('lastVisited', location.pathname)
+      }
+   }, [location.pathname])
+
    const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/template/preview/') || location.pathname.startsWith('/preview/')
 
    return (
@@ -95,7 +101,14 @@ function App() {
             <Routes>
                <Route path="/" element={<Home />} />
                <Route path="/about" element={<AboutPage />} />
-               <Route path="/signup" element={<SignupPage />} />
+               <Route
+                  path="/signup"
+                  element={
+                     <LoginRoute>
+                        <SignupPage />
+                     </LoginRoute>
+                  }
+               />
                <Route path="/support" element={<CustomerPage />} />
                <Route path="/qna" element={<QnaPage />} />
                <Route path="/faq" element={<FaqPage />} />
@@ -137,7 +150,14 @@ function App() {
                   }
                />
 
-               <Route path="/login" element={<LoginPage />}>
+               <Route
+                  path="/login"
+                  element={
+                     <LoginRoute>
+                        <LoginPage />
+                     </LoginRoute>
+                  }
+               >
                   <Route index element={<Login />} />
                   <Route path="*" element={<Navigate to="/login" replace />} />
                </Route>
