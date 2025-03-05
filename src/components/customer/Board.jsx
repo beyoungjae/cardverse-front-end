@@ -17,7 +17,7 @@ const BoardContainer = styled(Box)(({ theme }) => ({
 
 // 보드 아이템 컨테이너
 const BoardItemContainer = styled(Box)(({ theme }) => ({
-   borderBottom: '1px solid #585858',
+   borderBottom: '1px solid #91a0a0',
 }))
 
 // 콘텐츠 박스
