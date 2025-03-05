@@ -16,7 +16,7 @@ import 'swiper/css/pagination'
 const BannerContainer = styled(Box)(({ theme }) => ({
    width: '100%',
    height: '85vh',
-   maxHeight: '800px',
+   maxHeight: '1000px',
    position: 'relative',
    overflow: 'hidden',
    userSelect: 'none',
@@ -37,7 +37,7 @@ const Bannerimg = styled('img')(({ theme }) => ({
    width: '100%',
    height: '100%',
    objectFit: 'cover',
-   objectPosition: 'center',
+   objectPosition: 'top',
    transition: 'transform 0.3s ease',
    pointerEvents: 'none',
 }))
@@ -75,39 +75,47 @@ const BannerContent = styled(Box)(({ theme }) => ({
 
 // 배너 타이틀
 const BannerTitle = styled('img')(({ theme }) => ({
-   width: '100%',
+   width: '70%',
    maxWidth: '600px',
    height: 'auto',
    marginBottom: '2rem',
    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+   marginLeft: '300px',
    [theme.breakpoints.down('lg')]: {
       maxWidth: '500px',
       marginBottom: '1.5rem',
+      marginLeft: '100px',
    },
    [theme.breakpoints.down('md')]: {
       maxWidth: '400px',
       marginBottom: '1rem',
+      marginLeft: '50px',
    },
    [theme.breakpoints.down('sm')]: {
       maxWidth: '280px',
       marginBottom: '0.8rem',
+      marginLeft: '10px',
    },
 }))
 
 // 배너 서브타이틀
 const BannerSubtitle = styled('img')(({ theme }) => ({
-   width: '100%',
+   width: '70%',
    maxWidth: '500px',
    height: 'auto',
    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+   marginLeft: '300px',
    [theme.breakpoints.down('lg')]: {
       maxWidth: '400px',
+      marginLeft: '100px',
    },
    [theme.breakpoints.down('md')]: {
       maxWidth: '320px',
+      marginLeft: '50px',
    },
    [theme.breakpoints.down('sm')]: {
       maxWidth: '240px',
+      marginLeft: '10px',
    },
 }))
 
@@ -340,52 +348,52 @@ const Spotpoint = styled(Box)(({ theme }) => ({
 const cards = [
    {
       id: 1,
-      image: `${process.env.PUBLIC_URL}/images/templates/sample00001.png`,
+      image: `${process.env.PUBLIC_URL}/images/templates/thumnail1.png`,
       title: '카드 1',
    },
    {
       id: 2,
-      image: `${process.env.PUBLIC_URL}/images/templates/sample00002.png`,
+      image: `${process.env.PUBLIC_URL}/images/templates/thumnail2.png`,
       title: '카드 2',
    },
    {
       id: 3,
-      image: `${process.env.PUBLIC_URL}/images/templates/sample00003.png`,
+      image: `${process.env.PUBLIC_URL}/images/templates/thumnail3.png`,
       title: '카드 3',
    },
    {
       id: 4,
-      image: `${process.env.PUBLIC_URL}/images/templates/sample00004.png`,
+      image: `${process.env.PUBLIC_URL}/images/templates/thumnail4.png`,
       title: '카드 4',
    },
    {
       id: 5,
-      image: `${process.env.PUBLIC_URL}/images/templates/sample00005.png`,
+      image: `${process.env.PUBLIC_URL}/images/templates/thumnail5.png`,
       title: '카드 5',
    },
    {
       id: 6,
-      image: `${process.env.PUBLIC_URL}/images/templates/sample00006.png`,
+      image: `${process.env.PUBLIC_URL}/images/templates/thumnail6.png`,
       title: '카드 6',
    },
    {
       id: 7,
-      image: `${process.env.PUBLIC_URL}/images/templates/sample00007.png`,
+      image: `${process.env.PUBLIC_URL}/images/templates/thumnail7.png`,
       title: '카드 7',
    },
    {
       id: 8,
-      image: `${process.env.PUBLIC_URL}/images/templates/sample00008.png`,
+      image: `${process.env.PUBLIC_URL}/images/templates/thumnail8.png`,
       title: '카드 8',
    },
    {
       id: 9,
-      image: `${process.env.PUBLIC_URL}/images/templates/sample00009.png`,
+      image: `${process.env.PUBLIC_URL}/images/templates/thumnail9.png`,
       title: '카드 9',
    },
    {
       id: 10,
-      image: `${process.env.PUBLIC_URL}/images/templates/sample00010.png`,
+      image: `${process.env.PUBLIC_URL}/images/templates/thumnail10.png`,
       title: '카드 10',
    },
 ]
@@ -486,7 +494,7 @@ const ImageContainer = styled(Box)(({ theme }) => ({
    },
 }))
 
-// 이미지 상단에 오버레이 효과
+// 이미지를 감싸는 오버레이
 const ImageWrapper = styled(Box)(({ theme }) => ({
    position: 'relative',
    width: '100%',
@@ -499,9 +507,9 @@ const ImageWrapper = styled(Box)(({ theme }) => ({
       position: 'absolute',
       top: '50%',
       transform: 'translateY(-50%)',
-      width: '20%',
+      width: '100%',
       height: '100%',
-      background: 'linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3))',
+      background: 'linear-gradient(to right, transparent, rgba(0, 0, 0, 0.3))',
       pointerEvents: 'none',
       zIndex: 1,
    },
