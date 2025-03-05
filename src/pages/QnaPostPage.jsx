@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { styled } from '@mui/material/styles'
-import { Box, Typography, TextField, Button, Rating, CircularProgress, Alert, ClickAwayListener, Paper, Tooltip } from '@mui/material'
+import { Box, Typography, TextField, Button, Alert, FormControlLabel, Checkbox } from '@mui/material'
 
 import Dropdown from '../components/shared/Dropdown'
 import { useDispatch } from 'react-redux'
@@ -9,21 +9,21 @@ import { createPostThunk } from '../features/postSlice'
 
 // 컨테이너 스타일
 const PostContainer = styled(Box)(({ theme }) => ({
-   padding: '120px 40px',
+   padding: '50px 40px',
    backgroundColor: theme.palette.background.default,
    minHeight: '100vh',
    backgroundImage: 'linear-gradient(to bottom, #f8f9fa, #ffffff)',
    [theme.bps.md]: {
-      padding: '80px 24px',
+      padding: '60px 24px',
    },
    [theme.bps.sm]: {
-      padding: '60px 16px',
+      padding: '40px 16px',
    },
 }))
 
 // 폼 스타일
 const PostForm = styled(Box)(({ theme }) => ({
-   maxWidth: '600px',
+   maxWidth: '800px',
    margin: '0 auto',
    backgroundColor: theme.palette.background.paper,
    padding: '40px',
@@ -90,7 +90,7 @@ const SubmitButton = styled(Button)(({ theme }) => ({
 
 // 페이지 타이틀
 const PageTitle = styled(Typography)(({ theme }) => ({
-   marginBottom: '40px',
+   marginBottom: '50px',
    fontWeight: 700,
    position: 'relative',
    display: 'flex',
@@ -120,7 +120,8 @@ const options = [
 const QnaPostPage = () => {
    const dispatch = useDispatch()
    const navigate = useNavigate()
-   const [selectedValue, setSelectedValue] = useState('')
+   const [isPrivate, setIsPrivate] = useState(false)
+
    const [formData, setFormData] = useState({
       category: '',
       title: '',
@@ -129,7 +130,10 @@ const QnaPostPage = () => {
 
    const [error, setError] = useState('')
    const [successMessage, setSuccessMessage] = useState('')
-   console.log('formData:', formData)
+
+   const handleCheckboxChange = (e) => {
+      setIsPrivate(e.target.checked)
+   }
 
    const handleChange = (e) => {
       const { name, value } = e.target
@@ -183,11 +187,22 @@ const QnaPostPage = () => {
 
    return (
       <PostContainer>
-         <PageTitle variant="h4" component="h1" align="center" gutterBottom sx={{ mb: 4 }}>
+         <PageTitle variant="h4" component="h1" align="center" gutterBottom>
             1:1 문의하기
          </PageTitle>
 
          <PostForm component="form" onSubmit={handleSubmit}>
+            {error && (
+               <Alert severity="error" sx={{ mb: 3 }}>
+                  {error}
+               </Alert>
+            )}
+            {successMessage && (
+               <Alert severity="success" sx={{ mb: 3 }}>
+                  {successMessage}
+               </Alert>
+            )}
+
             <FormField>
                <Dropdown label="문의 선택" options={options} name="category" onChange={handleChange} value={formData.category} disabled={options.length === 0} />
             </FormField>
@@ -198,6 +213,10 @@ const QnaPostPage = () => {
 
             <FormField>
                <TextField id="content" name="content" label="문의 내용을 작성해주세요" multiline rows={10} value={formData.content} onChange={handleChange} fullWidth placeholder="템플릿에 대한 솔직한 리뷰를 작성해주세요." />
+            </FormField>
+
+            <FormField>
+               <FormControlLabel control={<Checkbox checked={isPrivate} onChange={handleCheckboxChange} />} label="비공개로 등록" />
             </FormField>
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>

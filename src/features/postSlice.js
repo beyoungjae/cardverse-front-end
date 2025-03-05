@@ -10,6 +10,25 @@ export const createPostThunk = createAsyncThunk('posts/createPost', async (formD
    }
 })
 
+export const fetchPostsThunk = createAsyncThunk('posts/fetchPostsThunk', async ({ types, limit }, { rejectWithValue }) => {
+   try {
+      const queryParams = new URLSearchParams()
+
+      if (Array.isArray(types)) {
+         types.forEach((t) => queryParams.append('types', t))
+      } else {
+         queryParams.append('types', types)
+      }
+
+      queryParams.append('limit', limit)
+
+      const response = await postApi.getPosts(queryParams)
+      return response.data
+   } catch (error) {
+      return rejectWithValue(error.response?.data || error.message)
+   }
+})
+
 const postSlice = createSlice({
    name: 'posts',
    initialState: {
@@ -27,10 +46,22 @@ const postSlice = createSlice({
          })
          .addCase(createPostThunk.fulfilled, (state, action) => {
             state.loading = false
-            state.post = action.payload
-            state.posts = [...state.posts, action.payload]
          })
          .addCase(createPostThunk.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload
+         })
+
+      builder
+         .addCase(fetchPostsThunk.pending, (state) => {
+            state.loading = true
+            state.error = null
+         })
+         .addCase(fetchPostsThunk.fulfilled, (state, action) => {
+            state.loading = false
+            state.posts = action.payload.posts
+         })
+         .addCase(fetchPostsThunk.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload
          })

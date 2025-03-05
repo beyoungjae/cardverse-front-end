@@ -76,9 +76,6 @@ function App() {
    const location = useLocation()
    const dispatch = useDispatch()
    const { isAuthenticated, user, authData, loading } = useSelector((state) => state.auth)
-   console.log('user정보 확인', user)
-   console.log('authData 확인', authData)
-   console.log('')
 
    useEffect(() => {
       dispatch(checkAuthStatusThunk(authData))

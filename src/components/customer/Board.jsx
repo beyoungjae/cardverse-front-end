@@ -79,12 +79,12 @@ const Board = ({ result }) => {
       <BoardContainer>
          {currentItems.map((item) => (
             <BoardItemContainer key={item.id}>
-               <BoardTitle>
-                  <Typography variant="h6" onClick={() => handleTitleClick(item.id)} sx={{ fontSize: '15px' }}>
+               <BoardTitle onClick={() => handleTitleClick(item.id)}>
+                  <Typography variant="h6" sx={{ fontSize: '15px' }}>
                      {item.title}
                   </Typography>
                </BoardTitle>
-               <ContentBox show={openItemId === item.id}>
+               <ContentBox show={openItemId === item.id ? 'true' : undefined}>
                   <Typography variant="body2">{item.content} </Typography>
                </ContentBox>
             </BoardItemContainer>

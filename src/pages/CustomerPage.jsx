@@ -5,7 +5,9 @@ import { styled } from '@mui/material/styles'
 import SearchIcon from '@mui/icons-material/Search'
 import Top4Card from '../components/customer/Top4Card'
 import Board from '../components/customer/Board'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchPostsThunk } from '../features/postSlice'
 
 // 고객센터 페이지 컨테이너
 const CustomerContainer = styled(Box)(({ theme }) => ({
@@ -377,7 +379,14 @@ const dummyQNA = [
 ]
 
 const CustomerPage = () => {
+   const dispatch = useDispatch()
    const [value, setValue] = useState('notice')
+   const { posts } = useSelector((state) => state.posts)
+   console.log(posts)
+
+   useEffect(() => {
+      dispatch(fetchPostsThunk({ types: ['qna', 'notice'], limit: 10 }))
+   }, [dispatch])
 
    const handleChange = (event, newValue) => {
       setValue(newValue)
@@ -416,10 +425,10 @@ const CustomerPage = () => {
                      </TabList>
                   </Box>
                   <TabPanel value="notice" sx={{ padding: 0 }}>
-                     <Board result={dummyNotice} />
+                     <Board result={posts?.notice || []} />
                   </TabPanel>
                   <TabPanel value="qna" sx={{ padding: 0 }}>
-                     <Board result={dummyQNA} />
+                     <Board result={posts.qna} />
                   </TabPanel>
                </TabContext>
             </Box>
