@@ -292,7 +292,6 @@ const DetailSectionTitle = muiStyled('div')(({ theme }) => ({
 const VideoSection = muiStyled(Box)(({ theme }) => ({
    position: 'relative',
    width: '100%',
-   backgroundColor: '#f5f5f5',
    borderRadius: '10px',
    padding: '2rem',
    marginBottom: '3rem',
@@ -824,7 +823,7 @@ const TemplateDetail = () => {
             <VideoSection>
                <div className="video-container">
                   <ReactPlayer
-                     url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                     url="https://player.vimeo.com/video/1062699002?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
                      className="react-player"
                      controls
                      width="100%"
