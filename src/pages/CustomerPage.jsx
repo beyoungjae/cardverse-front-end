@@ -17,22 +17,16 @@ const CustomerContainer = styled(Box)(({ theme }) => ({
 // 배너 이미지
 const Bannerimg = styled(Box)(() => ({
    width: '100%',
-   height: '300px',
+   height: '212px',
    backgroundImage: "url('/images/home/login-background.png')",
    backgroundSize: 'cover',
    backgroundPosition: 'center',
    backgroundRepeat: 'no-repeat',
-   position: 'relative',
-   display: 'flex',
-   flexDirection: 'column',
 }))
 
 // 배너 타이틀
 const BannerTitle = styled(Typography)(({ theme }) => ({
    ...theme.typography.h1,
-   position: 'absolute',
-   top: '0px',
-   // margin: '0 auto',
    textAlign: 'center',
    lineHeight: '185px',
    color: theme.palette.text.primary,
@@ -46,8 +40,6 @@ const BannerTitle = styled(Typography)(({ theme }) => ({
 
 // 검색창
 const SearchBox = styled(FormControl)(({ theme }) => ({
-   position: 'absolute',
-   top: '200px',
    width: '581px',
    backgroundColor: theme.palette.background.default,
    margin: '0 auto',
