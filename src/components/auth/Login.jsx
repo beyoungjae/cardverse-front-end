@@ -296,12 +296,13 @@ const Login = () => {
                   }}
                />
 
-               <Typography variant="body2" align="right" sx={{ mb: 2 }}>
-                  비밀번호가 기억나지 않으세요?
+               {/* 추후 구현 */}
+               {/* <Typography variant="body2" align="right" sx={{ mb: 2 }}>
+                  비밀번호가 기억나지 않으신가요?
                   <TextLink component="span" onClick={() => setShowModal(true)}>
                      비밀번호 찾기
                   </TextLink>
-               </Typography>
+               </Typography> */}
 
                <LoginButton type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   로그인
@@ -312,7 +313,7 @@ const Login = () => {
                <KakaoLoginBtn onClick={handleKakaoLogin} />
 
                <HelpText>
-                  계정이 없으세요?
+                  계정이 없으신가요?
                   <TextLink component={Link} to="/signup">
                      회원가입
                   </TextLink>
