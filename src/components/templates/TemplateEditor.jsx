@@ -36,6 +36,7 @@ import { COLORS } from './editor/styles/commonStyles'
 import { templateApi } from '../../api/templateApi'
 import { userTemplateApi } from '../../api/userTemplateApi'
 import { fetchTemplateDetail } from '../../features/templateSlice'
+import { fetchPurchaseHistory } from '../../features/purchaseSlice'
 
 // ===================== styled components =====================
 
@@ -510,6 +511,7 @@ const TemplateEditor = () => {
 
    const { detail: template } = useSelector((state) => state.templates)
    const { isAuthenticated, user, authData } = useSelector((state) => state.auth)
+   const { purchaseHistory } = useSelector((state) => state.purchase)
    const isAdmin = authData?.role === 'admin'
 
    // 강제 리렌더링을 위한 상태
@@ -597,7 +599,6 @@ const TemplateEditor = () => {
    // 테마 설정이 폼 데이터에 반영되도록 useEffect 추가
    useEffect(() => {
       if (themeSettings) {
-
          // 테마 설정을 폼 데이터에 반영
          methods.setValue('backgroundColor', themeSettings.backgroundColor)
          methods.setValue('primaryColor', themeSettings.primaryColor)
@@ -639,6 +640,13 @@ const TemplateEditor = () => {
       }
    }, [template, templateId, methods])
 
+   // 결제 내역 로드
+   useEffect(() => {
+      if (isAuthenticated) {
+         dispatch(fetchPurchaseHistory())
+      }
+   }, [dispatch, isAuthenticated])
+
    // 저장된 사용자 템플릿 데이터 불러오기
    useEffect(() => {
       const loadUserTemplate = async () => {
@@ -672,59 +680,59 @@ const TemplateEditor = () => {
          const templateSpecificKey = `template_theme_${templateId}`
          // 먼저 템플릿별 테마 설정 확인
          const savedTemplateTheme = localStorage.getItem(templateSpecificKey)
-         
-         // 템플릿별 저장된 테마 설정 불러오기 시
-            if (savedTemplateTheme) {
-               try {
-                  const parsedTheme = JSON.parse(savedTemplateTheme)
 
-                  // 테마 설정을 폼 데이터에 반영
-                  methods.setValue('backgroundColor', parsedTheme.backgroundColor)
-                  methods.setValue('primaryColor', parsedTheme.primaryColor)
-                  methods.setValue('secondaryColor', parsedTheme.secondaryColor)
-                  methods.setValue('fontFamily', parsedTheme.fontFamily)
-                  methods.setValue('animation', parsedTheme.animation)
-                  
-                  // 테마 설정 상태 업데이트 (handleThemeChange 사용)
-                  Object.entries(parsedTheme).forEach(([key, value]) => {
-                     handleThemeChange(key, value)
-                  })
-                  
-                  return true
-               } catch (error) {
-                  console.error('템플릿별 테마 설정 파싱 오류:', error)
-               }
-            }
-         
-         // 글로벌 테마 설정 확인
-         const THEME_STORAGE_KEY = 'template_theme_draft'
-         const savedGlobalTheme = localStorage.getItem(THEME_STORAGE_KEY)
-         
+         // 템플릿별 저장된 테마 설정 불러오기 시
          if (savedTemplateTheme) {
             try {
                const parsedTheme = JSON.parse(savedTemplateTheme)
-               
+
                // 테마 설정을 폼 데이터에 반영
                methods.setValue('backgroundColor', parsedTheme.backgroundColor)
                methods.setValue('primaryColor', parsedTheme.primaryColor)
                methods.setValue('secondaryColor', parsedTheme.secondaryColor)
                methods.setValue('fontFamily', parsedTheme.fontFamily)
                methods.setValue('animation', parsedTheme.animation)
-               
+
                // 테마 설정 상태 업데이트 (handleThemeChange 사용)
                Object.entries(parsedTheme).forEach(([key, value]) => {
                   handleThemeChange(key, value)
                })
-               
+
                return true
             } catch (error) {
                console.error('템플릿별 테마 설정 파싱 오류:', error)
             }
          }
-         
+
+         // 글로벌 테마 설정 확인
+         const THEME_STORAGE_KEY = 'template_theme_draft'
+         const savedGlobalTheme = localStorage.getItem(THEME_STORAGE_KEY)
+
+         if (savedTemplateTheme) {
+            try {
+               const parsedTheme = JSON.parse(savedTemplateTheme)
+
+               // 테마 설정을 폼 데이터에 반영
+               methods.setValue('backgroundColor', parsedTheme.backgroundColor)
+               methods.setValue('primaryColor', parsedTheme.primaryColor)
+               methods.setValue('secondaryColor', parsedTheme.secondaryColor)
+               methods.setValue('fontFamily', parsedTheme.fontFamily)
+               methods.setValue('animation', parsedTheme.animation)
+
+               // 테마 설정 상태 업데이트 (handleThemeChange 사용)
+               Object.entries(parsedTheme).forEach(([key, value]) => {
+                  handleThemeChange(key, value)
+               })
+
+               return true
+            } catch (error) {
+               console.error('템플릿별 테마 설정 파싱 오류:', error)
+            }
+         }
+
          return false
       }
-      
+
       // 저장된 테마 설정이 없으면 기본 프리셋 적용
       const themeLoaded = loadThemeSettings()
       if (!themeLoaded) {
@@ -738,12 +746,12 @@ const TemplateEditor = () => {
     */
    const encodeTemplateId = (id) => {
       // 타임스탬프를 추가하여 동일한 ID도 다른 URL이 되도록 함
-      const timestamp = Date.now();
-      const data = `${id}-${timestamp}`;
-      
+      const timestamp = Date.now()
+      const data = `${id}-${timestamp}`
+
       // Base64로 인코딩
-      return btoa(data);
-   };
+      return btoa(data)
+   }
 
    // sections
    const themeProps = {
@@ -796,6 +804,19 @@ const TemplateEditor = () => {
                      return
                   }
 
+                  if (!isAdmin && templateId) {
+                     if (!userTemplateId) {
+                        const currentTemplateId = parseInt(templateId)
+
+                        const isPurchased = purchaseHistory.some((purchase) => purchase.template?.id === currentTemplateId)
+
+                        if (!isPurchased) {
+                           showNotification('이 템플릿을 저장하려면 먼저 구매가 필요합니다.', 'error')
+                           return
+                        }
+                     }
+                  }
+
                   setIsPreviewLoading(true)
 
                   // 현재 폼 데이터 가져오기
@@ -839,7 +860,7 @@ const TemplateEditor = () => {
                      showNotification('잠시후 미리보기 페이지가 열립니다...', 'info')
                      setTimeout(() => {
                         // 인코딩된 URL 생성
-                        const encodedId = encodeTemplateId(savedUserTemplateId);
+                        const encodedId = encodeTemplateId(savedUserTemplateId)
                         const previewUrl = `/preview/${encodedId}`
                         window.open(previewUrl, '_blank')
                      }, 3000)

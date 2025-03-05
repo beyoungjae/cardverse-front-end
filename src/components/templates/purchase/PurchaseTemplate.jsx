@@ -219,7 +219,7 @@ const PurchaseTemplate = () => {
    useEffect(() => {
       // 컴포넌트 마운트 시 구매 상태 초기화
       dispatch(resetPurchaseStatus())
-      
+
       // 컴포넌트 언마운트 시에도 초기화
       return () => {
          dispatch(resetPurchaseStatus())
@@ -317,7 +317,7 @@ const PurchaseTemplate = () => {
          setCurrentStep(1)
       } else if (currentStep === 1) {
          // 결제 정보 단계에서 결제 처리 진행
-         
+
          // 카드 결제인 경우 카드 정보 검증
          if (paymentMethod === 'card') {
             // 간단한 유효성 검사
@@ -334,7 +334,7 @@ const PurchaseTemplate = () => {
                return
             }
          }
-         
+
          setIsProcessing(true)
          try {
             const purchaseData = {
@@ -508,7 +508,7 @@ const PurchaseTemplate = () => {
                            label={
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                  <CreditCard />
-                                 <span>신용/체크카드 (현재 모의결제 중)</span>
+                                 <span>신용/체크카드 (실제 결제 처리 미구현)</span>
                               </Box>
                            }
                         />
@@ -575,15 +575,13 @@ const PurchaseTemplate = () => {
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                            아래 계좌로 후원해 주세요.
                            <br />
-                           개발 팀에 후원해 주시면 감사하겠습니다.
+                           개발팀에 후원해 주시면 감사하겠습니다.
                         </Typography>
                         <Box sx={{ bgcolor: 'background.paper', p: 2, borderRadius: 1 }}>
                            <Typography variant="body2">
                               은행명: 카카오뱅크
                               <br />
                               계좌번호: 3333067590933
-                              <br />
-                              예금주: 정병재
                            </Typography>
                         </Box>
                      </Box>

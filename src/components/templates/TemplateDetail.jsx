@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
@@ -9,7 +9,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import CloseIcon from '@mui/icons-material/Close'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
-import { fetchTemplateDetail, updateTemplate, deleteTemplate} from '../../features/templateSlice'
+import { fetchTemplateDetail, updateTemplate, deleteTemplate } from '../../features/templateSlice'
 import { checkTemplatePurchased } from '../../features/purchaseSlice'
 
 // 애니메이션 keyframes
@@ -563,6 +563,17 @@ const TemplateDetail = () => {
 
    const currentTab = location.state?.currentTab || 'wedding'
 
+   // 구매 페이지로 이동하는 함수
+   const handlePurchase = useCallback(() => {
+      if (!isAuthenticated) {
+         navigate('/login', { state: { from: location } })
+         return
+      }
+      navigate(`/template/${currentTab}/purchase/${templateId}`, {
+         state: { template, currentTab },
+      })
+   }, [isAuthenticated, navigate, location, currentTab, templateId, template])
+
    useLayoutEffect(() => {
       // 모바일에서는 smooth, 데스크톱에서는 auto 사용
       const isMobile = window.innerWidth <= 768
@@ -586,6 +597,13 @@ const TemplateDetail = () => {
       }
    }, [dispatch, isAuthenticated, templateId])
 
+   // location.state.openPurchase가 true일 경우 자동으로 구매 페이지로 이동
+   useEffect(() => {
+      if (location.state?.openPurchase && template) {
+         handlePurchase()
+      }
+   }, [location.state, template, handlePurchase])
+
    // 이미지 로딩 상태 초기화
    useEffect(() => {
       if (template && detailImages.length > 0) {
@@ -594,7 +612,7 @@ const TemplateDetail = () => {
          // 모든 이미지 프리로드
          const loadImages = async () => {
             try {
-               const promises = detailImages.map(src => {
+               const promises = detailImages.map((src) => {
                   return new Promise((resolve, reject) => {
                      const img = new Image()
                      img.src = src
@@ -616,24 +634,24 @@ const TemplateDetail = () => {
       }
    }, [template, detailImages])
 
-   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
+   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' })
 
    // 알림 표시 함수
    const showNotification = (message, severity = 'success') => {
       setNotification({
          open: true,
          message,
-         severity
-      });
-   };
+         severity,
+      })
+   }
 
    // 알림 닫기 함수
    const handleCloseNotification = (event, reason) => {
       if (reason === 'clickaway') {
-         return;
+         return
       }
-      setNotification({ ...notification, open: false });
-   };
+      setNotification({ ...notification, open: false })
+   }
 
    const handleBack = () => {
       navigate(`/template/${currentTab}`, {
@@ -672,15 +690,6 @@ const TemplateDetail = () => {
       } else {
          return
       }
-   }
-   const handlePurchase = () => {
-      if (!isAuthenticated) {
-         navigate('/login', { state: { from: location } })
-         return
-      }
-      navigate(`/template/${currentTab}/purchase/${templateId}`, {
-         state: { template, currentTab },
-      })
    }
 
    useEffect(() => {
@@ -760,14 +769,14 @@ const TemplateDetail = () => {
                <Typography className="price-text">Price | {Number(template.price).toLocaleString('ko-KR')}원</Typography>
                <ButtonGroup>
                   {isPurchased ? (
-                     <Typography 
-                        sx={{ 
-                           color: 'success.main', 
-                           fontWeight: 'bold', 
+                     <Typography
+                        sx={{
+                           color: 'success.main',
+                           fontWeight: 'bold',
                            padding: '10px 20px',
                            border: '1px solid',
                            borderColor: 'success.main',
-                           borderRadius: '4px'
+                           borderRadius: '4px',
                         }}
                      >
                         이미 구매한 템플릿입니다
@@ -800,10 +809,10 @@ const TemplateDetail = () => {
                         <CircularProgress size={40} />
                      ) : detailImages.length > 0 ? (
                         detailImages.map((image, index) => (
-                           <img 
-                              key={`detail-image-${index}`} 
-                              src={image} 
-                              alt={`Detail ${index + 1}`} 
+                           <img
+                              key={`detail-image-${index}`}
+                              src={image}
+                              alt={`Detail ${index + 1}`}
                               className={activeIndex === index ? 'active' : ''}
                               onError={(e) => {
                                  console.error(`이미지 로드 실패: ${image}`)
@@ -822,13 +831,7 @@ const TemplateDetail = () => {
 
             <VideoSection>
                <div className="video-container">
-                  <ReactPlayer
-                     url="https://player.vimeo.com/video/1062699002?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-                     className="react-player"
-                     controls
-                     width="100%"
-                     height="100%"
-                  />
+                  <ReactPlayer url="https://player.vimeo.com/video/1062699002?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" className="react-player" controls width="100%" height="100%" />
                </div>
             </VideoSection>
             <VideoSectionSubComment>
@@ -855,9 +858,9 @@ const TemplateDetail = () => {
                      <NavigateBeforeIcon />
                   </IconButton>
                   {detailImages.length > 0 ? (
-                     <img 
-                        src={detailImages[currentPreviewIndex]} 
-                        alt={`Preview ${currentPreviewIndex + 1}`} 
+                     <img
+                        src={detailImages[currentPreviewIndex]}
+                        alt={`Preview ${currentPreviewIndex + 1}`}
                         className="slide-image"
                         onError={(e) => {
                            console.error(`미리보기 이미지 로드 실패: ${detailImages[currentPreviewIndex]}`)
@@ -883,23 +886,10 @@ const TemplateDetail = () => {
          </PreviewModal>
 
          {/* 템플릿 수정 모달 */}
-         {isEditModalOpen && template && (
-            <TemplateEditModal
-               open={isEditModalOpen}
-               onClose={() => setIsEditModalOpen(false)}
-               template={template}
-               templateId={templateId}
-               showNotification={showNotification}
-            />
-         )}
+         {isEditModalOpen && template && <TemplateEditModal open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} template={template} templateId={templateId} showNotification={showNotification} />}
 
          {/* 알림 스낵바 */}
-         <Snackbar 
-            open={notification.open} 
-            autoHideDuration={6000} 
-            onClose={handleCloseNotification}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-         >
+         <Snackbar open={notification.open} autoHideDuration={6000} onClose={handleCloseNotification} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
             <Alert onClose={handleCloseNotification} severity={notification.severity} sx={{ width: '100%' }}>
                {notification.message}
             </Alert>

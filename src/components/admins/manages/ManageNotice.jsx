@@ -2,7 +2,7 @@ import TitleContainer from '../layouts/TitleContainer'
 import MainContainer from '../layouts/MainContainer'
 import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/system'
-import { items } from '../test/noticeItem'
+// import { items } from '../test/noticeItem'
 
 const Container = styled(Box)(() => ({
    width: '100%',
@@ -22,7 +22,7 @@ const ManageNotice = () => {
    return (
       <Container>
          <TitleContainer title="공지사항" />
-         <MainContainer type="accordion" itemData={items ? items : []}></MainContainer>
+         <MainContainer type="accordion"></MainContainer>
       </Container>
    )
 }
