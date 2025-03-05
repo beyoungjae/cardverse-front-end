@@ -67,13 +67,20 @@ const authSlice = createSlice({
    name: 'auth',
    initialState: {
       user: null,
-      isAuthenticated: false, 
+      isAuthenticated: false,
       loading: true,
       error: null,
       loginHistory: [],
       authData: {},
    },
-   reducers: {},
+   reducers: {
+      logout: (state) => {
+         state.isAuthenticated = false
+         state.authData = null
+         state.user = null
+         localStorage.removeItem('user')
+      },
+   },
    extraReducers: (builder) => {
       // 회원가입
       builder
@@ -101,6 +108,7 @@ const authSlice = createSlice({
             state.isAuthenticated = true
             state.user = action.payload.user
             state.authData = action.payload.authData
+            localStorage.setItem('user', JSON.stringify(action.payload.user))
          })
          .addCase(loginUserThunk.rejected, (state, action) => {
             state.loading = false
@@ -119,11 +127,12 @@ const authSlice = createSlice({
             state.user = action.payload.user
             state.authData = action.payload.authData
             state.token = action.payload.token
+            localStorage.setItem('user', JSON.stringify(action.payload.user))
          })
          .addCase(oauthLoginUserThunk.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload
-            localStorage.removeItem('persist:auth') 
+            localStorage.removeItem('persist:auth')
          })
 
       //로그아웃
@@ -135,9 +144,9 @@ const authSlice = createSlice({
          .addCase(logoutUserThunk.fulfilled, (state, action) => {
             state.loading = false
             state.isAuthenticated = false
-            state.user = null 
+            state.user = null
 
-            localStorage.removeItem('persist:auth') 
+            localStorage.removeItem('persist:auth')
          })
          .addCase(logoutUserThunk.rejected, (state, action) => {
             state.loading = false
@@ -195,7 +204,7 @@ const authSlice = createSlice({
             if (state.authData) {
                state.authData = {
                   ...state.authData,
-                  nick: action.payload.nick
+                  nick: action.payload.nick,
                }
             }
          })
@@ -206,4 +215,5 @@ const authSlice = createSlice({
    },
 })
 
+export const { logout } = authSlice.actions
 export default authSlice.reducer
