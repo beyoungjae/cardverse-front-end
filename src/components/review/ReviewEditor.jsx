@@ -182,6 +182,7 @@ const DropdownLabel = styled(Typography)(({ theme }) => ({
 
 // 커스텀 드롭다운 컴포넌트
 const CustomDropdown = ({ label, value, onChange, options, isLoading, disabled }) => {
+   console.log('label:', label)
    const [isOpen, setIsOpen] = useState(false)
    const selectedOption = options.find((option) => option.value === value)
 
@@ -216,8 +217,7 @@ const CustomDropdown = ({ label, value, onChange, options, isLoading, disabled }
                         color: isOpen ? 'primary.main' : 'text.secondary',
                      }}
                   />
-               }
-            >
+               }>
                {isLoading ? (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                      <CircularProgress size={20} />
@@ -233,8 +233,7 @@ const CustomDropdown = ({ label, value, onChange, options, isLoading, disabled }
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
-                     }}
-                  >
+                     }}>
                      {selectedOption.label}
                   </Typography>
                ) : (
@@ -243,8 +242,7 @@ const CustomDropdown = ({ label, value, onChange, options, isLoading, disabled }
                      sx={{
                         color: 'text.secondary',
                         fontStyle: 'italic',
-                     }}
-                  >
+                     }}>
                      템플릿을 선택해주세요
                   </Typography>
                )}
@@ -267,8 +265,7 @@ const CustomDropdown = ({ label, value, onChange, options, isLoading, disabled }
                                  sx={{
                                     fontWeight: value === option.value ? 600 : 400,
                                     transition: 'all 0.2s ease',
-                                 }}
-                              >
+                                 }}>
                                  {option.label}
                               </Typography>
                            </DropdownItem>

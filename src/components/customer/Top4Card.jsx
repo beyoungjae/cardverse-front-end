@@ -101,7 +101,7 @@ const Top4Card = () => {
             <Box>
                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                   <Typography sx={{ marginRight: '8px', fontSize: '0.9rem' }}>더 자세한 질문은</Typography>
-                  <Link to="/qna">
+                  <Link to="/post/new">
                      <CustomerButton>1:1문의하기</CustomerButton>
                   </Link>
                </Box>

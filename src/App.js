@@ -11,7 +11,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 // 컴포넌트 import
 import Navbar from './components/shared/Navbar'
-import { Home, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, AdminPage, CreatePostPage, AboutPage, QnaPage, FaqPage, EventPage, TemplatePreviewPage, MyPage } from './pages'
+import { Home, TemplatePage, LoginPage, SignupPage, ReviewPage, CustomerPage, AdminPage, CreatePostPage, AboutPage, QnaPage, FaqPage, EventPage, TemplatePreviewPage, MyPage, QnaPostPage } from './pages'
 import Footer from './components/shared/Footer'
 import { Login } from './components/auth'
 import ReviewEditor from './components/review/ReviewEditor'
@@ -76,6 +76,9 @@ function App() {
    const location = useLocation()
    const dispatch = useDispatch()
    const { isAuthenticated, user, authData, loading } = useSelector((state) => state.auth)
+   console.log('user정보 확인', user)
+   console.log('authData 확인', authData)
+   console.log('')
 
    useEffect(() => {
       dispatch(checkAuthStatusThunk(authData))
@@ -110,7 +113,9 @@ function App() {
                   }
                />
                <Route path="/support" element={<CustomerPage />} />
-               <Route path="/qna" element={<QnaPage />} />
+               {/* <Route path="/qna" element={<QnaPage />} /> */}
+               {/* <Route path="/qna" element={<QnaPage />} /> */}
+               <Route path="/post/new" element={<QnaPostPage />} />
                <Route path="/faq" element={<FaqPage />} />
                <Route path="/event" element={<EventPage />} />
                <Route path="/template">
@@ -156,8 +161,7 @@ function App() {
                      <LoginRoute>
                         <LoginPage />
                      </LoginRoute>
-                  }
-               >
+                  }>
                   <Route index element={<Login />} />
                   <Route path="*" element={<Navigate to="/login" replace />} />
                </Route>

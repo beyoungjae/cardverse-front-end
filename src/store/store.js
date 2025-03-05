@@ -6,6 +6,7 @@ import authReducer from '../features/authSlice'
 import templateReducer from '../features/templateSlice'
 import purchaseReducer from '../features/purchaseSlice'
 import reviewReducer from '../features/reviewSlice'
+import postReducer from '../features/postSlice'
 
 const authPersistConfig = {
    key: 'auth',
@@ -29,6 +30,7 @@ const store = configureStore({
       purchase: purchaseReducer,
       session: persistedSessionReducer, // 창 닫힘 감지용 추가
       reviews: reviewReducer,
+      posts: postReducer,
    },
    middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
