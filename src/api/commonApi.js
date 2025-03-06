@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const host = window.location.hostname === 'localhost' ? 'http://43.203.232.147:8000' : '/api'
+// const host = window.location.hostname === 'localhost' ? 'http://43.203.232.147:8000' : '/api'
+const host = process.env.REACT_APP_API_URL || 'http://localhost:8000'
 
 const commonApi = axios.create({
    baseURL: host,

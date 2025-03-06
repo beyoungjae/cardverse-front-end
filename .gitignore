@@ -27,5 +27,6 @@ package-lock.json
 test/
 
 .env
+
 .vercel
 .env*.local

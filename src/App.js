@@ -78,9 +78,22 @@ function App() {
    const dispatch = useDispatch()
    const { isAuthenticated, user, authData, loading } = useSelector((state) => state.auth)
 
+   const authRef = useRef(false)
+
+   console.log(isAuthenticated)
+
    useEffect(() => {
       dispatch(checkAuthStatusThunk(authData))
    }, [dispatch])
+
+   useEffect(() => {
+      if (authRef.current === isAuthenticated) {
+         return // ✅ 이전 값과 같으면 아무것도 하지 않음
+      }
+
+      authRef.current = isAuthenticated // ✅ 변경된 값만 반영
+      console.log('Updated authRef:', authRef.current)
+   }, [isAuthenticated]) // ✅ isAuthenticated 값이 변경될 때 실행
 
    useEffect(() => {
       if (location.pathname !== '/login' && location.pathname !== '/signup') {
@@ -159,8 +172,7 @@ function App() {
                      <LoginRoute>
                         <LoginPage />
                      </LoginRoute>
-                  }
-               >
+                  }>
                   <Route index element={<Login />} />
                   <Route path="*" element={<Navigate to="/login" replace />} />
                </Route>
