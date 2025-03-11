@@ -19,6 +19,7 @@ import LoginRoute from './components/redirect/LoginRoute'
 // 라우트 세팅
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom'
 import AuthChecker from './components/auth/AuthChecker'
+import commonApi from './api/commonApi'
 
 // 네비바 아래 컨텐츠를 위한 컨테이너
 const MainContent = muiStyled('div')(({ theme, $hideLayout }) => ({
@@ -88,6 +89,12 @@ function App() {
    }, [location.pathname])
 
    const hideLayout = location.pathname.startsWith('/login') || location.pathname.startsWith('/signup') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/template/preview/') || location.pathname.startsWith('/preview/')
+
+   // 앱 시작 시 저장된 토큰이 있으면 복원
+   const token = localStorage.getItem('authToken')
+   if (token) {
+      commonApi.defaults.headers.common['Authorization'] = `Bearer ${token}`
+   }
 
    return (
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
