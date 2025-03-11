@@ -1,44 +1,33 @@
 import axios from 'axios'
 
 const commonApi = axios.create({
-   baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
+   baseURL: process.env.REACT_APP_API_URL || 'https://cardverse-ten.store',
    withCredentials: true,
-   headers: {
-      'Content-Type': 'application/json',
-   },
+   timeout: 10000,
 })
+
+// 요청 인터셉터 추가
+commonApi.interceptors.request.use(
+   (config) => {
+      const token = localStorage.getItem('authToken')
+      if (token) {
+         config.headers.Authorization = `Bearer ${token}`
+      }
+      return config
+   },
+   (error) => Promise.reject(error)
+)
 
 // 응답 인터셉터 추가
 commonApi.interceptors.response.use(
    (response) => response,
    (error) => {
-      // 401 에러 처리 (인증 실패)
-      if (error.response?.status === 401) {
-         // 로그인 상태 확인 요청인 경우에는 로컬 스토리지를 지우지 않음
-         const isStatusCheck = error.config.url.includes('/auth/status');
-         
-         if (!isStatusCheck) {
-            // 로컬 스토리지의 인증 관련 데이터 삭제
-            localStorage.removeItem('loginType');
-            
-            // 홈페이지로 리다이렉트 (선택적)
-            // 자동 리다이렉트는 사용자 경험을 해칠 수 있으므로 필요한 경우에만 활성화
-            // window.location.href = '/';
-         }
+      // 401 오류 시 로그인 페이지로 리다이렉트 (선택 사항)
+      if (error.response && error.response.status === 401) {
+         console.log('인증 오류: 로그인이 필요합니다')
+         // 로그인 페이지로 리다이렉트하거나 로그인 모달 표시
       }
-      
-      // 네트워크 오류 처리 (서버 연결 실패)
-      if (!error.response) {
-         console.error('Network error:', error.message);
-         // 네트워크 오류는 로그인 상태를 초기화하지 않고 오류만 반환
-         return Promise.reject({
-            ...error,
-            isNetworkError: true,
-            message: '서버 연결에 실패했습니다. 네트워크 연결을 확인해주세요.'
-         });
-      }
-      
-      return Promise.reject(error);
+      return Promise.reject(error)
    }
 )
 
